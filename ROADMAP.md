@@ -7,36 +7,79 @@ access control. Decision pending.
 
 ---
 
-### Option 1 — Delegate to Google OAuth
+### Option 1 — Google OAuth (Sign in with Google)
 
 **How it works:**
-Students sign in with their Google account only. No custom sign-up form,
-no DOB field, no age gate built by us. Google handles COPPA compliance for
-under-13 accounts via Google Family Link — parents approve the child's
-Google account, and that approval carries over to any app the child signs
-into with it.
+Students sign in with their existing Google account. No custom sign-up
+form, no DOB field, no password managed by us. Better Auth handles the
+OAuth flow; Google issues the identity token.
 
-**Why it works:**
-- Google has a legal team, COPPA infrastructure, and parental consent
-  flows already built and audited
-- Schools already provision Google accounts for students via Google
-  Workspace for Education — those accounts are district-managed and
-  age-verified at enrollment
-- We never touch a DOB field, so we can't be accused of collecting it
-  incorrectly
-- Zero liability for fake age declarations — if a child bypasses Google
-  Family Link, that's between Google and the parent, not us
+**What Google OAuth actually gives you:**
+When a user signs in with Google, your app receives only this:
 
-**What it doesn't solve:**
-- Students without a Google account (uncommon in schools, more common
-  for younger/home-school kids)
-- Parents who don't use Family Link (it's optional, not enforced)
+```json
+{
+  "sub": "1234567890",
+  "name": "Amelia M.",
+  "email": "amelia@school.edu",
+  "picture": "https://...",
+  "email_verified": true
+}
+```
+
+That is all. **Google does not expose age, date of birth, or an
+"under 13" flag in the OAuth token.** This is intentional — Google
+withholds age data for privacy reasons regardless of account type.
+
+**What Google Family Link actually does (and doesn't do):**
+Family Link is a parental device-supervision tool, not an age gate for
+third-party websites. It lets parents approve Android app installs and
+set screen time limits. It does NOT:
+- Signal to your website that a visitor is under 13
+- Restrict which websites a child can visit
+- Expose the child's age to OAuth recipients
+- Give third-party apps any parental consent confirmation
+
+A child with a Family Link account signs into your site identically to
+an adult. You cannot tell the difference from the token.
+
+**The one useful signal — email domain:**
+School-issued Google Workspace for Education accounts have recognisable
+domains (`@students.districtname.k12.us`). You can read the email domain
+on sign-in and apply restrictions:
+
+```
+@gmail.com         → unknown age → treat as adult, no restrictions
+@school.k12.us     → likely a school student → apply grade-level defaults
+```
+
+This is a heuristic, not a guarantee. A child can have a personal Gmail
+account and sign in with that instead.
+
+**What Google OAuth is actually good for:**
+- Stronger identity than email/password (harder to create fake Google
+  accounts than fake email addresses)
+- Convenience — students already have Google accounts from school
+- Removes password management from our responsibility
+- School domain heuristic gives a weak but free age signal
+
+**What it does NOT provide:**
+- Age verification of any kind
+- COPPA compliance on its own
+- Parental consent confirmation
+- Any difference in token between an 8-year-old and a 40-year-old
+
+**Conclusion:** Google OAuth is worth adding for convenience and identity
+strength. It is **not** an age control mechanism. Age-based feature
+gating must come from the teacher setting a grade level on the classroom
+— not from Google.
 
 **Implementation effort:** Low — add Google OAuth to Better Auth (1–2 hours).
 
 **Comparable products using this approach:**
 MIT App Inventor (main platform), Google Classroom integrations, most
-EdTech tools targeting middle/high school.
+EdTech tools targeting middle/high school — all of whom rely on the
+teacher/school relationship for actual age context, not the OAuth token.
 
 ---
 
@@ -115,15 +158,19 @@ serious K–12 EdTech product at scale.
 
 ## Recommended Phasing
 
-| Phase | Options | When |
+| Phase | What | Why |
 |---|---|---|
-| v1 (now) | Option 1 + Option 2 | Launch — covers schools and low-friction classroom use |
-| v2 | Option 3 (Clever) | First paying school district customer |
+| v1 (now) | Option 2 — No-login classroom sessions | Zero PII, zero COPPA exposure, lowest friction for classrooms |
+| v1 (now) | Option 1 — Google OAuth (convenience only) | Easier sign-in for teachers/parents; school domain heuristic for weak age signal |
+| v1 (now) | Teacher sets `grade_level` on classroom | **The actual age signal** — drives all feature gating |
+| v2 | Option 3 — Clever/ClassLink SSO | First paying school district; grade level in token replaces heuristic |
 | v2 | Parent activation flow | If direct-to-consumer growth warrants it |
 
-The combination of Options 1 and 2 is what MIT App Inventor has run
-successfully for 15+ years. It covers the vast majority of real classroom
-use cases with minimal liability and minimal friction.
+**Key insight:** Google OAuth is a sign-in convenience, not an age control.
+The teacher is the age signal. The classroom `grade_level` field is what
+drives feature gating — block availability, run limits, explain styles.
+That is the design that MIT App Inventor, Google Classroom, and every
+serious K–12 EdTech product converge on.
 
 ---
 
