@@ -1,0 +1,94 @@
+import {
+  pgTable,
+  text,
+  timestamp,
+  integer,
+  jsonb,
+  boolean,
+} from "drizzle-orm/pg-core";
+
+export const profiles = pgTable("profiles", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull().unique(),
+  displayName: text("display_name").notNull(),
+  role: text("role").notNull().default("student"), // student | teacher | parent | admin
+  linkCode: text("link_code").unique(), // for parent-child linking (students only)
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const classrooms = pgTable("classrooms", {
+  id: text("id").primaryKey(),
+  teacherId: text("teacher_id").notNull(),
+  name: text("name").notNull(),
+  joinCode: text("join_code").notNull().unique(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const classroomMembers = pgTable("classroom_members", {
+  id: text("id").primaryKey(),
+  classroomId: text("classroom_id").notNull(),
+  studentId: text("student_id").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const parentChildLinks = pgTable("parent_child_links", {
+  id: text("id").primaryKey(),
+  parentId: text("parent_id").notNull(),
+  studentId: text("student_id").notNull(),
+  linkCode: text("link_code").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const projects = pgTable("projects", {
+  id: text("id").primaryKey(),
+  ownerId: text("owner_id").notNull(),
+  classroomId: text("classroom_id"),
+  name: text("name").notNull(),
+  description: text("description"),
+  dslJson: jsonb("dsl_json"),
+  blocklyJson: jsonb("blockly_json"),
+  status: text("status").notNull().default("draft"), // draft | published
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const agentRuns = pgTable("agent_runs", {
+  id: text("id").primaryKey(),
+  projectId: text("project_id").notNull(),
+  studentId: text("student_id").notNull(),
+  input: text("input"),
+  output: text("output"),
+  provider: text("provider").notNull().default("mock"),
+  status: text("status").notNull().default("completed"), // completed | flagged | error
+  safetyFlags: jsonb("safety_flags"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const reasoningReceipts = pgTable("reasoning_receipts", {
+  id: text("id").primaryKey(),
+  runId: text("run_id").notNull().unique(),
+  projectId: text("project_id").notNull(),
+  studentId: text("student_id").notNull(),
+  goal: text("goal"),
+  knowledgeUsed: jsonb("knowledge_used"),
+  rulesApplied: jsonb("rules_applied"),
+  stepsFollowed: jsonb("steps_followed"),
+  toolsUsed: jsonb("tools_used"),
+  approvalRequired: jsonb("approval_required"),
+  safetyFlags: jsonb("safety_flags"),
+  output: text("output"),
+  provider: text("provider").notNull().default("mock"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const usageLimits = pgTable("usage_limits", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull().unique(),
+  dailyRunLimit: integer("daily_run_limit").notNull().default(5),
+  runsUsedToday: integer("runs_used_today").notNull().default(0),
+  periodStart: timestamp("period_start").notNull().defaultNow(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
