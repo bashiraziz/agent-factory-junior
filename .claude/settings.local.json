@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p app_design_extract)",
+      "Bash(unzip -o \"App Design Recommendation.zip\" -d app_design_extract)",
+      "Bash(npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --no-turbopack --yes)",
+      "Bash(mkdir -p app-design-temp)",
+      "Bash(unzip -o \"App Design Recommendation.zip\" -d app-design-temp/)"
+    ]
+  }
+}
