@@ -25,3 +25,23 @@ body {
 .font-display { font-family: var(--font-fredoka), Fredoka, sans-serif; }
 .font-sans    { font-family: var(--font-nunito), Nunito, sans-serif; }
 .font-mono    { font-family: var(--font-space-mono), "Space Mono", monospace; }
+
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 32px;
+  border-radius: 14px;
+  border: 2px solid #f0e7d6;
+  color: #2a2a3c;
+  font-family: var(--font-nunito), Nunito, sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  text-decoration: none;
+  background: transparent;
+  transition: background 150ms ease-out, border-color 150ms ease-out;
+}
+.btn-outline:hover {
+  background: #fbf6ec;
+  border-color: #7c5cff;
+}

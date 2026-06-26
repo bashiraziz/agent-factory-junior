@@ -92,26 +92,7 @@ export default function Home() {
             Get started free
           </Link>
 
-          <Link
-            href="/sign-in"
-            className="inline-flex items-center justify-center font-sans transition-colors hover:bg-[#FBF6EC]"
-            style={{
-              padding: "16px 32px",
-              borderRadius: 14,
-              border: "2px solid #F0E7D6",
-              color: "#2A2A3C",
-              fontWeight: 700,
-              fontSize: 18,
-              textDecoration: "none",
-              background: "transparent",
-            }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.borderColor = "#7C5CFF";
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.borderColor = "#F0E7D6";
-            }}
-          >
+          <Link href="/sign-in" className="btn-outline">
             Sign in
           </Link>
         </div>
