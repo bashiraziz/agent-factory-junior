@@ -3,7 +3,7 @@ import { agentRuns, reasoningReceipts, usageLimits, projects } from "@/db/schema
 import { eq } from "drizzle-orm";
 import { validateProject } from "./validate-project";
 import { buildSafePrompt } from "./build-safe-prompt";
-import { callLLM } from "./mock-llm";
+import { callLLM } from "./llm";
 import type { ProjectDSL } from "./types";
 import { nanoid } from "@/lib/utils";
 
