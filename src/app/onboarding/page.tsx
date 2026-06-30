@@ -36,14 +36,18 @@ const ROLES = [
 ];
 
 export default function OnboardingPage() {
-  const { data: session } = useSession();
+  const { data: session, isPending: sessionLoading } = useSession();
   const router = useRouter();
   const [selected, setSelected] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleContinue = async () => {
-    if (!selected || !session?.user) return;
+    if (!selected) return;
+    if (!session?.user) {
+      setError("Session not found — try refreshing the page.");
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
@@ -106,11 +110,11 @@ export default function OnboardingPage() {
 
         <button
           onClick={handleContinue}
-          disabled={!selected || loading}
+          disabled={!selected || loading || sessionLoading}
           className="w-full py-4 rounded-pill font-sans font-extrabold text-lg text-white transition-transform hover:-translate-y-0.5 disabled:opacity-40"
           style={{ background: "#7C5CFF", boxShadow: "0 5px 0 #5B43E0" }}
         >
-          {loading ? "Setting up…" : "Continue →"}
+          {sessionLoading ? "Loading…" : loading ? "Setting up…" : "Continue →"}
         </button>
       </div>
     </main>
