@@ -1,20 +1,16 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
 import { db } from "@/db";
-import { profiles, projects, usageLimits } from "@/db/schema";
+import { projects, usageLimits } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { Mascot } from "@/components/mascot";
 import { StatusPill } from "@/components/status-pill";
 import { AvatarChip } from "@/components/avatar-chip";
+import { resolveStudentProfile } from "@/lib/student-auth";
 
 export default async function StudentDashboard() {
-  const session = await auth.api.getSession({ headers: await headers() });
-  if (!session?.user) redirect("/sign-in");
-
-  const [profile] = await db.select().from(profiles).where(eq(profiles.userId, session.user.id));
-  if (!profile) redirect("/onboarding");
+  const profile = await resolveStudentProfile();
+  if (!profile) redirect("/join");
   if (profile.role !== "student") redirect(`/${profile.role}/dashboard`);
 
   const myProjects = await db
@@ -24,7 +20,7 @@ export default async function StudentDashboard() {
     .orderBy(desc(projects.updatedAt))
     .limit(6);
 
-  const [usage] = await db.select().from(usageLimits).where(eq(usageLimits.userId, session.user.id));
+  const [usage] = await db.select().from(usageLimits).where(eq(usageLimits.userId, profile.id));
   const runsLeft = usage ? usage.dailyRunLimit - usage.runsUsedToday : 5;
   const runsLimit = usage?.dailyRunLimit ?? 5;
 

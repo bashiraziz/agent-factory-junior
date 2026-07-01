@@ -209,11 +209,11 @@ export default async function ParentChildDetailPage({
                     <StatusPill status={status} />
 
                     <Link
-                      href={`/student/projects/${run.projectId}/receipt/${run.id}`}
+                      href={`/student/projects/${run.projectId}/replay/${run.id}`}
                       className="font-sans font-extrabold text-xs px-3 py-1.5 rounded-pill flex-shrink-0"
                       style={{ background: "#F4F0FF", color: "#7C5CFF" }}
                     >
-                      Receipt →
+                      Replay →
                     </Link>
                   </div>
                 );
@@ -233,7 +233,7 @@ export default async function ParentChildDetailPage({
               You can see exactly what every AI Worker did
             </div>
             <div className="font-sans text-sm mt-1" style={{ color: "#5C5747" }}>
-              Every step, every rule applied, every answer — all shown in the Reasoning Receipt. Nothing is hidden from you as a parent.
+              Every step, every rule applied, every answer — all shown in the Replay. Nothing is hidden from you as a parent.
             </div>
           </div>
         </div>

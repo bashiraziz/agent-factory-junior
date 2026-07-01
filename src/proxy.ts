@@ -1,23 +1,36 @@
 import { NextRequest, NextResponse } from "next/server";
+import { SEAT_COOKIE } from "@/lib/seat-session";
 
 const ROLE_PREFIXES = ["student", "teacher", "parent", "admin"];
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Find which role prefix this route is under
   const matchedRole = ROLE_PREFIXES.find((role) =>
     pathname.startsWith(`/${role}/`)
   );
   if (!matchedRole) return NextResponse.next();
 
-  // Check for a Better Auth session cookie
-  // Better Auth sets a cookie named "better-auth.session_token" by default
+  // Better Auth session covers all roles
   const sessionCookie =
     request.cookies.get("better-auth.session_token") ||
     request.cookies.get("__Secure-better-auth.session_token");
 
-  if (!sessionCookie?.value) {
+  // Seat-code session covers /student/* only (no account, Track A)
+  const seatCookie = request.cookies.get(SEAT_COOKIE);
+
+  const isAuthenticated =
+    !!sessionCookie?.value ||
+    (matchedRole === "student" && !!seatCookie?.value);
+
+  if (!isAuthenticated) {
+    if (matchedRole === "student") {
+      // Offer both sign-in and /join for unauthenticated student routes
+      const url = request.nextUrl.clone();
+      url.pathname = "/join";
+      url.searchParams.set("next", pathname);
+      return NextResponse.redirect(url);
+    }
     const url = request.nextUrl.clone();
     url.pathname = "/sign-in";
     url.searchParams.set("next", pathname);

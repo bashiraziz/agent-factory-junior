@@ -10,7 +10,7 @@ import {
 const CHIPS = [
   { label: "Visual block editor", Icon: Blocks,      color: "#7C5CFF" },
   { label: "Safe for kids",        Icon: ShieldCheck, color: "#FF6B6B" },
-  { label: "Reasoning receipts",   Icon: ScrollText,  color: "#FF924D" },
+  { label: "Replays",              Icon: ScrollText,  color: "#FF924D" },
   { label: "Teacher & parent review", Icon: Users,   color: "#3DA5F4" },
 ];
 

@@ -2,6 +2,7 @@ import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { SeatCodesPanel } from "@/components/seat-codes-panel";
 import { db } from "@/db";
 import { profiles, classrooms, classroomMembers, agentRuns, projects } from "@/db/schema";
 import { eq, and, desc, gte } from "drizzle-orm";
@@ -221,14 +222,14 @@ export default async function ClassroomDetailPage({
 
                     {/* Action */}
                     <Link
-                      href={`/student/projects/${run.projectId}/receipt/${run.id}`}
+                      href={`/student/projects/${run.projectId}/replay/${run.id}`}
                       className="font-sans font-extrabold text-xs px-3 py-1.5 rounded-pill whitespace-nowrap"
                       style={{
                         background: isFlagged ? "#FFF1DC" : "#F4F0FF",
                         color: isFlagged ? "#E0792B" : "#7C5CFF",
                       }}
                     >
-                      {isFlagged ? "Review →" : "Receipt →"}
+                      {isFlagged ? "Review →" : "Replay →"}
                     </Link>
                   </div>
                 );
@@ -236,6 +237,9 @@ export default async function ClassroomDetailPage({
             </div>
           )}
         </section>
+
+        {/* Seat codes — Track A */}
+        <SeatCodesPanel classroomId={id} />
 
         {/* Students list */}
         {members.length > 0 && (

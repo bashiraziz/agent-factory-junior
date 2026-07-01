@@ -114,7 +114,7 @@ export default function LinkChildPage() {
                   <li>🎓 Ask your child for their link code</li>
                   <li>🔗 Enter it above to connect</li>
                   <li>👀 See all their AI Worker activity</li>
-                  <li>📋 Read reasoning receipts for every run</li>
+                  <li>📋 Watch replays for every run</li>
                 </ul>
               </div>
 

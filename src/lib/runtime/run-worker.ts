@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { agentRuns, reasoningReceipts, usageLimits, projects } from "@/db/schema";
+import { agentRuns, replays, usageLimits, projects } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { validateProject } from "./validate-project";
 import { buildSafePrompt } from "./build-safe-prompt";
@@ -91,10 +91,10 @@ export async function runWorker(projectId: string, studentId: string) {
     safetyFlags: llmResult.safety_flags,
   });
 
-  // Save receipt
-  const receiptId = nanoid();
-  await db.insert(reasoningReceipts).values({
-    id: receiptId,
+  // Save replay
+  const replayId = nanoid();
+  await db.insert(replays).values({
+    id: replayId,
     runId,
     projectId,
     studentId,
@@ -120,7 +120,7 @@ export async function runWorker(projectId: string, studentId: string) {
 
   return {
     runId,
-    receiptId,
+    replayId,
     output: outputText,
     messages: llmResult.messages,
     safetyFlags: llmResult.safety_flags,

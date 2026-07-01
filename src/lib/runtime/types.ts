@@ -34,7 +34,7 @@ export interface ProjectDSL {
   approval_required: Array<{ action: string }>;
 }
 
-export interface ReasoningReceipt {
+export interface Replay {
   runId: string;
   projectId: string;
   studentId: string;

@@ -13,7 +13,7 @@ type WorkerMessage =
 
 interface RunResult {
   runId: string;
-  receiptId: string;
+  replayId: string;
   messages: WorkerMessage[];
   safetyFlags: string[];
   runsUsedToday: number;
@@ -234,11 +234,11 @@ export default function RunProjectPage() {
           </Link>
           <div className="flex-1" />
           <Link
-            href={`/student/projects/${id}/receipt/${result?.runId}`}
+            href={`/student/projects/${id}/replay/${result?.runId}`}
             className="font-mono text-xs uppercase tracking-widest"
             style={{ color: "#8A8071" }}
           >
-            See reasoning receipt →
+            See replay →
           </Link>
         </div>
       </header>
@@ -282,11 +282,11 @@ export default function RunProjectPage() {
         </div>
         {result?.runId && (
           <Link
-            href={`/student/projects/${id}/receipt/${result.runId}`}
+            href={`/student/projects/${id}/replay/${result.runId}`}
             className="font-sans text-sm font-extrabold"
             style={{ color: "#7C5CFF" }}
           >
-            See reasoning receipt →
+            See replay →
           </Link>
         )}
       </footer>

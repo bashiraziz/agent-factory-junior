@@ -66,7 +66,7 @@ export const agentRuns = pgTable("agent_runs", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
-export const reasoningReceipts = pgTable("reasoning_receipts", {
+export const replays = pgTable("replays", {
   id: text("id").primaryKey(),
   runId: text("run_id").notNull().unique(),
   projectId: text("project_id").notNull(),
@@ -80,6 +80,18 @@ export const reasoningReceipts = pgTable("reasoning_receipts", {
   safetyFlags: jsonb("safety_flags"),
   output: text("output"),
   provider: text("provider").notNull().default("mock"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const classroomSeatCodes = pgTable("classroom_seat_codes", {
+  id: text("id").primaryKey(),
+  classroomId: text("classroom_id").notNull(),
+  code: text("code").notNull().unique(),
+  profileId: text("profile_id"),        // set when student joins
+  sessionToken: text("session_token").unique(), // set when student joins
+  isActive: boolean("is_active").notNull().default(true),
+  joinedAt: timestamp("joined_at"),
+  expiresAt: timestamp("expires_at"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 

@@ -146,7 +146,7 @@ async function initDb() {
     `);
 
     await client.query(`
-      CREATE TABLE IF NOT EXISTS reasoning_receipts (
+      CREATE TABLE IF NOT EXISTS replays (
         id TEXT PRIMARY KEY,
         run_id TEXT NOT NULL UNIQUE,
         project_id TEXT NOT NULL,
@@ -165,6 +165,20 @@ async function initDb() {
     `);
 
     await client.query(`
+      CREATE TABLE IF NOT EXISTS classroom_seat_codes (
+        id TEXT PRIMARY KEY,
+        classroom_id TEXT NOT NULL,
+        code TEXT NOT NULL UNIQUE,
+        profile_id TEXT,
+        session_token TEXT UNIQUE,
+        is_active BOOLEAN NOT NULL DEFAULT TRUE,
+        joined_at TIMESTAMPTZ,
+        expires_at TIMESTAMPTZ,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+    `);
+
+    await client.query(`
       CREATE TABLE IF NOT EXISTS usage_limits (
         id TEXT PRIMARY KEY,
         user_id TEXT NOT NULL UNIQUE,
@@ -174,6 +188,15 @@ async function initDb() {
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       );
+    `);
+
+    // Rename reasoning_receipts → replays if old table still exists
+    await client.query(`
+      DO $$ BEGIN
+        IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'reasoning_receipts') THEN
+          ALTER TABLE reasoning_receipts RENAME TO replays;
+        END IF;
+      END $$;
     `);
 
     console.log("✅ All tables created successfully!\n");

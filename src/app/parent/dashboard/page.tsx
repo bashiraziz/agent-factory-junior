@@ -194,7 +194,7 @@ export default async function ParentDashboard() {
                   Full transparency, always
                 </div>
                 <div className="font-sans text-sm mt-1" style={{ color: "#5C5747" }}>
-                  You can see exactly what every AI Worker did — every step, every rule, every answer — in the Reasoning Receipt. Nothing is hidden.
+                  You can see exactly what every AI Worker did — every step, every rule, every answer — in the Replay. Nothing is hidden.
                 </div>
               </div>
             </div>

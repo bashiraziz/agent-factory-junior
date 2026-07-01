@@ -236,7 +236,7 @@ export default async function TeacherDashboard() {
                   </div>
                   <StatusPill status="flagged" />
                   <Link
-                    href={`/student/projects/${run.projectId}/receipt/${run.id}`}
+                    href={`/student/projects/${run.projectId}/replay/${run.id}`}
                     className="font-sans font-extrabold text-xs px-3 py-1.5 rounded-pill"
                     style={{ background: "#FFF1DC", color: "#E0792B" }}
                   >
