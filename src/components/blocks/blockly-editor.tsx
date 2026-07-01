@@ -287,18 +287,16 @@ export default function BlocklyEditor({
       if (onWorkspaceReady) {
         const addBlock = (type: string) => {
           if (!workspaceRef.current) return;
-          // Place below all existing blocks
-          let bottom = 60;
-          for (const b of workspaceRef.current.getAllBlocks(false)) {
-            const xy = b.getRelativeToSurfaceXY();
-            const hw = b.getHeightWidth();
-            bottom = Math.max(bottom, xy.y + hw.height + 24);
-          }
-          const block = workspaceRef.current.newBlock(type);
+          const ws = workspaceRef.current;
+          const block = ws.newBlock(type);
           block.initSvg();
           block.render();
-          block.moveBy(60, bottom);
-          workspaceRef.current.scrollBlockIntoView?.(block.id);
+          // Place at current viewport centre so it's always visible
+          const metrics = ws.getMetrics();
+          const scale = ws.scale;
+          const cx = -ws.scrollX / scale + metrics.viewWidth / (2 * scale) - 100;
+          const cy = -ws.scrollY / scale + metrics.viewHeight / (2 * scale) - 30;
+          block.moveBy(Math.max(20, cx), Math.max(20, cy));
           handleChange(Blockly);
         };
         const clearBlocks = () => {
@@ -329,9 +327,7 @@ export default function BlocklyEditor({
 
       workspace.addChangeListener((event: AnyBlockly) => {
         if (UI_EVENTS.has(event.type)) return;
-        if (!event.isUiEvent) {
-          handleChange(Blockly);
-        }
+        handleChange(Blockly);
       });
     });
 
