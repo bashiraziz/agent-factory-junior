@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { useSession } from "@/lib/auth-client";
+import { useSession, signOut } from "@/lib/auth-client";
 import type { ProjectDSL } from "@/lib/runtime/types";
 
 // Dynamically import Blockly — no SSR
@@ -67,10 +67,16 @@ export default function EditProjectPage() {
   const latestDsl = useRef<ProjectDSL | null>(null);
   const latestBlocklyJson = useRef<object | null>(null);
   const addBlockRef = useRef<((type: string) => void) | null>(null);
+  const clearBlocksRef = useRef<(() => void) | null>(null);
+  const [confirmClear, setConfirmClear] = useState(false);
 
-  const handleWorkspaceReady = useCallback((fn: (type: string) => void) => {
-    addBlockRef.current = fn;
-  }, []);
+  const handleWorkspaceReady = useCallback(
+    ({ addBlock, clearBlocks }: { addBlock: (type: string) => void; clearBlocks: () => void }) => {
+      addBlockRef.current = addBlock;
+      clearBlocksRef.current = clearBlocks;
+    },
+    []
+  );
 
   // Load project
   useEffect(() => {
@@ -235,6 +241,13 @@ export default function EditProjectPage() {
           >
             ▶ Run
           </Link>
+          <button
+            onClick={() => signOut().then(() => router.push("/sign-in"))}
+            className="px-3 py-1.5 rounded-pill font-sans font-extrabold text-xs transition-colors"
+            style={{ background: "#F0E7D6", color: "#5C5747" }}
+          >
+            Sign out
+          </button>
           <div
             className="w-10 h-10 rounded-full flex items-center justify-center font-sans font-extrabold text-sm"
             style={{ background: "#F4F0FF", color: "#7C5CFF" }}
@@ -290,6 +303,39 @@ export default function EditProjectPage() {
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* Clear canvas */}
+          <div className="p-3 mt-auto border-t-2" style={{ borderColor: "#F0E7D6" }}>
+            {confirmClear ? (
+              <div className="space-y-2">
+                <div className="font-sans text-xs text-center" style={{ color: "#5C5747" }}>Remove all blocks?</div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => { clearBlocksRef.current?.(); setConfirmClear(false); }}
+                    className="flex-1 py-1.5 rounded-pill font-sans font-extrabold text-xs text-white"
+                    style={{ background: "#E5393A" }}
+                  >
+                    Clear all
+                  </button>
+                  <button
+                    onClick={() => setConfirmClear(false)}
+                    className="flex-1 py-1.5 rounded-pill font-sans font-extrabold text-xs"
+                    style={{ background: "#F0E7D6", color: "#5C5747" }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => setConfirmClear(true)}
+                className="w-full py-2 rounded-pill font-sans font-extrabold text-xs transition-colors"
+                style={{ background: "#FFF0F0", color: "#C0443A", border: "1.5px solid #FFCCCC" }}
+              >
+                🗑 Clear canvas
+              </button>
+            )}
           </div>
         </aside>
 

@@ -20,7 +20,7 @@ interface BlocklyEditorProps {
   onDslChange: (dsl: ProjectDSL, name: string) => void;
   onBlocklyChange: (json: object) => void;
   projectName: string;
-  onWorkspaceReady?: (addBlock: (type: string) => void) => void;
+  onWorkspaceReady?: (controls: { addBlock: (type: string) => void; clearBlocks: () => void }) => void;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -301,7 +301,12 @@ export default function BlocklyEditor({
           workspaceRef.current.scrollBlockIntoView?.(block.id);
           handleChange(Blockly);
         };
-        onWorkspaceReady(addBlock);
+        const clearBlocks = () => {
+          if (!workspaceRef.current) return;
+          workspaceRef.current.clear();
+          handleChange(Blockly);
+        };
+        onWorkspaceReady({ addBlock, clearBlocks });
       }
 
       // Load initial state

@@ -8,6 +8,7 @@ import { StatusPill } from "@/components/status-pill";
 import { AvatarChip } from "@/components/avatar-chip";
 import { resolveStudentProfile } from "@/lib/student-auth";
 import { DeleteWorkerButton } from "@/components/delete-worker-button";
+import { LogoutButton } from "@/components/logout-button";
 
 export default async function StudentDashboard() {
   const profile = await resolveStudentProfile();
@@ -57,6 +58,7 @@ export default async function StudentDashboard() {
           >
             {runsLeft} RUNS LEFT TODAY
           </div>
+          <LogoutButton />
           <AvatarChip name={profile.displayName} size={36} />
         </div>
       </header>
