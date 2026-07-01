@@ -236,8 +236,12 @@ export default function BlocklyEditor({
 
     let workspace: AnyBlockly = null;
     let Blockly: AnyBlockly = null;
+    let cancelled = false;
 
     import("blockly").then((mod) => {
+      if (cancelled || !divRef.current) return;
+      // Wipe any prior Blockly SVG (e.g. from Strict Mode double-mount) before injecting.
+      divRef.current.innerHTML = "";
       Blockly = mod.default || mod;
 
       registerBlocks(Blockly);
@@ -288,20 +292,19 @@ export default function BlocklyEditor({
         const addBlock = (type: string) => {
           if (!workspaceRef.current) return;
           const ws = workspaceRef.current;
-          const block = ws.newBlock(type);
-          block.initSvg();
-          block.render();
-          // Place at current viewport centre so it's always visible
-          const metrics = ws.getMetrics();
-          const scale = ws.scale;
-          const cx = -ws.scrollX / scale + metrics.viewWidth / (2 * scale) - 100;
-          const cy = -ws.scrollY / scale + metrics.viewHeight / (2 * scale) - 30;
-          block.moveBy(Math.max(20, cx), Math.max(20, cy));
+          const count = ws.getTopBlocks(false).length;
+          // Use v13 serialization API — handles initSvg/render/positioning correctly
+          Blockly.serialization.blocks.append(
+            { type, x: 40, y: 40 + count * 60 },
+            ws
+          );
           handleChange(Blockly);
         };
         const clearBlocks = () => {
           if (!workspaceRef.current) return;
-          workspaceRef.current.getTopBlocks(false).forEach((b: AnyBlockly) => b.dispose(false));
+          const ws = workspaceRef.current;
+          try { ws.clear(); } catch { /* ignore */ }
+          try { ws.render?.(); } catch { /* ignore */ }
           handleChange(Blockly);
         };
         onWorkspaceReady({ addBlock, clearBlocks });
@@ -332,10 +335,12 @@ export default function BlocklyEditor({
     });
 
     return () => {
+      cancelled = true;
       if (workspace) {
-        workspace.dispose();
+        try { workspace.dispose(); } catch { /* ignore */ }
         workspaceRef.current = null;
       }
+      if (divRef.current) divRef.current.innerHTML = "";
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
