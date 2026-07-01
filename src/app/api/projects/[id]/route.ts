@@ -54,3 +54,23 @@ export async function PATCH(
 
   return NextResponse.json(updated);
 }
+
+export async function DELETE(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  const profile = await resolveStudentProfile();
+  if (!profile) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const [existing] = await db
+    .select()
+    .from(projects)
+    .where(and(eq(projects.id, id), eq(projects.ownerId, profile.id)));
+
+  if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+  await db.delete(projects).where(eq(projects.id, id));
+
+  return new NextResponse(null, { status: 204 });
+}

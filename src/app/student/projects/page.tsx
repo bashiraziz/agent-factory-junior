@@ -5,6 +5,7 @@ import { projects } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { StatusPill } from "@/components/status-pill";
 import { AvatarChip } from "@/components/avatar-chip";
+import { DeleteWorkerButton } from "@/components/delete-worker-button";
 import { resolveStudentProfile } from "@/lib/student-auth";
 
 export default async function StudentProjects() {
@@ -105,7 +106,8 @@ export default async function StudentProjects() {
 
                 <StatusPill status="safe" />
 
-                <div className="flex gap-2 flex-shrink-0">
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <DeleteWorkerButton id={project.id} name={project.name} />
                   <Link
                     href={`/student/projects/${project.id}/edit`}
                     className="px-4 py-2 rounded-pill font-sans font-extrabold text-sm transition-transform hover:-translate-y-0.5"
