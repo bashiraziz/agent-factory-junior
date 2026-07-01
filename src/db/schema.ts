@@ -98,6 +98,17 @@ export const classroomSeatCodes = pgTable("classroom_seat_codes", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+export const childCredentials = pgTable("child_credentials", {
+  id: text("id").primaryKey(),
+  profileId: text("profile_id").notNull().unique(),
+  parentId: text("parent_id").notNull(),
+  username: text("username").notNull().unique(),
+  pinHash: text("pin_hash").notNull(),
+  sessionToken: text("session_token").unique(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
 export const usageLimits = pgTable("usage_limits", {
   id: text("id").primaryKey(),
   userId: text("user_id").notNull().unique(),

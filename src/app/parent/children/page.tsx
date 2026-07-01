@@ -47,13 +47,22 @@ export default async function ParentChildrenPage() {
           </Link>
           <span className="font-display text-xl" style={{ color: "#2A2A3C" }}>My Children</span>
         </div>
-        <Link
-          href="/parent/children/link"
-          className="px-4 py-2 rounded-pill font-sans font-extrabold text-sm text-white"
-          style={{ background: "#18B5A0", boxShadow: "0 4px 0 #0E8A78" }}
-        >
-          + Link a Child
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/parent/children/create"
+            className="px-4 py-2 rounded-pill font-sans font-extrabold text-sm text-white"
+            style={{ background: "#7C5CFF", boxShadow: "0 4px 0 #5B43E0" }}
+          >
+            + Create Account
+          </Link>
+          <Link
+            href="/parent/children/link"
+            className="px-4 py-2 rounded-pill font-sans font-extrabold text-sm text-white"
+            style={{ background: "#18B5A0", boxShadow: "0 4px 0 #0E8A78" }}
+          >
+            + Link a Child
+          </Link>
+        </div>
       </header>
 
       <main className="max-w-3xl mx-auto px-6 py-8">
@@ -76,15 +85,24 @@ export default async function ParentChildrenPage() {
               No children linked yet
             </div>
             <p className="font-sans mb-6" style={{ color: "#5C5747" }}>
-              Ask your child for their link code and enter it here.
+              Create an account for your child (no email needed!) or link an existing one.
             </p>
-            <Link
-              href="/parent/children/link"
-              className="inline-block px-6 py-3 rounded-pill font-sans font-extrabold text-white"
-              style={{ background: "#18B5A0", boxShadow: "0 4px 0 #0E8A78" }}
-            >
-              Link a Child →
-            </Link>
+            <div className="flex items-center justify-center gap-3 flex-wrap">
+              <Link
+                href="/parent/children/create"
+                className="inline-block px-6 py-3 rounded-pill font-sans font-extrabold text-white"
+                style={{ background: "#7C5CFF", boxShadow: "0 4px 0 #5B43E0" }}
+              >
+                Create Account →
+              </Link>
+              <Link
+                href="/parent/children/link"
+                className="inline-block px-6 py-3 rounded-pill font-sans font-extrabold text-white"
+                style={{ background: "#18B5A0", boxShadow: "0 4px 0 #0E8A78" }}
+              >
+                Link a Child →
+              </Link>
+            </div>
           </div>
         ) : (
           <div className="space-y-4">

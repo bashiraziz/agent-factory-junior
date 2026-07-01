@@ -4,6 +4,7 @@ import { db } from "@/db";
 import { profiles } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { getSeatProfile } from "./seat-session";
+import { getChildProfile } from "./child-session";
 
 /**
  * Resolves the current student's profile from either a Better Auth session
@@ -18,6 +19,9 @@ export async function resolveStudentProfile() {
       .where(eq(profiles.userId, session.user.id));
     if (profile) return profile;
   }
+
+  const child = await getChildProfile();
+  if (child) return child;
 
   return getSeatProfile();
 }

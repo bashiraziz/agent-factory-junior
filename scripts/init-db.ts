@@ -190,6 +190,19 @@ async function initDb() {
       );
     `);
 
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS child_credentials (
+        id TEXT PRIMARY KEY,
+        profile_id TEXT NOT NULL UNIQUE,
+        parent_id TEXT NOT NULL,
+        username TEXT NOT NULL UNIQUE,
+        pin_hash TEXT NOT NULL,
+        session_token TEXT UNIQUE,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+    `);
+
     // Rename reasoning_receipts → replays (only if old table exists and new one doesn't)
     await client.query(`
       DO $$ BEGIN
