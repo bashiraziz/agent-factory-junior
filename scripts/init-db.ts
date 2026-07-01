@@ -200,6 +200,20 @@ async function initDb() {
       END $$;
     `);
 
+    // Parent control columns (idempotent)
+    await client.query(`
+      ALTER TABLE usage_limits ADD COLUMN IF NOT EXISTS paused BOOLEAN NOT NULL DEFAULT FALSE;
+    `);
+    await client.query(`
+      ALTER TABLE parent_child_links ADD COLUMN IF NOT EXISTS email_on_flag BOOLEAN NOT NULL DEFAULT FALSE;
+    `);
+    await client.query(`
+      ALTER TABLE parent_child_links ADD COLUMN IF NOT EXISTS require_approval BOOLEAN NOT NULL DEFAULT FALSE;
+    `);
+    await client.query(`
+      ALTER TABLE projects ADD COLUMN IF NOT EXISTS parent_approved_at TIMESTAMPTZ;
+    `);
+
     console.log("✅ All tables created successfully!\n");
     console.log("Next step: Set DATABASE_URL in .env.local and run: npm run db:migrate");
   } finally {

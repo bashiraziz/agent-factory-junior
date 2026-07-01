@@ -1,6 +1,6 @@
 import { db } from "@/db";
-import { agentRuns, replays, usageLimits, projects } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { agentRuns, replays, usageLimits, projects, parentChildLinks } from "@/db/schema";
+import { eq, and } from "drizzle-orm";
 import { validateProject } from "./validate-project";
 import { buildSafePrompt } from "./build-safe-prompt";
 import { callLLM } from "./llm";
@@ -53,6 +53,10 @@ export async function runWorker(projectId: string, studentId: string) {
     currentUsage.runsUsedToday = 0;
   }
 
+  if (currentUsage.paused) {
+    throw new Error("Your parent has paused AI Worker runs. Ask them to unpause it in the family dashboard.");
+  }
+
   const bypassLimit = !!process.env.DEV_UNLIMITED_RUNS && process.env.DEV_UNLIMITED_RUNS !== "0";
   if (
     !bypassLimit &&
@@ -61,6 +65,22 @@ export async function runWorker(projectId: string, studentId: string) {
     throw new Error(
       `Daily run limit reached (${currentUsage.dailyRunLimit} runs). Try again tomorrow!`
     );
+  }
+
+  // Parent approval gate: if any linked parent requires approval and this project isn't approved yet, block.
+  if (!project.parentApprovedAt) {
+    const approvalRequired = await db
+      .select()
+      .from(parentChildLinks)
+      .where(
+        and(
+          eq(parentChildLinks.studentId, studentId),
+          eq(parentChildLinks.requireApproval, true)
+        )
+      );
+    if (approvalRequired.length > 0) {
+      throw new Error("Waiting for parent approval. Ask a parent to approve this AI Worker in the family dashboard.");
+    }
   }
 
   // Validate DSL

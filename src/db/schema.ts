@@ -38,6 +38,8 @@ export const parentChildLinks = pgTable("parent_child_links", {
   parentId: text("parent_id").notNull(),
   studentId: text("student_id").notNull(),
   linkCode: text("link_code").notNull(),
+  emailOnFlag: boolean("email_on_flag").notNull().default(false),
+  requireApproval: boolean("require_approval").notNull().default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
@@ -50,6 +52,7 @@ export const projects = pgTable("projects", {
   dslJson: jsonb("dsl_json"),
   blocklyJson: jsonb("blockly_json"),
   status: text("status").notNull().default("draft"), // draft | published
+  parentApprovedAt: timestamp("parent_approved_at"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
@@ -100,6 +103,7 @@ export const usageLimits = pgTable("usage_limits", {
   userId: text("user_id").notNull().unique(),
   dailyRunLimit: integer("daily_run_limit").notNull().default(5),
   runsUsedToday: integer("runs_used_today").notNull().default(0),
+  paused: boolean("paused").notNull().default(false),
   periodStart: timestamp("period_start").notNull().defaultNow(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),

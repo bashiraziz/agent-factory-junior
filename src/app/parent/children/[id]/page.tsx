@@ -3,10 +3,11 @@ import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { db } from "@/db";
-import { profiles, parentChildLinks, agentRuns, projects, classroomMembers, classrooms } from "@/db/schema";
+import { profiles, parentChildLinks, agentRuns, projects, classroomMembers, classrooms, usageLimits } from "@/db/schema";
 import { eq, and, desc } from "drizzle-orm";
 import { AvatarChip } from "@/components/avatar-chip";
 import { StatusPill } from "@/components/status-pill";
+import { ParentControlsPanel } from "@/components/parent-controls-panel";
 
 export default async function ParentChildDetailPage({
   params,
@@ -80,6 +81,14 @@ export default async function ParentChildDetailPage({
   });
 
   const maxBarCount = Math.max(1, ...dayBars.map((b) => b.count));
+
+  // Controls state: usage limits + child's workers
+  const [usage] = await db.select().from(usageLimits).where(eq(usageLimits.userId, id));
+  const childProjects = await db
+    .select()
+    .from(projects)
+    .where(eq(projects.ownerId, id))
+    .orderBy(desc(projects.updatedAt));
 
   return (
     <div className="min-h-screen" style={{ background: "#FFFDF7" }}>
@@ -221,6 +230,21 @@ export default async function ParentChildDetailPage({
             </div>
           )}
         </section>
+
+        {/* Parent controls */}
+        <ParentControlsPanel
+          studentId={id}
+          initialDailyLimit={usage?.dailyRunLimit ?? 5}
+          runsUsedToday={usage?.runsUsedToday ?? 0}
+          initialPaused={usage?.paused ?? false}
+          initialEmailOnFlag={link.emailOnFlag ?? false}
+          initialRequireApproval={link.requireApproval ?? false}
+          workers={childProjects.map((p) => ({
+            id: p.id,
+            name: p.name,
+            parentApprovedAt: p.parentApprovedAt ? new Date(p.parentApprovedAt).toISOString() : null,
+          }))}
+        />
 
         {/* Reassurance strip */}
         <div
