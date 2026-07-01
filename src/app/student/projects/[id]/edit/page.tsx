@@ -305,15 +305,7 @@ export default function EditProjectPage() {
           </div>
 
           {/* Blockly workspace fills the canvas */}
-          <div
-            className="absolute inset-0"
-            style={{
-              backgroundImage:
-                "radial-gradient(circle at 16px 16px, #EFE7D6 1.7px, transparent 1.8px)",
-              backgroundSize: "28px 28px",
-              backgroundColor: "#FFFDF7",
-            }}
-          >
+          <div className="absolute inset-0">
             <BlocklyEditor
               initialBlocklyJson={blocklyJson}
               onDslChange={handleDslChange}

@@ -248,7 +248,7 @@ export default function BlocklyEditor({
         theme = Blockly.Theme.defineTheme("afj", {
           base: "classic",
           componentStyles: {
-            workspaceBackgroundColour: "transparent",
+            workspaceBackgroundColour: "#FFFDF7",
             toolboxBackgroundColour: "#FBF6EC",
             toolboxForegroundColour: "#2A2A3C",
             flyoutBackgroundColour: "#F4F0FF",
@@ -280,7 +280,6 @@ export default function BlocklyEditor({
         },
         trashcan: true,
         move: { scrollbars: true, drag: true, wheel: false },
-        renderer: "zelos",
       });
 
       workspaceRef.current = workspace;
