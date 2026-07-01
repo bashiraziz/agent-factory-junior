@@ -91,3 +91,49 @@ body {
 .afj-pop-in {
   animation: afjPopIn 500ms ease-out;
 }
+@keyframes afjWave {
+  0%, 60%, 100% { transform: rotate(0deg); }
+  10% { transform: rotate(14deg); }
+  20% { transform: rotate(-8deg); }
+  30% { transform: rotate(14deg); }
+  40% { transform: rotate(-4deg); }
+  50% { transform: rotate(10deg); }
+}
+.afj-wave {
+  display: inline-block;
+  transform-origin: 70% 70%;
+  animation: afjWave 2.4s ease-in-out infinite;
+}
+@keyframes afjFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+.afj-float {
+  animation: afjFloat 2.6s ease-in-out infinite;
+  display: inline-block;
+}
+@keyframes afjWiggle {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  25% { transform: rotate(-6deg) scale(1.06); }
+  75% { transform: rotate(6deg) scale(1.06); }
+}
+.afj-wiggle:hover {
+  animation: afjWiggle 500ms ease-in-out;
+}
+@keyframes afjShake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+.afj-shake {
+  animation: afjShake 450ms ease-in-out;
+}
+@keyframes afjGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(124,92,255,.35); }
+  50% { box-shadow: 0 0 0 10px rgba(124,92,255,0); }
+}
+.afj-glow {
+  animation: afjGlow 2s ease-out infinite;
+}

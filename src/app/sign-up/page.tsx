@@ -137,12 +137,22 @@ export default function SignUpPage() {
         {step === "form" && (
           <form onSubmit={handleSubmit} className="rounded-card p-8 space-y-4" style={{ background: "#FFFFFF", boxShadow: "0 18px 50px rgba(58,46,28,.12)", border: "2px solid #F0E7D6" }}>
             {error && (
-              <div className="p-3 rounded-xl font-sans text-sm" style={{ background: "#FFF1DC", color: "#E0792B" }}>
-                {error}
+              <div
+                key={error}
+                className="afj-shake p-3 rounded-xl font-sans text-sm flex items-start gap-2"
+                style={{ background: "#FFF1DC", border: "2px solid #FFC53D66", color: "#8A5A00" }}
+              >
+                <span className="text-lg leading-none">😅</span>
+                <div>
+                  <div className="font-extrabold">Oops!</div>
+                  <div>{error}</div>
+                </div>
               </div>
             )}
             <div className="space-y-2">
-              <label className="font-mono text-xs uppercase tracking-widest" style={{ color: "#8A8071" }}>Your name</label>
+              <label className="font-sans text-sm font-extrabold flex items-center gap-1.5" style={{ color: "#2A2A3C" }}>
+                <span>👋</span> What should we call you?
+              </label>
               <input
                 type="text"
                 required
@@ -154,7 +164,9 @@ export default function SignUpPage() {
               />
             </div>
             <div className="space-y-2">
-              <label className="font-mono text-xs uppercase tracking-widest" style={{ color: "#8A8071" }}>Email</label>
+              <label className="font-sans text-sm font-extrabold flex items-center gap-1.5" style={{ color: "#2A2A3C" }}>
+                <span>📧</span> Your email
+              </label>
               <input
                 type="email"
                 required
@@ -166,7 +178,9 @@ export default function SignUpPage() {
               />
             </div>
             <div className="space-y-2">
-              <label className="font-mono text-xs uppercase tracking-widest" style={{ color: "#8A8071" }}>Password</label>
+              <label className="font-sans text-sm font-extrabold flex items-center gap-1.5" style={{ color: "#2A2A3C" }}>
+                <span>🔐</span> Pick a secret password
+              </label>
               <input
                 type="password"
                 required
@@ -175,7 +189,7 @@ export default function SignUpPage() {
                 onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
                 className="w-full px-4 py-3 rounded-[11px] font-sans text-base outline-none"
                 style={{ background: "#FBF6EC", border: "1.5px solid #F0E7D6", color: "#2A2A3C" }}
-                placeholder="Min. 8 characters"
+                placeholder="At least 8 characters"
               />
             </div>
             <button
@@ -184,7 +198,7 @@ export default function SignUpPage() {
               className="w-full py-4 rounded-pill font-sans font-extrabold text-lg text-white transition-transform hover:-translate-y-0.5 disabled:opacity-60"
               style={{ background: "#7C5CFF", boxShadow: "0 5px 0 #5B43E0" }}
             >
-              {loading ? "Creating account…" : "Create account"}
+              {loading ? "Building your account…" : "Let's build stuff! ✨"}
             </button>
             <button
               type="button"

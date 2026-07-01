@@ -140,22 +140,27 @@ export default async function StudentDashboard() {
 
           {myProjects.length === 0 ? (
             <div
-              className="rounded-card p-10 text-center"
-              style={{ background: "#FFFFFF", border: "2px dashed #F0E7D6" }}
+              className="rounded-card p-10 text-center relative overflow-hidden"
+              style={{ background: "linear-gradient(180deg,#FFFFFF 0%,#F4F0FF 100%)", border: "2px dashed #7C5CFF44" }}
             >
-              <div className="text-5xl mb-4">🤖</div>
-              <div className="font-display text-xl mb-2" style={{ color: "#2A2A3C" }}>
-                Build your first AI Worker!
+              <div className="flex items-center justify-center gap-3 mb-4">
+                <div className="afj-float text-6xl">🤖</div>
+                <div
+                  className="relative afj-pop-in rounded-2xl px-4 py-3 font-sans text-sm font-extrabold"
+                  style={{ background: "#FFFFFF", border: "2px solid #7C5CFF33", color: "#2A2A3C", boxShadow: "0 4px 12px rgba(58,46,28,.08)" }}
+                >
+                  Hey {firstName}! Let&apos;s build your first AI Worker! <span className="text-lg">🚀</span>
+                </div>
               </div>
-              <p className="font-sans mb-5" style={{ color: "#5C5747" }}>
-                Use blocks to create a smart helper that can explain things, ask questions, and give quizzes.
+              <p className="font-sans mb-6" style={{ color: "#5C5747" }}>
+                Snap some blocks together, give it a Goal + Safety Rule, and watch your creation come alive.
               </p>
               <Link
                 href="/student/projects/new"
-                className="inline-block px-6 py-3 rounded-pill font-sans font-extrabold text-white"
-                style={{ background: "#7C5CFF", boxShadow: "0 4px 0 #5B43E0" }}
+                className="afj-wiggle inline-flex items-center gap-2 px-7 py-3.5 rounded-pill font-sans font-extrabold text-white afj-glow"
+                style={{ background: "#7C5CFF", boxShadow: "0 5px 0 #5B43E0" }}
               >
-                Create My First AI Worker →
+                <span className="text-xl">✨</span> Start building →
               </Link>
             </div>
           ) : (

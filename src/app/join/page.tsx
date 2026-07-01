@@ -73,10 +73,15 @@ export default function JoinPage() {
         >
           {error && (
             <div
-              className="p-3 rounded-xl font-sans text-sm text-center"
-              style={{ background: "#FFF1DC", color: "#E0792B" }}
+              key={error}
+              className="afj-shake p-3 rounded-xl font-sans text-sm flex items-start gap-2"
+              style={{ background: "#FFF1DC", border: "2px solid #FFC53D66", color: "#8A5A00" }}
             >
-              {error}
+              <span className="text-lg leading-none">😅</span>
+              <div>
+                <div className="font-extrabold">Oops!</div>
+                <div>{error}</div>
+              </div>
             </div>
           )}
 

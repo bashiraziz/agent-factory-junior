@@ -57,22 +57,30 @@ export default async function StudentProjects() {
 
         {myProjects.length === 0 ? (
           <div
-            className="rounded-card p-12 text-center"
-            style={{ background: "#FFFFFF", border: "2px dashed #F0E7D6" }}
+            className="rounded-card p-12 text-center relative overflow-hidden"
+            style={{ background: "linear-gradient(180deg,#FFFFFF 0%,#F4F0FF 100%)", border: "2px dashed #7C5CFF44" }}
           >
-            <div className="text-6xl mb-4">🤖</div>
+            <div className="flex items-center justify-center gap-3 mb-5">
+              <div className="afj-float text-7xl">🤖</div>
+              <div
+                className="afj-pop-in rounded-2xl px-4 py-3 font-sans text-sm font-extrabold"
+                style={{ background: "#FFFFFF", border: "2px solid #7C5CFF33", color: "#2A2A3C", boxShadow: "0 4px 12px rgba(58,46,28,.08)" }}
+              >
+                Your robot friends live here! <span className="text-lg">🤝</span>
+              </div>
+            </div>
             <div className="font-display text-2xl mb-2" style={{ color: "#2A2A3C" }}>
-              No AI Workers yet
+              Ready to build one?
             </div>
             <p className="font-sans mb-6" style={{ color: "#5C5747" }}>
-              Create your first AI Worker with visual blocks!
+              Pick a template or start blank — your first AI Worker is a couple of clicks away.
             </p>
             <Link
               href="/student/projects/new"
-              className="inline-block px-6 py-3 rounded-pill font-sans font-extrabold text-white"
-              style={{ background: "#7C5CFF", boxShadow: "0 4px 0 #5B43E0" }}
+              className="afj-wiggle inline-flex items-center gap-2 px-7 py-3.5 rounded-pill font-sans font-extrabold text-white afj-glow"
+              style={{ background: "#7C5CFF", boxShadow: "0 5px 0 #5B43E0" }}
             >
-              Create Your First Worker →
+              <span className="text-xl">✨</span> Start building →
             </Link>
           </div>
         ) : (
