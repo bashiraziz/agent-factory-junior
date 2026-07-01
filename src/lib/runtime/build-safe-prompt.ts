@@ -22,7 +22,7 @@ export function buildSafePrompt(dsl: ProjectDSL): string {
       stepsLines.push(`${stepNum}. Explain the topic using ${styleLabel}.`);
     } else if (step.type === "quiz") {
       stepsLines.push(
-        `${stepNum}. Create exactly ${step.question_count} quiz question(s) with 3 answer choices each. Mark the correct answer.`
+        `${stepNum}. Create exactly ${step.question_count} quiz question(s) with 3 answer choices each. Mark the correct answer (0-based index). Include a short kid-friendly "explanation" (1-2 sentences) for each question that explains *why* the correct answer is right — this is shown to the student after they submit so they can learn from mistakes.`
       );
     } else if (step.type === "output") {
       stepsLines.push(`${stepNum}. Deliver the final helpful response.`);
@@ -54,7 +54,7 @@ Return your response in JSON with this exact shape:
 {
   "messages": [
     { "role": "worker", "content": "..." },
-    { "role": "quiz", "questions": [{ "q": "...", "choices": ["A","B","C"], "answer": 0 }] }
+    { "role": "quiz", "questions": [{ "q": "...", "choices": ["A","B","C"], "answer": 0, "explanation": "Why the correct answer is right." }] }
   ],
   "steps_completed": ["..."],
   "safety_flags": []

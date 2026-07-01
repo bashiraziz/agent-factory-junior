@@ -3,24 +3,21 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { STARTER_TEMPLATES } from "@/lib/templates/starter-templates";
 
 export default function NewProjectPage() {
   const router = useRouter();
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name.trim()) return;
-    setLoading(true);
+  const createFromTemplate = async (templateId: string) => {
+    setLoading(templateId);
     setError(null);
     try {
       const res = await fetch("/api/projects", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: name.trim(), description: description.trim() }),
+        body: JSON.stringify({ templateId }),
       });
       if (!res.ok) {
         const data = await res.json();
@@ -30,7 +27,28 @@ export default function NewProjectPage() {
       router.push(`/student/projects/${project.id}/edit`);
     } catch (ex) {
       setError(ex instanceof Error ? ex.message : "Something went wrong");
-      setLoading(false);
+      setLoading(null);
+    }
+  };
+
+  const createBlank = async () => {
+    setLoading("blank");
+    setError(null);
+    try {
+      const res = await fetch("/api/projects", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: "My AI Worker" }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Failed to create project");
+      }
+      const project = await res.json();
+      router.push(`/student/projects/${project.id}/edit`);
+    } catch (ex) {
+      setError(ex instanceof Error ? ex.message : "Something went wrong");
+      setLoading(null);
     }
   };
 
@@ -41,8 +59,8 @@ export default function NewProjectPage() {
         style={{ background: "#FFFFFF", borderBottom: "2px solid #F0E7D6" }}
       >
         <Link
-          href="/student/projects"
-          className="p-2 rounded-block hover:bg-paper-sunken transition-colors"
+          href="/student/dashboard"
+          className="p-2 rounded-block transition-colors"
           style={{ color: "#7C5CFF" }}
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
@@ -63,95 +81,100 @@ export default function NewProjectPage() {
         <span className="font-display text-lg" style={{ color: "#2A2A3C" }}>New AI Worker</span>
       </header>
 
-      <main className="flex-1 flex items-center justify-center px-4">
-        <div className="w-full max-w-md">
-          <div
-            className="rounded-card p-8"
-            style={{ background: "#FFFFFF", border: "2px solid #F0E7D6", boxShadow: "0 18px 50px rgba(58,46,28,.12)" }}
-          >
-            <div className="text-center mb-8">
-              <div className="text-5xl mb-3">🤖</div>
-              <h1 className="font-display text-3xl font-semibold" style={{ color: "#2A2A3C" }}>
-                Name Your AI Worker
-              </h1>
-              <p className="font-sans mt-2" style={{ color: "#5C5747" }}>
-                Give it a great name — you can always change it later.
-              </p>
-            </div>
-
-            {error && (
-              <div
-                className="mb-4 p-3 rounded-block font-sans text-sm text-center"
-                style={{ background: "#FFF1DC", color: "#E0792B" }}
-              >
-                {error}
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label
-                  htmlFor="name"
-                  className="block font-mono text-xs uppercase tracking-widest mb-2"
-                  style={{ color: "#8A8071" }}
-                >
-                  AI WORKER NAME *
-                </label>
-                <input
-                  id="name"
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. Plant Science Tutor"
-                  maxLength={60}
-                  required
-                  className="w-full px-4 py-3 rounded-block font-sans text-base focus:outline-none transition-colors"
-                  style={{
-                    background: "#FBF6EC",
-                    border: "2px solid #F0E7D6",
-                    color: "#2A2A3C",
-                  }}
-                  onFocus={(e) => { e.target.style.borderColor = "#7C5CFF"; }}
-                  onBlur={(e) => { e.target.style.borderColor = "#F0E7D6"; }}
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="description"
-                  className="block font-mono text-xs uppercase tracking-widest mb-2"
-                  style={{ color: "#8A8071" }}
-                >
-                  DESCRIPTION (optional)
-                </label>
-                <textarea
-                  id="description"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="What will this AI Worker help with?"
-                  rows={3}
-                  maxLength={200}
-                  className="w-full px-4 py-3 rounded-block font-sans text-base focus:outline-none transition-colors resize-none"
-                  style={{
-                    background: "#FBF6EC",
-                    border: "2px solid #F0E7D6",
-                    color: "#2A2A3C",
-                  }}
-                  onFocus={(e) => { e.target.style.borderColor = "#7C5CFF"; }}
-                  onBlur={(e) => { e.target.style.borderColor = "#F0E7D6"; }}
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={!name.trim() || loading}
-                className="w-full py-3.5 rounded-pill font-sans font-extrabold text-lg text-white transition-transform hover:-translate-y-0.5 disabled:opacity-40 disabled:cursor-not-allowed"
-                style={{ background: "#7C5CFF", boxShadow: "0 4px 0 #5B43E0" }}
-              >
-                {loading ? "Creating…" : "Build It with Blocks →"}
-              </button>
-            </form>
+      <main className="flex-1 px-6 py-10">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-10">
+            <div className="text-5xl mb-3">🤖</div>
+            <h1 className="font-display text-4xl font-semibold" style={{ color: "#2A2A3C" }}>
+              Pick a starting point
+            </h1>
+            <p className="font-sans text-lg mt-2" style={{ color: "#5C5747" }}>
+              Start from a ready-made worker, or build one from scratch.
+            </p>
           </div>
+
+          {error && (
+            <div
+              className="mb-6 p-3 rounded-block font-sans text-sm text-center max-w-md mx-auto"
+              style={{ background: "#FFF1DC", color: "#E0792B" }}
+            >
+              {error}
+            </div>
+          )}
+
+          {/* Template cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+            {STARTER_TEMPLATES.map((tpl) => {
+              const isLoading = loading === tpl.id;
+              return (
+                <button
+                  key={tpl.id}
+                  onClick={() => createFromTemplate(tpl.id)}
+                  disabled={loading !== null}
+                  className="rounded-card p-5 text-left flex gap-4 transition-transform hover:-translate-y-0.5 disabled:opacity-40 disabled:cursor-not-allowed"
+                  style={{
+                    background: "#FFFFFF",
+                    border: `2px solid ${tpl.color}33`,
+                    boxShadow: `0 4px 0 ${tpl.color}44, 0 18px 40px rgba(58,46,28,.08)`,
+                  }}
+                >
+                  <div
+                    className="w-14 h-14 rounded-block flex items-center justify-center text-3xl flex-shrink-0"
+                    style={{ background: `${tpl.color}22` }}
+                  >
+                    {tpl.icon}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="font-display text-xl font-semibold" style={{ color: "#2A2A3C" }}>
+                      {tpl.name}
+                    </div>
+                    <div className="font-sans text-sm mt-1" style={{ color: "#5C5747" }}>
+                      {tpl.tagline}
+                    </div>
+                    <div
+                      className="font-mono text-[10px] uppercase tracking-widest mt-3"
+                      style={{ color: tpl.color }}
+                    >
+                      {isLoading ? "CREATING…" : `USE THIS TEMPLATE →`}
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Start blank */}
+          <div
+            className="rounded-card p-5 flex items-center gap-4"
+            style={{ background: "#FBF6EC", border: "2px dashed #F0E7D6" }}
+          >
+            <div
+              className="w-12 h-12 rounded-block flex items-center justify-center text-2xl font-bold flex-shrink-0"
+              style={{ background: "#FFFFFF", color: "#8A8071" }}
+            >
+              +
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="font-display text-lg font-semibold" style={{ color: "#2A2A3C" }}>
+                Start blank
+              </div>
+              <div className="font-sans text-sm" style={{ color: "#5C5747" }}>
+                Build your own worker from scratch with blocks.
+              </div>
+            </div>
+            <button
+              onClick={createBlank}
+              disabled={loading !== null}
+              className="px-5 py-2.5 rounded-pill font-sans font-extrabold text-sm text-white transition-transform hover:-translate-y-0.5 disabled:opacity-40"
+              style={{ background: "#7C5CFF", boxShadow: "0 4px 0 #5B43E0" }}
+            >
+              {loading === "blank" ? "Creating…" : "Start blank →"}
+            </button>
+          </div>
+
+          <p className="font-sans text-xs text-center mt-6" style={{ color: "#8A8071" }}>
+            You can rename any worker later from the editor.
+          </p>
         </div>
       </main>
     </div>

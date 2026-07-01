@@ -3,7 +3,15 @@ import type { ProjectDSL } from "./types";
 export interface LLMResponse {
   messages: Array<
     | { role: "worker"; content: string }
-    | { role: "quiz"; questions: Array<{ q: string; choices: string[]; answer: number }> }
+    | {
+        role: "quiz";
+        questions: Array<{
+          q: string;
+          choices: string[];
+          answer: number;
+          explanation?: string;
+        }>;
+      }
   >;
   steps_completed: string[];
   safety_flags: string[];

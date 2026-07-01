@@ -9,6 +9,7 @@ import { AvatarChip } from "@/components/avatar-chip";
 import { resolveStudentProfile } from "@/lib/student-auth";
 import { DeleteWorkerButton } from "@/components/delete-worker-button";
 import { LogoutButton } from "@/components/logout-button";
+import { HelpButton } from "@/components/help-button";
 
 export default async function StudentDashboard() {
   const profile = await resolveStudentProfile();
@@ -58,6 +59,16 @@ export default async function StudentDashboard() {
           >
             {runsLeft} RUNS LEFT TODAY
           </div>
+          <HelpButton
+            screenKey="student-dashboard"
+            title="Your dashboard"
+            tips={[
+              { icon: "🤖", title: "New AI Worker", body: "Click + New AI Worker to start building a helper with visual blocks." },
+              { icon: "▶", title: "Run a worker", body: "Green Run button uses one of your daily runs. You get 5 per day." },
+              { icon: "✏", title: "Edit or delete", body: "Edit changes the blocks. The trash icon on each card deletes the worker permanently." },
+              { icon: "❓", title: "Full guide", body: "Tap 'See full help' for detailed instructions and safety info." },
+            ]}
+          />
           <LogoutButton />
           <AvatarChip name={profile.displayName} size={36} />
         </div>

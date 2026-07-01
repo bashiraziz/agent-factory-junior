@@ -53,7 +53,11 @@ export async function runWorker(projectId: string, studentId: string) {
     currentUsage.runsUsedToday = 0;
   }
 
-  if (currentUsage.runsUsedToday >= currentUsage.dailyRunLimit) {
+  const bypassLimit = !!process.env.DEV_UNLIMITED_RUNS && process.env.DEV_UNLIMITED_RUNS !== "0";
+  if (
+    !bypassLimit &&
+    currentUsage.runsUsedToday >= currentUsage.dailyRunLimit
+  ) {
     throw new Error(
       `Daily run limit reached (${currentUsage.dailyRunLimit} runs). Try again tomorrow!`
     );
@@ -126,5 +130,6 @@ export async function runWorker(projectId: string, studentId: string) {
     safetyFlags: llmResult.safety_flags,
     runsUsedToday: currentUsage.runsUsedToday + 1,
     dailyRunLimit: currentUsage.dailyRunLimit,
+    provider: process.env.LLM_PROVIDER || "mock",
   };
 }

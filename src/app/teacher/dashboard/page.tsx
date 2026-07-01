@@ -4,9 +4,11 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { db } from "@/db";
 import { profiles, classrooms, classroomMembers, agentRuns, projects } from "@/db/schema";
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc, inArray } from "drizzle-orm";
 import { AvatarChip } from "@/components/avatar-chip";
 import { StatusPill } from "@/components/status-pill";
+import { LogoutButton } from "@/components/logout-button";
+import { HelpButton } from "@/components/help-button";
 
 export default async function TeacherDashboard() {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -22,12 +24,29 @@ export default async function TeacherDashboard() {
     .where(eq(classrooms.teacherId, profile.id))
     .orderBy(desc(classrooms.createdAt));
 
-  // Get recent runs with student info (across all my classrooms)
-  const recentRuns = await db
-    .select()
-    .from(agentRuns)
-    .orderBy(desc(agentRuns.createdAt))
-    .limit(10);
+  // Collect all student IDs across this teacher's classrooms
+  const allMembers = myClassrooms.length
+    ? await db
+        .select()
+        .from(classroomMembers)
+        .where(
+          inArray(
+            classroomMembers.classroomId,
+            myClassrooms.map((c) => c.id)
+          )
+        )
+    : [];
+  const studentIds = Array.from(new Set(allMembers.map((m) => m.studentId)));
+
+  // Get recent runs scoped to this teacher's students only
+  const recentRuns = studentIds.length
+    ? await db
+        .select()
+        .from(agentRuns)
+        .where(inArray(agentRuns.studentId, studentIds))
+        .orderBy(desc(agentRuns.createdAt))
+        .limit(10)
+    : [];
 
   // Enrich with student + project names
   const enrichedRuns = await Promise.all(
@@ -38,18 +57,12 @@ export default async function TeacherDashboard() {
     })
   );
 
-  // Total students across my classrooms
-  const memberCounts = await Promise.all(
-    myClassrooms.map(async (c) => {
-      const members = await db
-        .select()
-        .from(classroomMembers)
-        .where(eq(classroomMembers.classroomId, c.id));
-      return { classroom: c, count: members.length };
-    })
-  );
-
-  const totalStudents = memberCounts.reduce((sum, m) => sum + m.count, 0);
+  // Total students across my classrooms (derived from allMembers we already fetched)
+  const memberCounts = myClassrooms.map((c) => ({
+    classroom: c,
+    count: allMembers.filter((m) => m.classroomId === c.id).length,
+  }));
+  const totalStudents = studentIds.length;
   const flaggedRuns = enrichedRuns.filter((r) => r.run.status === "flagged");
   const firstName = profile.displayName.split(" ")[0];
 
@@ -82,6 +95,17 @@ export default async function TeacherDashboard() {
               + New Classroom
             </div>
           </Link>
+          <HelpButton
+            screenKey="teacher-dashboard"
+            title="Teacher Hub"
+            tips={[
+              { icon: "🏫", title: "Create a classroom", body: "Click + New Classroom, give it a name, and share the join code with students." },
+              { icon: "🎓", title: "Students join with a code", body: "Students go to /join and enter your code — no email needed for kids." },
+              { icon: "⚠", title: "Safety flags", body: "Any run that trips a safety rule appears in the review list. Click Review to see what happened." },
+              { icon: "📊", title: "Per-classroom view", body: "Click a classroom card to see today's runs, students, and seat codes." },
+            ]}
+          />
+          <LogoutButton />
           <AvatarChip name={profile.displayName} size={36} />
         </div>
       </header>

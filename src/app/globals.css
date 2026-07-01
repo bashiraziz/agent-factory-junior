@@ -45,3 +45,49 @@ body {
   background: #fbf6ec;
   border-color: #7c5cff;
 }
+
+/* HelpButton animations */
+@keyframes afjHintPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+.afj-hint-pulse {
+  animation: afjHintPulse 1.4s ease-in-out infinite;
+}
+@keyframes afjSlideIn {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+.afj-slide-in {
+  animation: afjSlideIn 200ms ease-out;
+}
+@keyframes afjTrophyBounce {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  25% { transform: scale(1.2) rotate(-10deg); }
+  50% { transform: scale(1.15) rotate(10deg); }
+  75% { transform: scale(1.2) rotate(-6deg); }
+}
+.afj-trophy-bounce {
+  animation: afjTrophyBounce 1.6s ease-in-out infinite;
+  display: inline-block;
+}
+@keyframes afjConfettiFall {
+  0% { transform: translateY(-30px) rotate(0deg); opacity: 0; }
+  15% { opacity: 1; }
+  100% { transform: translateY(140px) rotate(540deg); opacity: 0; }
+}
+.afj-confetti {
+  position: absolute;
+  top: 0;
+  font-size: 22px;
+  animation: afjConfettiFall 2.4s ease-in infinite;
+  pointer-events: none;
+}
+@keyframes afjPopIn {
+  0% { transform: scale(0.6); opacity: 0; }
+  60% { transform: scale(1.06); opacity: 1; }
+  100% { transform: scale(1); }
+}
+.afj-pop-in {
+  animation: afjPopIn 500ms ease-out;
+}

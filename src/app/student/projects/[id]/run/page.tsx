@@ -6,10 +6,13 @@ import Link from "next/link";
 import { useSession } from "@/lib/auth-client";
 import { Mascot } from "@/components/mascot";
 import { StatusPill } from "@/components/status-pill";
+import { HelpButton } from "@/components/help-button";
 
+type QuizQuestion = { q: string; choices: string[]; answer: number; explanation?: string };
 type WorkerMessage =
   | { role: "worker"; content: string }
-  | { role: "quiz"; questions: Array<{ q: string; choices: string[]; answer: number }> };
+  | { role: "user"; content: string }
+  | { role: "quiz"; questions: QuizQuestion[] };
 
 interface RunResult {
   runId: string;
@@ -17,9 +20,10 @@ interface RunResult {
   safetyFlags: string[];
   runsUsedToday: number;
   dailyRunLimit: number;
+  provider: string;
 }
 
-function QuizCard({ questions }: { questions: Array<{ q: string; choices: string[]; answer: number }> }) {
+function QuizCard({ questions }: { questions: QuizQuestion[] }) {
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [submitted, setSubmitted] = useState(false);
 
@@ -36,40 +40,60 @@ function QuizCard({ questions }: { questions: Array<{ q: string; choices: string
         🎯 QUIZ TIME — {questions.length} QUESTIONS
       </div>
       <div className="space-y-5">
-        {questions.map((q, qi) => (
-          <div key={qi}>
-            <div className="font-sans font-extrabold text-sm mb-2" style={{ color: "#2A2A3C" }}>
-              {qi + 1}. {q.q}
+        {questions.map((q, qi) => {
+          const gotIt = submitted && answers[qi] === q.answer;
+          return (
+            <div key={qi}>
+              <div className="font-sans font-extrabold text-sm mb-2" style={{ color: "#2A2A3C" }}>
+                {qi + 1}. {q.q}
+              </div>
+              <div className="space-y-2">
+                {q.choices.map((choice, ci) => {
+                  const isSelected = answers[qi] === ci;
+                  const isCorrect = ci === q.answer;
+                  let bg = "#FFFFFF";
+                  let border = "#F0E7D6";
+                  let textColor = "#2A2A3C";
+                  if (submitted) {
+                    if (isCorrect) { bg = "#D1FAE5"; border = "#46C46A"; textColor = "#2E9B52"; }
+                    else if (isSelected && !isCorrect) { bg = "#FEE2E2"; border = "#FF6B6B"; textColor = "#C0443A"; }
+                  } else if (isSelected) {
+                    bg = "#F4F0FF"; border = "#7C5CFF"; textColor = "#7C5CFF";
+                  }
+                  return (
+                    <button
+                      key={ci}
+                      onClick={() => !submitted && setAnswers((a) => ({ ...a, [qi]: ci }))}
+                      disabled={submitted}
+                      className="w-full text-left px-4 py-2.5 rounded-block font-sans text-sm transition-all"
+                      style={{ background: bg, border: `2px solid ${border}`, color: textColor }}
+                    >
+                      <span className="font-bold mr-2">{String.fromCharCode(65 + ci)}.</span>
+                      {choice}
+                    </button>
+                  );
+                })}
+              </div>
+              {submitted && q.explanation && (
+                <div
+                  className="mt-2 p-3 rounded-block flex gap-2 items-start"
+                  style={{
+                    background: gotIt ? "#ECFDF5" : "#FEF3C7",
+                    border: `2px solid ${gotIt ? "#46C46A44" : "#FFC53D66"}`,
+                  }}
+                >
+                  <span className="text-base flex-shrink-0">{gotIt ? "✅" : "💡"}</span>
+                  <div className="font-sans text-xs leading-relaxed" style={{ color: "#5C5747" }}>
+                    <span className="font-extrabold" style={{ color: gotIt ? "#2E9B52" : "#E0792B" }}>
+                      {gotIt ? "Nice — " : "Why: "}
+                    </span>
+                    {q.explanation}
+                  </div>
+                </div>
+              )}
             </div>
-            <div className="space-y-2">
-              {q.choices.map((choice, ci) => {
-                const isSelected = answers[qi] === ci;
-                const isCorrect = ci === q.answer;
-                let bg = "#FFFFFF";
-                let border = "#F0E7D6";
-                let textColor = "#2A2A3C";
-                if (submitted) {
-                  if (isCorrect) { bg = "#D1FAE5"; border = "#46C46A"; textColor = "#2E9B52"; }
-                  else if (isSelected && !isCorrect) { bg = "#FEE2E2"; border = "#FF6B6B"; textColor = "#C0443A"; }
-                } else if (isSelected) {
-                  bg = "#F4F0FF"; border = "#7C5CFF"; textColor = "#7C5CFF";
-                }
-                return (
-                  <button
-                    key={ci}
-                    onClick={() => !submitted && setAnswers((a) => ({ ...a, [qi]: ci }))}
-                    disabled={submitted}
-                    className="w-full text-left px-4 py-2.5 rounded-block font-sans text-sm transition-all"
-                    style={{ background: bg, border: `2px solid ${border}`, color: textColor }}
-                  >
-                    <span className="font-bold mr-2">{String.fromCharCode(65 + ci)}.</span>
-                    {choice}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
       {!submitted ? (
         <button
@@ -80,14 +104,48 @@ function QuizCard({ questions }: { questions: Array<{ q: string; choices: string
         >
           Submit Answers
         </button>
+      ) : score === questions.length ? (
+        <div
+          className="mt-4 p-6 rounded-card text-center relative overflow-hidden afj-pop-in"
+          style={{
+            background: "linear-gradient(180deg, #FFF6E6 0%, #D1FAE5 100%)",
+            border: "3px solid #46C46A",
+            boxShadow: "0 6px 0 #2E9B52, 0 20px 40px rgba(46,155,82,.15)",
+          }}
+        >
+          {/* Confetti burst */}
+          {["🎉", "⭐", "🎊", "✨", "🌟", "🎈", "💫", "🏅"].map((emoji, i) => (
+            <span
+              key={i}
+              className="afj-confetti"
+              style={{
+                left: `${8 + i * 11}%`,
+                animationDelay: `${i * 0.15}s`,
+              }}
+            >
+              {emoji}
+            </span>
+          ))}
+          <div className="relative z-10">
+            <div className="text-6xl mb-2">
+              <span className="afj-trophy-bounce">🏆</span>
+            </div>
+            <div className="font-display text-3xl font-semibold mb-1" style={{ color: "#2E9B52" }}>
+              Perfect Score!
+            </div>
+            <div className="font-sans text-sm font-extrabold" style={{ color: "#5C5747" }}>
+              {score}/{questions.length} — you got them all! 🌟
+            </div>
+          </div>
+        </div>
       ) : (
         <div
           className="mt-4 p-3 rounded-block text-center"
-          style={{ background: score === questions.length ? "#D1FAE5" : "#FFF6E6" }}
+          style={{ background: "#FFF6E6" }}
         >
-          <div className="font-display text-xl font-semibold" style={{ color: score === questions.length ? "#2E9B52" : "#E0792B" }}>
+          <div className="font-display text-xl font-semibold" style={{ color: "#E0792B" }}>
             {score}/{questions.length} correct{" "}
-            {score === questions.length ? "🎉" : score >= questions.length / 2 ? "👍" : "Keep going! 💪"}
+            {score >= questions.length / 2 ? "👍" : "Keep going! 💪"}
           </div>
         </div>
       )}
@@ -98,6 +156,28 @@ function QuizCard({ questions }: { questions: Array<{ q: string; choices: string
 function MessageBubble({ msg }: { msg: WorkerMessage }) {
   if (msg.role === "quiz") {
     return <QuizCard questions={msg.questions} />;
+  }
+  if (msg.role === "user") {
+    return (
+      <div className="flex gap-3 items-start justify-end">
+        <div
+          className="max-w-[80%] rounded-card rounded-tr-sm px-4 py-3 font-sans text-sm"
+          style={{
+            background: "#7C5CFF",
+            color: "#FFFFFF",
+            lineHeight: 1.6,
+          }}
+        >
+          {msg.content}
+        </div>
+        <div
+          className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 text-base"
+          style={{ background: "#FFF6E6", border: "2px solid #FFC53D66" }}
+        >
+          🧒
+        </div>
+      </div>
+    );
   }
   return (
     <div className="flex gap-3 items-start">
@@ -133,14 +213,91 @@ export default function RunProjectPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [projectName, setProjectName] = useState("AI Worker");
+  const [hasQuizStep, setHasQuizStep] = useState(false);
+  const [advanced, setAdvanced] = useState(false);
+  const [input, setInput] = useState("");
+  const [sending, setSending] = useState(false);
+
+  const userReplyCount = result?.messages.filter((m) => m.role === "user").length ?? 0;
+  const showAdvance = !!result && !advanced && userReplyCount >= 1 && !sending;
+
+  const advance = async () => {
+    if (!result || advanced || sending) return;
+    setSending(true);
+    const phase: "quiz" | "output" = hasQuizStep ? "quiz" : "output";
+    try {
+      const res = await fetch(`/api/projects/${id}/advance`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          history: result.messages.filter(
+            (m) => m.role === "worker" || m.role === "user"
+          ),
+          phase,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to advance");
+      const newMsg: WorkerMessage =
+        data.kind === "quiz"
+          ? { role: "quiz", questions: data.questions }
+          : { role: "worker", content: data.content };
+      setResult((r) => (r ? { ...r, messages: [...r.messages, newMsg] } : r));
+      setAdvanced(true);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Something went wrong";
+      setResult((r) =>
+        r ? { ...r, messages: [...r.messages, { role: "worker", content: `😕 ${msg}` }] } : r
+      );
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const sendMessage = async () => {
+    const text = input.trim();
+    if (!text || !result || sending) return;
+    setSending(true);
+    setInput("");
+    const userMsg: WorkerMessage = { role: "user", content: text };
+    const history = [...result.messages, userMsg];
+    setResult({ ...result, messages: history });
+    try {
+      const res = await fetch(`/api/projects/${id}/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          history: result.messages.filter(
+            (m) => m.role === "worker" || m.role === "user"
+          ),
+          userMessage: text,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to reply");
+      const workerMsg: WorkerMessage = { role: "worker", content: data.content };
+      setResult((r) => (r ? { ...r, messages: [...r.messages, workerMsg] } : r));
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Something went wrong";
+      setResult((r) =>
+        r ? { ...r, messages: [...r.messages, { role: "worker", content: `😕 ${msg}` }] } : r
+      );
+    } finally {
+      setSending(false);
+    }
+  };
 
   useEffect(() => {
     if (!session?.user) return;
 
-    // Fetch project name
+    // Fetch project metadata (name + whether a quiz step exists)
     fetch(`/api/projects/${id}`)
       .then((r) => r.json())
-      .then((p) => setProjectName(p.name || "AI Worker"))
+      .then((p) => {
+        setProjectName(p.name || "AI Worker");
+        const steps = (p.dslJson?.steps ?? []) as Array<{ type: string }>;
+        setHasQuizStep(steps.some((s) => s.type === "quiz"));
+      })
       .catch(() => {});
 
     // Run the worker
@@ -216,10 +373,20 @@ export default function RunProjectPage() {
               {projectName}
             </div>
             <div className="font-mono text-[10px] uppercase tracking-widest" style={{ color: "#7C5CFF" }}>
-              RUNNING SAFELY · MOCK MODEL
+              RUNNING SAFELY · {(result?.provider ?? "mock").toUpperCase()} MODEL
             </div>
           </div>
           <StatusPill status={hasSafetyFlags ? "flagged" : "safe"} />
+          <HelpButton
+            screenKey="student-run"
+            title="Running your worker"
+            tips={[
+              { icon: "🤖", title: "What you see", body: "Your AI Worker is following the steps you built. It answers using only your approved knowledge and rules." },
+              { icon: "🎯", title: "Quizzes", body: "If you added a Quiz block, you can pick answers and get scored right here." },
+              { icon: "🔁", title: "Replay", body: "Click 'See replay' to see exactly what steps ran and what rules were checked." },
+              { icon: "⚡", title: "Runs left", body: "You get 5 runs per day. The counter at the bottom shows how many are left." },
+            ]}
+          />
         </div>
 
         {/* Nav bar */}
@@ -271,24 +438,75 @@ export default function RunProjectPage() {
         )}
       </main>
 
-      {/* Footer */}
-      <footer
-        className="sticky bottom-0 px-6 py-4 flex items-center justify-between"
+      {/* Chat input + Footer */}
+      <div
+        className="sticky bottom-0"
         style={{ background: "#FFFFFF", borderTop: "2px solid #F0E7D6" }}
       >
-        <div className="font-mono text-xs uppercase tracking-widest" style={{ color: "#8A8071" }}>
-          {runsLeft} OF {result?.dailyRunLimit ?? 5} RUNS LEFT TODAY
-        </div>
-        {result?.runId && (
-          <Link
-            href={`/student/projects/${id}/replay/${result.runId}`}
-            className="font-sans text-sm font-extrabold"
-            style={{ color: "#7C5CFF" }}
+        <div className="max-w-2xl mx-auto px-4 py-3">
+          {showAdvance && (
+            <div className="mb-3 flex justify-center">
+              <button
+                onClick={advance}
+                className="px-5 py-2.5 rounded-pill font-sans font-extrabold text-sm text-white transition-transform hover:-translate-y-0.5"
+                style={{
+                  background: hasQuizStep ? "#FF924D" : "#46C46A",
+                  boxShadow: hasQuizStep ? "0 4px 0 #CC6B2A" : "0 4px 0 #2E9B52",
+                }}
+              >
+                {hasQuizStep ? "🎯 Ready for the quiz?" : "🎁 Wrap it up!"}
+              </button>
+            </div>
+          )}
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              sendMessage();
+            }}
+            className="flex items-center gap-2"
           >
-            See replay →
-          </Link>
-        )}
-      </footer>
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder={sending ? "Worker is thinking…" : "Type your reply…"}
+              disabled={sending || !result}
+              className="flex-1 px-4 py-3 rounded-pill font-sans text-sm outline-none disabled:opacity-60"
+              style={{
+                background: "#FBF6EC",
+                border: "2px solid #F0E7D6",
+                color: "#2A2A3C",
+              }}
+            />
+            <button
+              type="submit"
+              disabled={sending || !input.trim() || !result}
+              aria-label="Send"
+              className="w-12 h-12 rounded-full flex items-center justify-center text-white font-extrabold transition-transform hover:-translate-y-0.5 disabled:opacity-40 disabled:cursor-not-allowed"
+              style={{ background: "#7C5CFF", boxShadow: "0 4px 0 #5B43E0" }}
+            >
+              {sending ? "…" : "➤"}
+            </button>
+          </form>
+        </div>
+        <div
+          className="px-6 py-2 flex items-center justify-between"
+          style={{ borderTop: "1px solid #F0E7D6" }}
+        >
+          <div className="font-mono text-xs uppercase tracking-widest" style={{ color: "#8A8071" }}>
+            {runsLeft} OF {result?.dailyRunLimit ?? 5} RUNS LEFT TODAY
+          </div>
+          {result?.runId && (
+            <Link
+              href={`/student/projects/${id}/replay/${result.runId}`}
+              className="font-sans text-sm font-extrabold"
+              style={{ color: "#7C5CFF" }}
+            >
+              See replay →
+            </Link>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

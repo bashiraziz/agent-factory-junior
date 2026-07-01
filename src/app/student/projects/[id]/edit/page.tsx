@@ -6,6 +6,7 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useSession, signOut } from "@/lib/auth-client";
 import type { ProjectDSL } from "@/lib/runtime/types";
+import { HelpButton } from "@/components/help-button";
 
 // Dynamically import Blockly — no SSR
 const BlocklyEditor = dynamic(() => import("@/components/blocks/blockly-editor"), {
@@ -227,13 +228,17 @@ export default function EditProjectPage() {
 
         {/* Right */}
         <div className="flex items-center gap-2 flex-shrink-0">
-          <button
-            className="w-9 h-9 rounded-block flex items-center justify-center transition-colors font-mono text-xs"
-            style={{ color: "#8A8071" }}
-            title="Help"
-          >
-            ?
-          </button>
+          <HelpButton
+            screenKey="student-editor"
+            title="Block editor"
+            tips={[
+              { icon: "🎯", title: "Start with Goal", body: "Click Goal in the left palette, then type what your AI Worker should help with." },
+              { icon: "🛡", title: "Add a Safety Rule", body: "Every worker needs at least one rule before it can run. Example: \"Only answer questions about science\" or \"Never give the final answer to a homework question.\"" },
+              { icon: "🧩", title: "Add steps", body: "Ask Student, Explain, Quiz, or Output — they run in the order you place them." },
+              { icon: "👆", title: "Drag to connect", body: "Drag one block under another to stack them. Right-click a block to delete just that one." },
+              { icon: "💾", title: "Auto-saved", body: "Look at the top-left for SAVED / SAVING… — you don't need to press save." },
+            ]}
+          />
           <Link
             href={`/student/projects/${id}/run`}
             className="px-4 py-2 rounded-pill font-sans font-extrabold text-sm text-white transition-transform hover:-translate-y-0.5"

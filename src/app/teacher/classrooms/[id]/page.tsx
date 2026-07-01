@@ -5,9 +5,11 @@ import { headers } from "next/headers";
 import { SeatCodesPanel } from "@/components/seat-codes-panel";
 import { db } from "@/db";
 import { profiles, classrooms, classroomMembers, agentRuns, projects } from "@/db/schema";
-import { eq, and, desc, gte } from "drizzle-orm";
+import { eq, and, desc, gte, inArray } from "drizzle-orm";
 import { AvatarChip } from "@/components/avatar-chip";
 import { StatusPill } from "@/components/status-pill";
+import { LogoutButton } from "@/components/logout-button";
+import { HelpButton } from "@/components/help-button";
 
 export default async function ClassroomDetailPage({
   params,
@@ -48,14 +50,15 @@ export default async function ClassroomDetailPage({
 
   const studentIds = members.map((m) => m.studentId);
 
-  // Get all runs for students in this classroom
-  const allRuns = await db
-    .select()
-    .from(agentRuns)
-    .orderBy(desc(agentRuns.createdAt))
-    .limit(50);
-
-  const classroomRuns = allRuns.filter((r) => studentIds.includes(r.studentId));
+  // Get runs scoped to this classroom's students only
+  const classroomRuns = studentIds.length
+    ? await db
+        .select()
+        .from(agentRuns)
+        .where(inArray(agentRuns.studentId, studentIds))
+        .orderBy(desc(agentRuns.createdAt))
+        .limit(50)
+    : [];
   const todayRuns = classroomRuns.filter((r) => new Date(r.createdAt) >= today);
   const safeRuns = todayRuns.filter((r) => r.status === "completed");
   const flaggedRuns = classroomRuns.filter((r) => r.status === "flagged");
@@ -91,7 +94,20 @@ export default async function ClassroomDetailPage({
           </Link>
           <span className="font-display text-xl" style={{ color: "#2A2A3C" }}>Classroom</span>
         </div>
-        <AvatarChip name={profile.displayName} size={36} />
+        <div className="flex items-center gap-3">
+          <HelpButton
+            screenKey="teacher-classroom"
+            title="Classroom detail"
+            tips={[
+              { icon: "🔑", title: "Join code", body: "Share the code shown at the top-right so students can join this classroom." },
+              { icon: "🎟", title: "Seat codes", body: "Pre-generate codes for kids without email. Each seat activates when the student joins." },
+              { icon: "👀", title: "Recent runs", body: "See every run a student in this classroom did. Click Replay to see exactly what happened." },
+              { icon: "⚠", title: "Flagged runs", body: "Yellow highlighted rows are runs that tripped a safety rule — click Review first." },
+            ]}
+          />
+          <LogoutButton />
+          <AvatarChip name={profile.displayName} size={36} />
+        </div>
       </header>
 
       <main className="max-w-5xl mx-auto px-6 py-8 space-y-8">
