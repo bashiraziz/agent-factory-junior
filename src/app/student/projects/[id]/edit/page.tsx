@@ -28,7 +28,7 @@ const BLOCK_PALETTE = [
   { type: "afj_explain", label: "Explain", color: "#18B5A0", icon: "💡", hint: "Explain the topic" },
   { type: "afj_quiz", label: "Quiz", color: "#FF924D", icon: "🎯", hint: "Test what they learned" },
   { type: "afj_output", label: "Output", color: "#46C46A", icon: "✅", hint: "Final message" },
-  { type: "afj_approval", label: "Approval", color: "#5B6BE6", icon: "👤", hint: "Needs teacher OK" },
+  { type: "afj_approval_required", label: "Approval", color: "#5B6BE6", icon: "👤", hint: "Needs teacher OK" },
 ];
 
 const SAFETY_CHECKS = [

@@ -279,7 +279,7 @@ export default function BlocklyEditor({
           scaleSpeed: 1.2,
         },
         trashcan: true,
-        move: { scrollbars: true, drag: true, wheel: false },
+        move: { scrollbars: true, drag: false, wheel: false },
       });
 
       workspaceRef.current = workspace;
