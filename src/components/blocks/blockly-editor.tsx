@@ -105,14 +105,14 @@ function processBlock(block: AnyBlockly, dsl: ProjectDSL) {
 function registerBlocks(Blockly: AnyBlockly) {
   if (Blockly.Blocks["afj_goal"]) return; // already registered
 
-  function makeBlock(type: string, label: string, fields: AnyBlockly[]) {
+  function makeBlock(type: string, label: string, fields: Array<{ factory: () => AnyBlockly; name: string }>) {
     Blockly.Blocks[type] = {
       init(this: AnyBlockly) {
         const dummy = this.appendDummyInput();
         dummy.appendField(label);
         for (const field of fields) {
           const row = this.appendDummyInput();
-          row.appendField(field.widget, field.name);
+          row.appendField(field.factory(), field.name);
         }
         this.setColour(BLOCK_COLORS[type] || "#888");
         this.setPreviousStatement(true, null);
@@ -123,19 +123,19 @@ function registerBlocks(Blockly: AnyBlockly) {
   }
 
   makeBlock("afj_goal", "🎯  GOAL", [
-    { widget: new Blockly.FieldTextInput("What will your AI Worker help with?"), name: "GOAL" },
+    { factory: () => new Blockly.FieldTextInput("What will your AI Worker help with?"), name: "GOAL" },
   ]);
 
   makeBlock("afj_knowledge", "📚  KNOWLEDGE", [
-    { widget: new Blockly.FieldTextInput("Enter a fact or note…"), name: "CONTENT" },
+    { factory: () => new Blockly.FieldTextInput("Enter a fact or note…"), name: "CONTENT" },
   ]);
 
   makeBlock("afj_rule", "🛡  SAFETY RULE", [
-    { widget: new Blockly.FieldTextInput("e.g. Only answer science questions"), name: "RULE" },
+    { factory: () => new Blockly.FieldTextInput("e.g. Only answer science questions"), name: "RULE" },
   ]);
 
   makeBlock("afj_ask_student", "❓  ASK STUDENT", [
-    { widget: new Blockly.FieldTextInput("What do you already know about…?"), name: "PROMPT" },
+    { factory: () => new Blockly.FieldTextInput("What do you already know about…?"), name: "PROMPT" },
   ]);
 
   // Explain — with dropdown
