@@ -301,7 +301,7 @@ export default function BlocklyEditor({
         };
         const clearBlocks = () => {
           if (!workspaceRef.current) return;
-          workspaceRef.current.clear();
+          workspaceRef.current.getTopBlocks(false).forEach((b: AnyBlockly) => b.dispose(false));
           handleChange(Blockly);
         };
         onWorkspaceReady({ addBlock, clearBlocks });
