@@ -24,6 +24,7 @@ const SECTIONS: Section[] = [
     items: [
       { q: "How do I add a block?", a: "Click any block in the left palette. It appears on the canvas. You can drag blocks to connect them into a stack." },
       { q: "What do the different blocks do?", a: "Goal = what your worker helps with. Knowledge = facts it should know. Safety Rule = things it must never do. Ask Student, Explain, Quiz, Output = steps it will follow, in order." },
+      { q: "Can I start from a template?", a: "Yes! When you make a new AI Worker you can pick a starter: Homework Helper, Story Buddy, Science Explainer, Word Coach, or AI Buddy (learn about AI). You can change any block after." },
       { q: "How do I delete a block?", a: "Right-click the block on the canvas. Or use Clear canvas at the bottom of the palette to remove all blocks at once." },
       { q: "Why do I need a Safety Rule?", a: "Every AI Worker needs at least one Safety Rule before it can run — this keeps things safe for you and other students." },
       { q: "Does it save automatically?", a: "Yes. Look at the top-left — it says SAVED, SAVING…, or UNSAVED. You never need to press save." },
@@ -35,8 +36,13 @@ const SECTIONS: Section[] = [
     audience: "student",
     items: [
       { q: "How do I run my worker?", a: "Click the green Run button on the editor or dashboard. Your worker follows the steps you built, one by one." },
-      { q: "How many runs do I get?", a: "5 runs per day by default. The counter is at the top-right of your dashboard." },
+      { q: "How many runs do I get?", a: "5 runs per day by default. Your parent can raise or lower this. The counter is at the top-right of your dashboard." },
+      { q: "Can I chat with my worker?", a: "Yes! After it explains something, type your reply in the box at the bottom and press Send. Your worker will answer back — you can go back and forth as many times as you want." },
+      { q: "How do I get to the quiz?", a: "After you've chatted at least once, a big button appears — 'Ready for the quiz? 🎯' (or 'Wrap it up! 🎁' if your worker has no quiz). Tap it when you're ready to finish." },
+      { q: "What if I get a quiz answer wrong?", a: "That's okay! After you press Check answers, each wrong question shows a friendly 'Why:' explaining the right answer so you learn from it." },
+      { q: "What happens if I get all the quiz right?", a: "You get a celebration — a bouncing trophy 🏆 and confetti! Try to score 100% every time." },
       { q: "What is a replay?", a: "After each run, you can open the replay to see exactly what your worker did, what knowledge it used, and what rules it followed." },
+      { q: "Why can't I run right now?", a: "A few reasons: (1) you used all today's runs, (2) your parent paused runs, or (3) your worker is waiting for a parent to approve it. The message on screen will say which one — ask your parent to help." },
     ],
   },
   {
@@ -56,8 +62,13 @@ const SECTIONS: Section[] = [
     audience: "parent",
     items: [
       { q: "How do I link to my child?", a: "Ask your child for their link code (from their profile). Enter it on your parent dashboard to link accounts." },
-      { q: "What can I see?", a: "Your child's AI Workers, their recent runs, safety flags, and daily usage. You can also change their daily run limit." },
-      { q: "How do approvals work?", a: "If a worker has an Approval block, actions like sharing or publishing pause and wait for your OK before running." },
+      { q: "What can I see?", a: "Your child's AI Workers, every recent run, safety flags, a weekly activity chart, and daily usage." },
+      { q: "How do I change the daily run limit?", a: "On your child's page, use the − / + stepper next to 'Daily run limit'. Any number between 1 and 50. Saves automatically." },
+      { q: "How do I pause runs completely?", a: "Flip the 'Runs enabled' switch to 🔴 Paused. Your child sees a friendly message asking you to unpause. Great for homework time or family dinner." },
+      { q: "What does 'Reset today's counter' do?", a: "Gives your child a fresh set of runs for the rest of today, without changing the daily limit. Use it if they hit the limit on a project you want them to keep working on." },
+      { q: "How do I approve a worker before it runs?", a: "Turn on 'Approve each new worker first' in Preferences. After that, every new AI Worker your child builds shows up as ⏳ Awaiting approval — tap Approve to let it run." },
+      { q: "Can I delete a worker my child made?", a: "Yes — each worker in the list has a Delete button. It's permanent, so you'll be asked to confirm." },
+      { q: "What is a replay?", a: "A full step-by-step record of what an AI Worker did — the goal, knowledge, rules applied, and every answer. Nothing is hidden from you. Click Replay on any run." },
     ],
   },
   {

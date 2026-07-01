@@ -232,6 +232,7 @@ export default function EditProjectPage() {
             screenKey="student-editor"
             title="Block editor"
             tips={[
+              { icon: "🌟", title: "Try a template", body: "New workers can start from a template — Homework Helper, Story Buddy, Science Explainer, Word Coach, or AI Buddy. Pick one when you make a new worker." },
               { icon: "🎯", title: "Start with Goal", body: "Click Goal in the left palette, then type what your AI Worker should help with." },
               { icon: "🛡", title: "Add a Safety Rule", body: "Every worker needs at least one rule before it can run. Example: \"Only answer questions about science\" or \"Never give the final answer to a homework question.\"" },
               { icon: "🧩", title: "Add steps", body: "Ask Student, Explain, Quiz, or Output — they run in the order you place them." },

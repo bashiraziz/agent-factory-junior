@@ -153,6 +153,52 @@ function QuizCard({ questions }: { questions: QuizQuestion[] }) {
   );
 }
 
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+function renderMarkdown(raw: string): string {
+  const lines = escapeHtml(raw).split("\n");
+  const out: string[] = [];
+  let inList = false;
+  const closeList = () => {
+    if (inList) {
+      out.push("</ul>");
+      inList = false;
+    }
+  };
+  for (const line of lines) {
+    const trimmed = line.trim();
+    const h = /^(#{1,6})\s+(.*)$/.exec(trimmed);
+    const li = /^[*-]\s+(.*)$/.exec(trimmed);
+    if (h) {
+      closeList();
+      const level = Math.min(6, h[1].length);
+      const size = level <= 2 ? "1.05rem" : level === 3 ? "1rem" : "0.95rem";
+      out.push(
+        `<div style="font-family:Fredoka,sans-serif;font-weight:600;font-size:${size};color:#2A2A3C;margin:0.75rem 0 0.25rem;">${h[2]}</div>`
+      );
+    } else if (li) {
+      if (!inList) {
+        out.push('<ul style="margin:0.25rem 0 0.5rem 1.1rem;padding:0;list-style:disc;">');
+        inList = true;
+      }
+      out.push(`<li style="margin:0.15rem 0;">${li[1]}</li>`);
+    } else if (trimmed === "") {
+      closeList();
+      out.push("<br />");
+    } else {
+      closeList();
+      out.push(line + "<br />");
+    }
+  }
+  closeList();
+  return out.join("").replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+}
+
 function MessageBubble({ msg }: { msg: WorkerMessage }) {
   if (msg.role === "quiz") {
     return <QuizCard questions={msg.questions} />;
@@ -195,11 +241,7 @@ function MessageBubble({ msg }: { msg: WorkerMessage }) {
           color: "#2A2A3C",
           lineHeight: 1.6,
         }}
-        dangerouslySetInnerHTML={{
-          __html: msg.content
-            .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-            .replace(/\n/g, "<br />"),
-        }}
+        dangerouslySetInnerHTML={{ __html: renderMarkdown(msg.content) }}
       />
     </div>
   );
@@ -219,10 +261,19 @@ export default function RunProjectPage() {
   const [sending, setSending] = useState(false);
 
   const userReplyCount = result?.messages.filter((m) => m.role === "user").length ?? 0;
+  const hasInitialQuiz = result?.messages.some((m) => m.role === "quiz") ?? false;
   const showAdvance = !!result && !advanced && userReplyCount >= 1 && !sending;
+  const showNudge = !!result && !advanced && userReplyCount === 0 && !sending;
+  const visibleMessages = advanced
+    ? result?.messages ?? []
+    : (result?.messages ?? []).filter((m) => m.role !== "quiz");
 
   const advance = async () => {
     if (!result || advanced || sending) return;
+    if (hasInitialQuiz) {
+      setAdvanced(true);
+      return;
+    }
     setSending(true);
     const phase: "quiz" | "output" = hasQuizStep ? "quiz" : "output";
     try {
@@ -382,9 +433,12 @@ export default function RunProjectPage() {
             title="Running your worker"
             tips={[
               { icon: "🤖", title: "What you see", body: "Your AI Worker is following the steps you built. It answers using only your approved knowledge and rules." },
-              { icon: "🎯", title: "Quizzes", body: "If you added a Quiz block, you can pick answers and get scored right here." },
+              { icon: "💬", title: "Chat back", body: "Type in the box at the bottom and press Send to reply. You can go back and forth as many times as you want." },
+              { icon: "🎯", title: "Ready for the quiz?", body: "After you've chatted at least once, tap the big 'Ready for the quiz?' (or 'Wrap it up!') button to move on." },
+              { icon: "💡", title: "Wrong answer? No problem", body: "Each wrong quiz question shows a friendly 'Why:' so you learn the right answer." },
+              { icon: "🏆", title: "Perfect score", body: "Get every quiz answer right and you'll see a bouncing trophy with confetti!" },
               { icon: "🔁", title: "Replay", body: "Click 'See replay' to see exactly what steps ran and what rules were checked." },
-              { icon: "⚡", title: "Runs left", body: "You get 5 runs per day. The counter at the bottom shows how many are left." },
+              { icon: "⚡", title: "Runs left", body: "You get 5 runs per day by default — your parent can change this. Counter is at the bottom." },
             ]}
           />
         </div>
@@ -411,7 +465,7 @@ export default function RunProjectPage() {
 
       {/* Chat area */}
       <main className="max-w-2xl mx-auto px-4 py-6 space-y-4">
-        {result?.messages.map((msg, i) => (
+        {visibleMessages.map((msg, i) => (
           <MessageBubble key={i} msg={msg} />
         ))}
 
@@ -444,6 +498,18 @@ export default function RunProjectPage() {
         style={{ background: "#FFFFFF", borderTop: "2px solid #F0E7D6" }}
       >
         <div className="max-w-2xl mx-auto px-4 py-3">
+          {showNudge && (
+            <div
+              className="mb-3 rounded-block px-4 py-2.5 flex items-center gap-2 justify-center text-center"
+              style={{ background: "#FFF6E6", border: "2px solid #FFC53D66" }}
+            >
+              <span className="text-lg">💬</span>
+              <div className="font-sans text-sm" style={{ color: "#5C5747" }}>
+                <span className="font-extrabold" style={{ color: "#2A2A3C" }}>Your turn!</span>{" "}
+                Read what your worker said, then type a question or what you learned to move on.
+              </div>
+            </div>
+          )}
           {showAdvance && (
             <div className="mb-3 flex justify-center">
               <button
@@ -469,7 +535,13 @@ export default function RunProjectPage() {
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder={sending ? "Worker is thinking…" : "Type your reply…"}
+              placeholder={
+                sending
+                  ? "Worker is thinking…"
+                  : showNudge
+                  ? "Type a question or what you learned…"
+                  : "Type your reply…"
+              }
               disabled={sending || !result}
               className="flex-1 px-4 py-3 rounded-pill font-sans text-sm outline-none disabled:opacity-60"
               style={{
