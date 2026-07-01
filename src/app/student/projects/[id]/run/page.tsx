@@ -13,7 +13,6 @@ type WorkerMessage =
 
 interface RunResult {
   runId: string;
-  replayId: string;
   messages: WorkerMessage[];
   safetyFlags: string[];
   runsUsedToday: number;
