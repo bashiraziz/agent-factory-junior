@@ -7,6 +7,7 @@ import { Mascot } from "@/components/mascot";
 import { StatusPill } from "@/components/status-pill";
 import { AvatarChip } from "@/components/avatar-chip";
 import { resolveStudentProfile } from "@/lib/student-auth";
+import { DeleteWorkerButton } from "@/components/delete-worker-button";
 
 export default async function StudentDashboard() {
   const profile = await resolveStudentProfile();
@@ -159,7 +160,10 @@ export default async function StudentDashboard() {
                     >
                       🤖
                     </div>
-                    <StatusPill status={project.status === "draft" ? "safe" : "safe"} />
+                    <div className="flex items-center gap-1">
+                      <StatusPill status={project.status === "draft" ? "safe" : "safe"} />
+                      <DeleteWorkerButton id={project.id} name={project.name} />
+                    </div>
                   </div>
                   <div>
                     <div className="font-display text-lg font-semibold leading-snug" style={{ color: "#2A2A3C" }}>

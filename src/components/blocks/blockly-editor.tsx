@@ -286,14 +286,19 @@ export default function BlocklyEditor({
       workspaceRef.current = workspace;
 
       if (onWorkspaceReady) {
-        let stackY = 60;
         const addBlock = (type: string) => {
           if (!workspaceRef.current) return;
+          // Place below all existing blocks
+          let bottom = 60;
+          for (const b of workspaceRef.current.getAllBlocks(false)) {
+            const xy = b.getRelativeToSurfaceXY();
+            const hw = b.getHeightWidth();
+            bottom = Math.max(bottom, xy.y + hw.height + 24);
+          }
           const block = workspaceRef.current.newBlock(type);
           block.initSvg();
           block.render();
-          block.moveBy(60, stackY);
-          stackY += block.getHeightWidth().height + 24;
+          block.moveBy(60, bottom);
           workspaceRef.current.scrollBlockIntoView?.(block.id);
           handleChange(Blockly);
         };
