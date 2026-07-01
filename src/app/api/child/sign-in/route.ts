@@ -7,6 +7,13 @@ import { eq } from "drizzle-orm";
 import { nanoid } from "@/lib/utils";
 import { CHILD_COOKIE } from "@/lib/child-session";
 
+const MAX_ATTEMPTS = 5;
+const LOCKOUT_MINUTES = 15;
+
+// Same message for unknown username and wrong PIN — prevents username enumeration.
+const GENERIC_ERROR = "That username and PIN don't match. Try again!";
+const LOCKED_ERROR = `Too many tries! Take a ${LOCKOUT_MINUTES}-minute break, then try again.`;
+
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
   const username = String(body?.username ?? "").trim().toLowerCase();
@@ -25,24 +32,41 @@ export async function POST(req: NextRequest) {
     .where(eq(childCredentials.username, username));
 
   if (!cred) {
-    return NextResponse.json(
-      { error: "We couldn't find that username. Ask your grown-up to check." },
-      { status: 401 }
-    );
+    return NextResponse.json({ error: GENERIC_ERROR }, { status: 401 });
+  }
+
+  const now = new Date();
+  if (cred.lockedUntil && cred.lockedUntil > now) {
+    return NextResponse.json({ error: LOCKED_ERROR }, { status: 429 });
   }
 
   const ok = await bcrypt.compare(pin, cred.pinHash);
   if (!ok) {
-    return NextResponse.json(
-      { error: "That PIN doesn't match. Try again!" },
-      { status: 401 }
-    );
+    const nextFailed = cred.failedAttempts + 1;
+    if (nextFailed >= MAX_ATTEMPTS) {
+      const lockedUntil = new Date(now.getTime() + LOCKOUT_MINUTES * 60 * 1000);
+      await db
+        .update(childCredentials)
+        .set({ failedAttempts: 0, lockedUntil, updatedAt: now })
+        .where(eq(childCredentials.id, cred.id));
+      return NextResponse.json({ error: LOCKED_ERROR }, { status: 429 });
+    }
+    await db
+      .update(childCredentials)
+      .set({ failedAttempts: nextFailed, updatedAt: now })
+      .where(eq(childCredentials.id, cred.id));
+    return NextResponse.json({ error: GENERIC_ERROR }, { status: 401 });
   }
 
   const token = nanoid(32);
   await db
     .update(childCredentials)
-    .set({ sessionToken: token, updatedAt: new Date() })
+    .set({
+      sessionToken: token,
+      failedAttempts: 0,
+      lockedUntil: null,
+      updatedAt: now,
+    })
     .where(eq(childCredentials.id, cred.id));
 
   const jar = await cookies();

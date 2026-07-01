@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db, profiles } from "@/db";
 import { eq } from "drizzle-orm";
-import { nanoid, generateCode } from "@/lib/utils";
+import { nanoid, generateCode, retryOnUnique } from "@/lib/utils";
 import { headers } from "next/headers";
 
 export async function POST(req: NextRequest) {
@@ -20,12 +20,14 @@ export async function POST(req: NextRequest) {
   if (existing.length > 0) {
     await db.update(profiles).set({ role, displayName, updatedAt: new Date() }).where(eq(profiles.userId, session.user.id));
   } else {
-    await db.insert(profiles).values({
-      id: nanoid(),
-      userId: session.user.id,
-      displayName: displayName || session.user.name || session.user.email,
-      role,
-      linkCode: role === "student" ? generateCode() : null,
+    await retryOnUnique(async () => {
+      await db.insert(profiles).values({
+        id: nanoid(),
+        userId: session.user.id,
+        displayName: displayName || session.user.name || session.user.email,
+        role,
+        linkCode: role === "student" ? generateCode() : null,
+      });
     });
   }
 

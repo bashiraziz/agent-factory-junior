@@ -98,6 +98,17 @@ export const classroomSeatCodes = pgTable("classroom_seat_codes", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+export const chatMessages = pgTable("chat_messages", {
+  id: text("id").primaryKey(),
+  projectId: text("project_id").notNull(),
+  studentId: text("student_id").notNull(),
+  role: text("role").notNull(), // "user" | "worker"
+  content: text("content").notNull(),
+  flagged: boolean("flagged").notNull().default(false),
+  flagReason: text("flag_reason"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 export const childCredentials = pgTable("child_credentials", {
   id: text("id").primaryKey(),
   profileId: text("profile_id").notNull().unique(),
@@ -105,6 +116,8 @@ export const childCredentials = pgTable("child_credentials", {
   username: text("username").notNull().unique(),
   pinHash: text("pin_hash").notNull(),
   sessionToken: text("session_token").unique(),
+  failedAttempts: integer("failed_attempts").notNull().default(0),
+  lockedUntil: timestamp("locked_until"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

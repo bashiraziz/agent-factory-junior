@@ -4,7 +4,7 @@ import { headers } from "next/headers";
 import { db } from "@/db";
 import { classrooms, profiles } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { nanoid, generateCode } from "@/lib/utils";
+import { nanoid, generateCode, retryOnUnique } from "@/lib/utils";
 
 export async function GET() {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -34,20 +34,21 @@ export async function POST(req: NextRequest) {
   if (!name?.trim()) return NextResponse.json({ error: "Name required" }, { status: 400 });
 
   const id = nanoid();
-  const joinCode = generateCode(6);
   const now = new Date();
 
-  const [classroom] = await db
-    .insert(classrooms)
-    .values({
-      id,
-      teacherId: profile.id,
-      name: name.trim(),
-      joinCode,
-      createdAt: now,
-      updatedAt: now,
-    })
-    .returning();
+  const [classroom] = await retryOnUnique(async () => {
+    return db
+      .insert(classrooms)
+      .values({
+        id,
+        teacherId: profile.id,
+        name: name.trim(),
+        joinCode: generateCode(),
+        createdAt: now,
+        updatedAt: now,
+      })
+      .returning();
+  });
 
   return NextResponse.json(classroom, { status: 201 });
 }

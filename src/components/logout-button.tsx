@@ -5,7 +5,12 @@ import { signOut } from "@/lib/auth-client";
 export function LogoutButton() {
   const router = useRouter();
   async function handleSignOut() {
-    await signOut();
+    // Invalidate seat & child sessions server-side (nulls sessionToken in DB
+    // and clears the cookies) alongside Better Auth signOut.
+    await Promise.allSettled([
+      fetch("/api/logout", { method: "POST" }),
+      signOut(),
+    ]);
     router.push("/sign-in");
   }
   return (

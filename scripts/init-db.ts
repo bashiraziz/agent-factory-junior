@@ -191,6 +191,25 @@ async function initDb() {
     `);
 
     await client.query(`
+      CREATE TABLE IF NOT EXISTS chat_messages (
+        id TEXT PRIMARY KEY,
+        project_id TEXT NOT NULL,
+        student_id TEXT NOT NULL,
+        role TEXT NOT NULL,
+        content TEXT NOT NULL,
+        flagged BOOLEAN NOT NULL DEFAULT FALSE,
+        flag_reason TEXT,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+    `);
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS chat_messages_project_id_idx ON chat_messages(project_id);
+    `);
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS chat_messages_student_id_idx ON chat_messages(student_id);
+    `);
+
+    await client.query(`
       CREATE TABLE IF NOT EXISTS child_credentials (
         id TEXT PRIMARY KEY,
         profile_id TEXT NOT NULL UNIQUE,
@@ -198,9 +217,18 @@ async function initDb() {
         username TEXT NOT NULL UNIQUE,
         pin_hash TEXT NOT NULL,
         session_token TEXT UNIQUE,
+        failed_attempts INTEGER NOT NULL DEFAULT 0,
+        locked_until TIMESTAMPTZ,
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       );
+    `);
+    // Idempotent columns for existing installs
+    await client.query(`
+      ALTER TABLE child_credentials ADD COLUMN IF NOT EXISTS failed_attempts INTEGER NOT NULL DEFAULT 0;
+    `);
+    await client.query(`
+      ALTER TABLE child_credentials ADD COLUMN IF NOT EXISTS locked_until TIMESTAMPTZ;
     `);
 
     // Rename reasoning_receipts → replays (only if old table exists and new one doesn't)
@@ -212,6 +240,16 @@ async function initDb() {
         END IF;
       END $$;
     `);
+
+    // Indexes on hot lookup paths (idempotent)
+    await client.query(`CREATE INDEX IF NOT EXISTS projects_owner_id_idx ON projects(owner_id);`);
+    await client.query(`CREATE INDEX IF NOT EXISTS classroom_members_classroom_id_idx ON classroom_members(classroom_id);`);
+    await client.query(`CREATE INDEX IF NOT EXISTS agent_runs_project_id_idx ON agent_runs(project_id);`);
+    await client.query(`CREATE INDEX IF NOT EXISTS agent_runs_student_id_idx ON agent_runs(student_id);`);
+    await client.query(`CREATE INDEX IF NOT EXISTS classroom_seat_codes_session_token_idx ON classroom_seat_codes(session_token);`);
+    await client.query(`CREATE INDEX IF NOT EXISTS child_credentials_session_token_idx ON child_credentials(session_token);`);
+    await client.query(`CREATE INDEX IF NOT EXISTS parent_child_links_parent_id_idx ON parent_child_links(parent_id);`);
+    await client.query(`CREATE INDEX IF NOT EXISTS parent_child_links_student_id_idx ON parent_child_links(student_id);`);
 
     // Parent control columns (idempotent)
     await client.query(`

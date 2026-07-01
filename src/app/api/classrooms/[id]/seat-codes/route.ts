@@ -4,7 +4,7 @@ import { headers } from "next/headers";
 import { db } from "@/db";
 import { classroomSeatCodes, classrooms, profiles } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
-import { nanoid, generateCode } from "@/lib/utils";
+import { nanoid, generateCode, retryOnUnique } from "@/lib/utils";
 
 async function requireTeacher(classroomId: string) {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -65,16 +65,42 @@ export async function POST(
   const n = Math.min(Math.max(1, Number(count)), 50);
 
   const now = new Date();
-  const rows = Array.from({ length: n }, () => ({
-    id: nanoid(),
-    classroomId: id,
-    code: generateCode(),
-    createdAt: now,
-  }));
+  const created: string[] = [];
+  for (let i = 0; i < n; i++) {
+    await retryOnUnique(async () => {
+      const code = generateCode();
+      await db.insert(classroomSeatCodes).values({
+        id: nanoid(),
+        classroomId: id,
+        code,
+        createdAt: now,
+      });
+      created.push(code);
+    });
+  }
 
-  await db.insert(classroomSeatCodes).values(rows);
+  return NextResponse.json({ ok: true, count: created.length, codes: created }, { status: 201 });
+}
 
-  return NextResponse.json({ ok: true, count: n, codes: rows.map((r) => r.code) }, { status: 201 });
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  const ctx = await requireTeacher(id);
+  if (!ctx) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { codeId, action } = await req.json();
+  if (!codeId || action !== "reset") {
+    return NextResponse.json({ error: "Unknown action" }, { status: 400 });
+  }
+
+  await db
+    .update(classroomSeatCodes)
+    .set({ profileId: null, sessionToken: null, joinedAt: null, isActive: true })
+    .where(and(eq(classroomSeatCodes.id, codeId), eq(classroomSeatCodes.classroomId, id)));
+
+  return NextResponse.json({ ok: true });
 }
 
 export async function DELETE(

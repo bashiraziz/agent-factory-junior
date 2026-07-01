@@ -26,6 +26,13 @@ const spaceMono = Space_Mono({
 export const metadata: Metadata = {
   title: "Agent Factory Junior — Build Your First AI Worker",
   description: "A safe, child-friendly platform to build AI Workers with visual blocks.",
+  icons: {
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/icon-32.png", sizes: "32x32", type: "image/png" },
+    ],
+    apple: "/icon-180.png",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

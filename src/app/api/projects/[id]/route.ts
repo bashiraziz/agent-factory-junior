@@ -3,6 +3,16 @@ import { db } from "@/db";
 import { projects } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { resolveStudentProfile } from "@/lib/student-auth";
+import { validateProject } from "@/lib/runtime/validate-project";
+import { z } from "zod";
+
+const patchSchema = z.object({
+  name: z.string().trim().min(1).max(80).optional(),
+  description: z.string().max(500).optional().nullable(),
+  dslJson: z.unknown().optional(),
+  blocklyJson: z.unknown().optional(),
+  status: z.enum(["draft", "published"]).optional(),
+});
 
 export async function GET(
   _req: NextRequest,
@@ -37,13 +47,28 @@ export async function PATCH(
 
   if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const body = await req.json();
+  const raw = await req.json();
+  const parsed = patchSchema.safeParse(raw);
+  if (!parsed.success) {
+    return NextResponse.json({ error: "Some fields didn't look right." }, { status: 400 });
+  }
+  const body = parsed.data;
   const allowed: Record<string, unknown> = {};
-  if ("name" in body) allowed.name = body.name;
-  if ("description" in body) allowed.description = body.description;
-  if ("dslJson" in body) allowed.dslJson = body.dslJson;
-  if ("blocklyJson" in body) allowed.blocklyJson = body.blocklyJson;
-  if ("status" in body) allowed.status = body.status;
+  if (body.name !== undefined) allowed.name = body.name;
+  if (body.description !== undefined) allowed.description = body.description;
+  if (body.dslJson !== undefined) {
+    const v = validateProject(body.dslJson);
+    if (!v.valid) {
+      return NextResponse.json({ error: v.errors[0] ?? "Project blocks aren't ready yet." }, { status: 400 });
+    }
+    allowed.dslJson = body.dslJson;
+  }
+  if (body.blocklyJson !== undefined) allowed.blocklyJson = body.blocklyJson;
+  if (body.status !== undefined) allowed.status = body.status;
+  // Editing blocks clears parent approval — must be re-approved before next run.
+  if (body.dslJson !== undefined || body.blocklyJson !== undefined) {
+    allowed.parentApprovedAt = null;
+  }
   allowed.updatedAt = new Date();
 
   const [updated] = await db

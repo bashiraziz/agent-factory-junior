@@ -5,6 +5,13 @@ import { eq } from "drizzle-orm";
 import { nanoid } from "@/lib/utils";
 import { resolveStudentProfile } from "@/lib/student-auth";
 import { getTemplate, dslToBlocklyJson } from "@/lib/templates/starter-templates";
+import { z } from "zod";
+
+const postSchema = z.object({
+  name: z.string().trim().max(80).optional(),
+  description: z.string().max(500).optional(),
+  templateId: z.string().max(80).optional(),
+});
 
 export async function GET() {
   const profile = await resolveStudentProfile();
@@ -24,7 +31,12 @@ export async function POST(req: NextRequest) {
   if (!profile) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   if (profile.role !== "student") return NextResponse.json({ error: "Students only" }, { status: 403 });
 
-  const { name, description, templateId } = await req.json();
+  const raw = await req.json();
+  const parsed = postSchema.safeParse(raw);
+  if (!parsed.success) {
+    return NextResponse.json({ error: "Some fields didn't look right." }, { status: 400 });
+  }
+  const { name, description, templateId } = parsed.data;
 
   const template = templateId ? getTemplate(templateId) : undefined;
   if (templateId && !template) {

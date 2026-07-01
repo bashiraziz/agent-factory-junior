@@ -1,36 +1,66 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Agent Factory Junior
 
-## Getting Started
+A child-safe, education-first platform where kids build their first **AI Workers** using visual Blockly blocks — goals, safety rules, approved knowledge, steps — with real LLM output, parent controls, and a full replay/receipt for every run.
 
-First, run the development server:
+## Roles
+
+- **Student** — builds and runs AI Workers. Signs in via a **classroom code** (teacher-issued) or a **username + 4-digit PIN** (parent-created, no email needed).
+- **Teacher** — creates classrooms, issues seat codes, sees per-student activity.
+- **Parent** — links to a child (link code) or creates a child account directly. Sets daily run limits, pauses, requires per-worker approval, reviews every run's replay.
+- **Admin** — reserved.
+
+## Tech
+
+- Next.js 16 App Router · TypeScript · Tailwind
+- Drizzle ORM + Postgres (Neon works out of the box)
+- Better Auth (grown-ups) · seat-code cookie session (classroom kids) · username+PIN cookie session (kids without email)
+- Vercel AI SDK v7 · Gemini (via `@ai-sdk/google`) with a mock provider fallback
+- Blockly for the visual editor
+
+## Environment variables
+
+Create `.env.local` with:
+
+| Var | Required | Notes |
+|---|---|---|
+| `DATABASE_URL` | ✅ | Postgres connection string (Neon `?sslmode=require` works) |
+| `BETTER_AUTH_SECRET` | ✅ | Any long random string |
+| `BETTER_AUTH_URL` | ✅ | e.g. `http://localhost:3000` in dev |
+| `LLM_PROVIDER` | | `gemini` or unset for the mock provider |
+| `GEMINI_API_KEY` | when `LLM_PROVIDER=gemini` | |
+| `GEMINI_MODEL` | | Defaults to `gemini-2.0-flash` |
+| `DEV_UNLIMITED_RUNS` | | Set to `1` in dev to bypass the daily run limit |
+
+## Getting started
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run db:migrate      # idempotent — creates/updates all tables + indexes
+npm run dev             # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open `/sign-in` for a grown-up (teacher/parent) or `/join` for a kid (classroom code or username+PIN).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Providers
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Mock** (default) — deterministic, no API key needed. Great for classroom demos.
+- **Gemini** — set `LLM_PROVIDER=gemini` + `GEMINI_API_KEY`. Chat, quiz-generation, and wrap-up all use Gemini.
 
-## Learn More
+## Safety model
 
-To learn more about Next.js, take a look at the following resources:
+Every LLM path goes through:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. **Guardrails** (`src/lib/runtime/guardrails.ts`) — parent pause, per-worker approval, daily run limit (chat counts as 1/5 of a run).
+2. **Prompt hardening** — student-authored goal/knowledge/rules are wrapped in `<student_content>` delimiters; the model is told to treat them as data, never instructions.
+3. **Output moderation** (`src/lib/runtime/moderate-output.ts`) — post-generation blocklist. Flags are replaced with a friendly message and marked in the run/replay so the parent can review.
+4. **Replay receipt** — every run persists goal, knowledge used, rules applied, steps followed, tools used, approval requirements, safety flags, and output.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Testing checklist
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- 6th wrong PIN within 15 minutes returns 429
+- Editing an approved project's blocks clears `parentApprovedAt`
+- A claimed seat code rejects re-joins; teacher reset re-opens it
+- Paused child cannot chat; 5 chat turns consume 1 run
+- No `Math.random` in token/code generation
+- Two parallel run requests cannot exceed the daily limit
+- Flagged output never reaches the child UI

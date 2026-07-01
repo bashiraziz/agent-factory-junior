@@ -1,14 +1,15 @@
 import { db } from "@/db";
-import { agentRuns, replays, usageLimits, projects, parentChildLinks } from "@/db/schema";
-import { eq, and } from "drizzle-orm";
+import { agentRuns, replays, projects } from "@/db/schema";
+import { eq } from "drizzle-orm";
 import { validateProject } from "./validate-project";
 import { buildSafePrompt } from "./build-safe-prompt";
 import { callLLM } from "./llm";
 import type { ProjectDSL } from "./types";
 import { nanoid } from "@/lib/utils";
+import { assertNotPaused, assertApproved, consumeRun } from "./guardrails";
+import { moderateOutput } from "./moderate-output";
 
 export async function runWorker(projectId: string, studentId: string) {
-  // Load project
   const [project] = await db
     .select()
     .from(projects)
@@ -17,85 +18,23 @@ export async function runWorker(projectId: string, studentId: string) {
   if (!project) throw new Error("Project not found.");
   if (project.ownerId !== studentId) throw new Error("Unauthorized.");
 
-  // Check usage limits
-  const [usage] = await db
-    .select()
-    .from(usageLimits)
-    .where(eq(usageLimits.userId, studentId));
+  const usage = await assertNotPaused(studentId);
+  await assertApproved(project, studentId);
 
-  const now = new Date();
-  let currentUsage = usage;
-
-  if (!currentUsage) {
-    const [created] = await db
-      .insert(usageLimits)
-      .values({
-        id: nanoid(),
-        userId: studentId,
-        dailyRunLimit: 5,
-        runsUsedToday: 0,
-        periodStart: now,
-      })
-      .returning();
-    currentUsage = created;
-  }
-
-  // Reset counter if period has rolled over (new day)
-  const periodStart = new Date(currentUsage.periodStart);
-  const dayDiff = Math.floor(
-    (now.getTime() - periodStart.getTime()) / (1000 * 60 * 60 * 24)
-  );
-  if (dayDiff >= 1) {
-    await db
-      .update(usageLimits)
-      .set({ runsUsedToday: 0, periodStart: now, updatedAt: now })
-      .where(eq(usageLimits.userId, studentId));
-    currentUsage.runsUsedToday = 0;
-  }
-
-  if (currentUsage.paused) {
-    throw new Error("Your parent has paused AI Worker runs. Ask them to unpause it in the family dashboard.");
-  }
-
-  const bypassLimit = !!process.env.DEV_UNLIMITED_RUNS && process.env.DEV_UNLIMITED_RUNS !== "0";
-  if (
-    !bypassLimit &&
-    currentUsage.runsUsedToday >= currentUsage.dailyRunLimit
-  ) {
-    throw new Error(
-      `Daily run limit reached (${currentUsage.dailyRunLimit} runs). Try again tomorrow!`
-    );
-  }
-
-  // Parent approval gate: if any linked parent requires approval and this project isn't approved yet, block.
-  if (!project.parentApprovedAt) {
-    const approvalRequired = await db
-      .select()
-      .from(parentChildLinks)
-      .where(
-        and(
-          eq(parentChildLinks.studentId, studentId),
-          eq(parentChildLinks.requireApproval, true)
-        )
-      );
-    if (approvalRequired.length > 0) {
-      throw new Error("Waiting for parent approval. Ask a parent to approve this AI Worker in the family dashboard.");
-    }
-  }
-
-  // Validate DSL
   const dsl = project.dslJson as ProjectDSL;
   const validation = validateProject(dsl);
   if (!validation.valid) {
     throw new Error(`Invalid project: ${validation.errors.join(", ")}`);
   }
 
-  // Build prompt and call LLM
+  // Reserve one run against the limit *before* the LLM call so parallel
+  // requests can't slip past the ceiling.
+  const counters = await consumeRun(studentId, usage, 1);
+
   const prompt = buildSafePrompt(dsl);
   const llmResult = await callLLM(prompt, dsl);
 
-  // Build output text
-  const outputText = llmResult.messages
+  let outputText = llmResult.messages
     .map((m) => {
       if (m.role === "worker") return m.content;
       if (m.role === "quiz") return `[Quiz: ${m.questions.length} questions]`;
@@ -103,53 +42,56 @@ export async function runWorker(projectId: string, studentId: string) {
     })
     .join("\n\n");
 
-  // Save run
+  const moderation = moderateOutput(outputText);
+  let safetyFlags = [...llmResult.safety_flags];
+  let messages = llmResult.messages;
+  let status: "completed" | "flagged" = safetyFlags.length > 0 ? "flagged" : "completed";
+  if (!moderation.ok) {
+    outputText = moderation.replacement;
+    messages = [{ role: "worker", content: moderation.replacement }];
+    safetyFlags = [...safetyFlags, ...moderation.reasons];
+    status = "flagged";
+  }
+
   const runId = nanoid();
-  await db.insert(agentRuns).values({
-    id: runId,
-    projectId,
-    studentId,
-    output: outputText,
-    provider: process.env.LLM_PROVIDER || "mock",
-    status: llmResult.safety_flags.length > 0 ? "flagged" : "completed",
-    safetyFlags: llmResult.safety_flags,
-  });
-
-  // Save replay
   const replayId = nanoid();
-  await db.insert(replays).values({
-    id: replayId,
-    runId,
-    projectId,
-    studentId,
-    goal: dsl.goal,
-    knowledgeUsed: dsl.knowledge.map((k) => k.content),
-    rulesApplied: dsl.rules,
-    stepsFollowed: llmResult.steps_completed,
-    toolsUsed: [],
-    approvalRequired: dsl.approval_required.map((a) => a.action),
-    safetyFlags: llmResult.safety_flags,
-    output: outputText,
-    provider: process.env.LLM_PROVIDER || "mock",
-  });
+  const provider = process.env.LLM_PROVIDER || "mock";
 
-  // Increment usage
-  await db
-    .update(usageLimits)
-    .set({
-      runsUsedToday: currentUsage.runsUsedToday + 1,
-      updatedAt: now,
-    })
-    .where(eq(usageLimits.userId, studentId));
+  await db.transaction(async (tx) => {
+    await tx.insert(agentRuns).values({
+      id: runId,
+      projectId,
+      studentId,
+      output: outputText,
+      provider,
+      status,
+      safetyFlags,
+    });
+    await tx.insert(replays).values({
+      id: replayId,
+      runId,
+      projectId,
+      studentId,
+      goal: dsl.goal,
+      knowledgeUsed: dsl.knowledge.map((k) => k.content),
+      rulesApplied: dsl.rules,
+      stepsFollowed: llmResult.steps_completed,
+      toolsUsed: [],
+      approvalRequired: dsl.approval_required.map((a) => a.action),
+      safetyFlags,
+      output: outputText,
+      provider,
+    });
+  });
 
   return {
     runId,
     replayId,
     output: outputText,
-    messages: llmResult.messages,
-    safetyFlags: llmResult.safety_flags,
-    runsUsedToday: currentUsage.runsUsedToday + 1,
-    dailyRunLimit: currentUsage.dailyRunLimit,
-    provider: process.env.LLM_PROVIDER || "mock",
+    messages,
+    safetyFlags,
+    runsUsedToday: counters.runsUsedToday,
+    dailyRunLimit: counters.dailyRunLimit,
+    provider,
   };
 }

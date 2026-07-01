@@ -5,6 +5,8 @@ import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { generateObject, generateText, NoObjectGeneratedError } from "ai";
 import { z } from "zod";
 import type { ProjectDSL } from "./types";
+import { assertNotPaused, assertApproved } from "./guardrails";
+import { moderateOutput } from "./moderate-output";
 
 type ChatTurn =
   | { role: "worker"; content: string }
@@ -61,6 +63,9 @@ export async function advanceWorker(
     .where(eq(projects.id, projectId));
   if (!project) throw new Error("Project not found.");
   if (project.ownerId !== studentId) throw new Error("Unauthorized.");
+
+  await assertNotPaused(studentId);
+  await assertApproved(project, studentId);
 
   const dsl = project.dslJson as ProjectDSL;
   const quizStep = dsl.steps.find((s) => s.type === "quiz") as
@@ -126,8 +131,10 @@ ${convo}`;
     system,
     prompt,
   });
+  const raw = text.trim() || "Great work today — keep exploring! 🌟";
+  const moderation = moderateOutput(raw);
   return {
     kind: "worker",
-    content: text.trim() || "Great work today — keep exploring! 🌟",
+    content: moderation.ok ? raw : moderation.replacement,
   };
 }

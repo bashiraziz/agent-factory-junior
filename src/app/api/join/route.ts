@@ -27,18 +27,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "This code has expired." }, { status: 403 });
   }
 
-  // If this seat already has a session, re-use it (student refreshed or came back)
-  if (seat.sessionToken && seat.profileId) {
-    const response = NextResponse.json({ ok: true });
-    response.cookies.set(SEAT_COOKIE, seat.sessionToken, {
-      httpOnly: true,
-      sameSite: "lax",
-      path: "/",
-    });
-    return response;
+  if (seat.sessionToken || seat.profileId) {
+    return NextResponse.json(
+      { error: "This code is already being used. Ask your teacher for a new one!" },
+      { status: 403 }
+    );
   }
 
-  // New join: create a guest profile and session token
   const displayName = nickname?.trim() || "Student";
   const profileId = nanoid();
   const sessionToken = nanoid(32);
@@ -62,7 +57,9 @@ export async function POST(req: NextRequest) {
   response.cookies.set(SEAT_COOKIE, sessionToken, {
     httpOnly: true,
     sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
     path: "/",
+    maxAge: 60 * 60 * 8, // one school day
   });
   return response;
 }
