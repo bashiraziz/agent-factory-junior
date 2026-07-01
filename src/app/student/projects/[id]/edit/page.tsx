@@ -66,6 +66,11 @@ export default function EditProjectPage() {
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const latestDsl = useRef<ProjectDSL | null>(null);
   const latestBlocklyJson = useRef<object | null>(null);
+  const addBlockRef = useRef<((type: string) => void) | null>(null);
+
+  const handleWorkspaceReady = useCallback((fn: (type: string) => void) => {
+    addBlockRef.current = fn;
+  }, []);
 
   // Load project
   useEffect(() => {
@@ -252,7 +257,7 @@ export default function EditProjectPage() {
               BLOCKS
             </div>
             <div className="font-sans text-xs" style={{ color: "#5C5747" }}>
-              Drag blocks onto the canvas to build your AI Worker.
+              Click a block to add it. Drag blocks to connect them. Right-click to delete.
             </div>
           </div>
 
@@ -260,13 +265,14 @@ export default function EditProjectPage() {
             {BLOCK_PALETTE.map((block) => (
               <div
                 key={block.type}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-block cursor-grab active:cursor-grabbing select-none"
+                className="flex items-center gap-3 px-3 py-2.5 rounded-block cursor-pointer select-none transition-transform hover:-translate-y-0.5 active:translate-y-0"
                 style={{
                   background: "#FFFFFF",
                   border: `2px solid ${block.color}22`,
                   boxShadow: `0 3px 0 ${block.color}44`,
                 }}
                 title={block.hint}
+                onClick={() => addBlockRef.current?.(block.type)}
               >
                 <div
                   className="w-8 h-8 rounded-[10px] flex items-center justify-center text-base flex-shrink-0"
@@ -313,6 +319,7 @@ export default function EditProjectPage() {
               onDslChange={handleDslChange}
               onBlocklyChange={handleBlocklyChange}
               projectName={project.name}
+              onWorkspaceReady={handleWorkspaceReady}
             />
           </div>
 

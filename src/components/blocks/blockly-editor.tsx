@@ -20,6 +20,7 @@ interface BlocklyEditorProps {
   onDslChange: (dsl: ProjectDSL, name: string) => void;
   onBlocklyChange: (json: object) => void;
   projectName: string;
+  onWorkspaceReady?: (addBlock: (type: string) => void) => void;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -205,25 +206,12 @@ function registerBlocks(Blockly: AnyBlockly) {
   };
 }
 
-const TOOLBOX = {
-  kind: "flyoutToolbox",
-  contents: [
-    { kind: "block", type: "afj_goal" },
-    { kind: "block", type: "afj_knowledge" },
-    { kind: "block", type: "afj_rule" },
-    { kind: "block", type: "afj_ask_student" },
-    { kind: "block", type: "afj_explain" },
-    { kind: "block", type: "afj_quiz" },
-    { kind: "block", type: "afj_output" },
-    { kind: "block", type: "afj_approval_required" },
-  ],
-};
-
 export default function BlocklyEditor({
   initialBlocklyJson,
   onDslChange,
   onBlocklyChange,
   projectName,
+  onWorkspaceReady,
 }: BlocklyEditorProps) {
   const divRef = useRef<HTMLDivElement>(null);
   const workspaceRef = useRef<AnyBlockly>(null);
@@ -280,7 +268,6 @@ export default function BlocklyEditor({
       if (!divRef.current) return;
 
       workspace = Blockly.inject(divRef.current, {
-        toolbox: TOOLBOX,
         theme,
         grid: { spacing: 28, length: 2, colour: "#EFE7D6", snap: true },
         zoom: {
@@ -297,6 +284,21 @@ export default function BlocklyEditor({
       });
 
       workspaceRef.current = workspace;
+
+      if (onWorkspaceReady) {
+        let stackY = 60;
+        const addBlock = (type: string) => {
+          if (!workspaceRef.current) return;
+          const block = workspaceRef.current.newBlock(type);
+          block.initSvg();
+          block.render();
+          block.moveBy(60, stackY);
+          stackY += block.getHeightWidth().height + 24;
+          workspaceRef.current.scrollBlockIntoView?.(block.id);
+          handleChange(Blockly);
+        };
+        onWorkspaceReady(addBlock);
+      }
 
       // Load initial state
       if (initialBlocklyJson && Object.keys(initialBlocklyJson).length > 0) {
