@@ -278,7 +278,7 @@ export default function BlocklyEditor({
           minScale: 0.5,
           scaleSpeed: 1.2,
         },
-        trashcan: true,
+        trashcan: false,
         move: { scrollbars: true, drag: false, wheel: false },
       });
 
