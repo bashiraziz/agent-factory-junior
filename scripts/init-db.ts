@@ -190,10 +190,11 @@ async function initDb() {
       );
     `);
 
-    // Rename reasoning_receipts → replays if old table still exists
+    // Rename reasoning_receipts → replays (only if old table exists and new one doesn't)
     await client.query(`
       DO $$ BEGIN
-        IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'reasoning_receipts') THEN
+        IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'reasoning_receipts')
+        AND NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'replays') THEN
           ALTER TABLE reasoning_receipts RENAME TO replays;
         END IF;
       END $$;
