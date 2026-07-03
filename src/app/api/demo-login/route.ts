@@ -20,8 +20,14 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(new URL("/sign-in", origin));
     }
 
-    // Set the Better Auth session cookie directly
     const jar = await cookies();
+
+    // Clear any stale child/seat/role cookies so old sessions don't hijack the redirect
+    for (const name of ["afj-child-session", "afj-seat-session", "afj-role"]) {
+      jar.delete(name);
+    }
+
+    // Set the Better Auth session cookie directly
     jar.set("better-auth.session_token", result.token, {
       httpOnly: true,
       sameSite: "lax",
