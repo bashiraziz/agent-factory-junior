@@ -1,6 +1,6 @@
 /**
  * Seed script — creates a demo parent + child + sample AI workers for feedback previews.
- * Safe to run multiple times (idempotent — skips existing rows).
+ * Safe to run multiple times (idempotent).
  *
  * Usage:
  *   npx tsx scripts/seed-demo.ts
@@ -26,36 +26,28 @@ const pool = new Pool({
   ssl: DATABASE_URL.includes("neon.tech") ? true : undefined,
 });
 
-// ── IDs (fixed so re-runs stay idempotent) ───────────────────────────────────
-const DEMO = {
-  // Better Auth
-  userId:         "demo_user_parent_001",
-  accountId:      "demo_account_parent_001",
-  // App
-  parentProfileId: "demo_profile_parent_001",
-  parentUsageLimitId: "demo_usage_parent_001",
-  // Child
-  childUserId:    "demo_user_child_001",
-  childProfileId: "demo_profile_child_001",
-  childCredId:    "demo_cred_child_001",
-  childLinkId:    "demo_link_child_001",
-  childUsageLimitId: "demo_usage_child_001",
-  // Projects
-  proj1Id: "demo_proj_math_001",
-  proj2Id: "demo_proj_story_001",
-  proj3Id: "demo_proj_science_001",
-  // Runs
-  run1Id:  "demo_run_001",
-  run2Id:  "demo_run_002",
-  run3Id:  "demo_run_003",
-};
-
-const DEMO_EMAIL    = "demo@agentfactoryjr.com";
-const DEMO_PASSWORD = "Demo1234!";
-const DEMO_PIN      = "1234";
+const DEMO_EMAIL     = "demo@agentfactoryjr.com";
+const DEMO_PASSWORD  = "Demo1234!";
+const DEMO_PIN       = "1234";
 const CHILD_USERNAME = "alex_demo";
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
+// Fixed IDs for app-level rows (idempotent across re-runs)
+const DEMO = {
+  parentProfileId:    "demo_profile_parent_001",
+  parentUsageLimitId: "demo_usage_parent_001",
+  childUserId:        "demo_user_child_001",
+  childProfileId:     "demo_profile_child_001",
+  childCredId:        "demo_cred_child_001",
+  childLinkId:        "demo_link_child_001",
+  childUsageLimitId:  "demo_usage_child_001",
+  proj1Id:            "demo_proj_math_001",
+  proj2Id:            "demo_proj_story_001",
+  proj3Id:            "demo_proj_science_001",
+  run1Id:             "demo_run_001",
+  run2Id:             "demo_run_002",
+  run3Id:             "demo_run_003",
+};
+
 function dsl(goal: string, knowledge: string[], rules: string[]) {
   return JSON.stringify({
     goal,
@@ -75,7 +67,7 @@ async function upsertRow(
     `SELECT 1 FROM ${table} WHERE ${idCol} = $1`,
     [idVal]
   );
-  if (exists.rowCount && exists.rowCount > 0) return false; // already seeded
+  if (exists.rowCount && exists.rowCount > 0) return false;
   const keys = Object.keys(cols);
   const vals = Object.values(cols);
   const placeholders = keys.map((_, i) => `$${i + 2}`).join(", ");
@@ -86,49 +78,55 @@ async function upsertRow(
   return true;
 }
 
-// ── Main ─────────────────────────────────────────────────────────────────────
 async function seed() {
+  // Import after dotenv so DATABASE_URL / BETTER_AUTH_SECRET are set
+  const { auth } = await import("../src/lib/auth.js");
+
   const client = await pool.connect();
   try {
     console.log("🌱  Seeding demo account…\n");
-
     const now = new Date();
-    const passwordHash = await bcrypt.hash(DEMO_PASSWORD, 10);
-    const pinHash      = await bcrypt.hash(DEMO_PIN, 10);
 
-    // ── 1. Better Auth user ─────────────────────────────────────────────────
-    const userCreated = await upsertRow(client, '"user"', "id", DEMO.userId, {
-      name: "Demo Parent",
-      email: DEMO_EMAIL,
-      '"emailVerified"': true,
-      '"createdAt"': now,
-      '"updatedAt"': now,
-    });
-    console.log(userCreated ? "  ✓ Better Auth user" : "  · Better Auth user (exists)");
+    // ── 1. Better Auth user — use BA's own API so the password hash is correct ─
+    // Delete any existing demo user first (re-seed always gets a fresh valid hash)
+    await client.query(`DELETE FROM "user" WHERE email = $1`, [DEMO_EMAIL]);
+    console.log("  · Cleared old demo auth user (if any)");
 
-    // ── 2. Better Auth account (credential) ────────────────────────────────
-    const accountCreated = await upsertRow(client, '"account"', "id", DEMO.accountId, {
-      '"accountId"': DEMO_EMAIL,
-      '"providerId"': "credential",
-      '"userId"': DEMO.userId,
-      password: passwordHash,
-      '"createdAt"': now,
-      '"updatedAt"': now,
-    });
-    console.log(accountCreated ? "  ✓ Auth credential" : "  · Auth credential (exists)");
+    const signUpData = await auth.api.signUpEmail({
+      body: { email: DEMO_EMAIL, password: DEMO_PASSWORD, name: "Demo Parent" },
+      headers: new Headers({ "content-type": "application/json" }),
+    }) as { user?: { id: string } };
+    const baUserId = signUpData?.user?.id;
+    if (!baUserId) {
+      console.error("❌  Better Auth signUp failed:", signUpData);
+      process.exit(1);
+    }
+    console.log("  ✓ Better Auth user created (id:", baUserId, ")");
 
-    // ── 3. Parent profile ───────────────────────────────────────────────────
+    // ── 2. Parent profile — upsert, linking to the new BA userId ──────────────
+    // Delete stale profile row if it pointed to an old userId
+    await client.query(
+      `DELETE FROM profiles WHERE id = $1 AND user_id != $2`,
+      [DEMO.parentProfileId, baUserId]
+    );
     const parentProfileCreated = await upsertRow(client, "profiles", "id", DEMO.parentProfileId, {
-      user_id: DEMO.userId,
+      user_id: baUserId,
       display_name: "Demo Parent",
       role: "parent",
       created_at: now,
       updated_at: now,
     });
-    console.log(parentProfileCreated ? "  ✓ Parent profile" : "  · Parent profile (exists)");
+    // If it already existed with the right userId, update it anyway
+    if (!parentProfileCreated) {
+      await client.query(
+        `UPDATE profiles SET user_id = $1 WHERE id = $2`,
+        [baUserId, DEMO.parentProfileId]
+      );
+    }
+    console.log("  ✓ Parent profile");
 
-    // ── 4. Parent usage limits ──────────────────────────────────────────────
-    const parentUsageCreated = await upsertRow(client, "usage_limits", "id", DEMO.parentUsageLimitId, {
+    // ── 3. Parent usage limits ─────────────────────────────────────────────────
+    await upsertRow(client, "usage_limits", "id", DEMO.parentUsageLimitId, {
       user_id: DEMO.parentProfileId,
       daily_run_limit: 10,
       runs_used_today: 0,
@@ -138,20 +136,20 @@ async function seed() {
       created_at: now,
       updated_at: now,
     });
-    console.log(parentUsageCreated ? "  ✓ Parent usage limits" : "  · Parent usage limits (exists)");
+    console.log("  ✓ Parent usage limits");
 
-    // ── 5. Child Better Auth-style user (child_ prefix, no real auth) ──────
-    const childUserCreated = await upsertRow(client, '"user"', "id", DEMO.childUserId, {
+    // ── 4. Child Better Auth-style user row (no real auth, internal only) ──────
+    await upsertRow(client, '"user"', "id", DEMO.childUserId, {
       name: "Alex (Demo)",
       email: `child_${DEMO.childUserId}@demo.internal`,
       '"emailVerified"': false,
       '"createdAt"': now,
       '"updatedAt"': now,
     });
-    console.log(childUserCreated ? "  ✓ Child user" : "  · Child user (exists)");
+    console.log("  ✓ Child user row");
 
-    // ── 6. Child profile ────────────────────────────────────────────────────
-    const childProfileCreated = await upsertRow(client, "profiles", "id", DEMO.childProfileId, {
+    // ── 5. Child profile ───────────────────────────────────────────────────────
+    await upsertRow(client, "profiles", "id", DEMO.childProfileId, {
       user_id: DEMO.childUserId,
       display_name: "Alex",
       role: "student",
@@ -159,10 +157,11 @@ async function seed() {
       created_at: now,
       updated_at: now,
     });
-    console.log(childProfileCreated ? "  ✓ Child profile" : "  · Child profile (exists)");
+    console.log("  ✓ Child profile");
 
-    // ── 7. Child credentials (username + PIN) ───────────────────────────────
-    const childCredCreated = await upsertRow(client, "child_credentials", "id", DEMO.childCredId, {
+    // ── 6. Child credentials (username + PIN) ──────────────────────────────────
+    const pinHash = await bcrypt.hash(DEMO_PIN, 10);
+    await upsertRow(client, "child_credentials", "id", DEMO.childCredId, {
       profile_id: DEMO.childProfileId,
       parent_id: DEMO.parentProfileId,
       username: CHILD_USERNAME,
@@ -171,10 +170,10 @@ async function seed() {
       created_at: now,
       updated_at: now,
     });
-    console.log(childCredCreated ? "  ✓ Child credentials" : "  · Child credentials (exists)");
+    console.log("  ✓ Child credentials");
 
-    // ── 8. Parent-child link ────────────────────────────────────────────────
-    const linkCreated = await upsertRow(client, "parent_child_links", "id", DEMO.childLinkId, {
+    // ── 7. Parent-child link ───────────────────────────────────────────────────
+    await upsertRow(client, "parent_child_links", "id", DEMO.childLinkId, {
       parent_id: DEMO.parentProfileId,
       student_id: DEMO.childProfileId,
       link_code: "DEMO1234",
@@ -182,10 +181,10 @@ async function seed() {
       require_approval: false,
       created_at: now,
     });
-    console.log(linkCreated ? "  ✓ Parent-child link" : "  · Parent-child link (exists)");
+    console.log("  ✓ Parent-child link");
 
-    // ── 9. Child usage limits ───────────────────────────────────────────────
-    const childUsageCreated = await upsertRow(client, "usage_limits", "id", DEMO.childUsageLimitId, {
+    // ── 8. Child usage limits ──────────────────────────────────────────────────
+    await upsertRow(client, "usage_limits", "id", DEMO.childUsageLimitId, {
       user_id: DEMO.childProfileId,
       daily_run_limit: 5,
       runs_used_today: 2,
@@ -195,10 +194,10 @@ async function seed() {
       created_at: now,
       updated_at: now,
     });
-    console.log(childUsageCreated ? "  ✓ Child usage limits" : "  · Child usage limits (exists)");
+    console.log("  ✓ Child usage limits");
 
-    // ── 10. Sample AI Workers (projects) ────────────────────────────────────
-    const proj1Created = await upsertRow(client, "projects", "id", DEMO.proj1Id, {
+    // ── 9. Sample AI Workers ───────────────────────────────────────────────────
+    await upsertRow(client, "projects", "id", DEMO.proj1Id, {
       owner_id: DEMO.childProfileId,
       name: "Multiplication Buddy",
       description: "Helps me practise times tables with hints, not answers!",
@@ -220,9 +219,9 @@ async function seed() {
       created_at: now,
       updated_at: now,
     });
-    console.log(proj1Created ? "  ✓ Project: Multiplication Buddy" : "  · Project: Multiplication Buddy (exists)");
+    console.log("  ✓ Project: Multiplication Buddy");
 
-    const proj2Created = await upsertRow(client, "projects", "id", DEMO.proj2Id, {
+    await upsertRow(client, "projects", "id", DEMO.proj2Id, {
       owner_id: DEMO.childProfileId,
       name: "Story Helper",
       description: "My AI writing partner — helps me build amazing stories!",
@@ -244,9 +243,9 @@ async function seed() {
       created_at: now,
       updated_at: now,
     });
-    console.log(proj2Created ? "  ✓ Project: Story Helper" : "  · Project: Story Helper (exists)");
+    console.log("  ✓ Project: Story Helper");
 
-    const proj3Created = await upsertRow(client, "projects", "id", DEMO.proj3Id, {
+    await upsertRow(client, "projects", "id", DEMO.proj3Id, {
       owner_id: DEMO.childProfileId,
       name: "Science Explorer",
       description: "Curious about science? Ask me anything about nature and space!",
@@ -269,48 +268,46 @@ async function seed() {
       created_at: now,
       updated_at: now,
     });
-    console.log(proj3Created ? "  ✓ Project: Science Explorer" : "  · Project: Science Explorer (exists)");
+    console.log("  ✓ Project: Science Explorer");
 
-    // ── 11. Sample agent runs (so history isn't empty) ──────────────────────
-    const run1Created = await upsertRow(client, "agent_runs", "id", DEMO.run1Id, {
+    // ── 10. Sample agent runs ──────────────────────────────────────────────────
+    await upsertRow(client, "agent_runs", "id", DEMO.run1Id, {
       project_id: DEMO.proj1Id,
       student_id: DEMO.childProfileId,
       input: "What is 7 times 8?",
       output: "Great question! Here's a hint: 7×8 is the same as 7×4 doubled. What is 7×4? 🤔",
       provider: "mock",
       status: "completed",
-      created_at: new Date(now.getTime() - 2 * 60 * 60 * 1000), // 2 hours ago
+      created_at: new Date(now.getTime() - 2 * 60 * 60 * 1000),
     });
-    console.log(run1Created ? "  ✓ Sample run 1" : "  · Sample run 1 (exists)");
 
-    const run2Created = await upsertRow(client, "agent_runs", "id", DEMO.run2Id, {
+    await upsertRow(client, "agent_runs", "id", DEMO.run2Id, {
       project_id: DEMO.proj2Id,
       student_id: DEMO.childProfileId,
       input: "I want to write a story about a dragon who is afraid of fire.",
       output: "I love it — that's a brilliant twist! 🐉 Let's give your dragon a name first. What would you like to call them?",
       provider: "mock",
       status: "completed",
-      created_at: new Date(now.getTime() - 1 * 60 * 60 * 1000), // 1 hour ago
+      created_at: new Date(now.getTime() - 60 * 60 * 1000),
     });
-    console.log(run2Created ? "  ✓ Sample run 2" : "  · Sample run 2 (exists)");
 
-    const run3Created = await upsertRow(client, "agent_runs", "id", DEMO.run3Id, {
+    await upsertRow(client, "agent_runs", "id", DEMO.run3Id, {
       project_id: DEMO.proj3Id,
       student_id: DEMO.childProfileId,
       input: "Why is the sky blue?",
-      output: "The sky is blue because of something called scattering! Sunlight is made of all colours. When it hits our atmosphere, blue light bounces around the most — so that's what we see. 🌤️ Here's a fun one: why do sunsets look orange and red?",
+      output: "The sky is blue because of scattering! Sunlight is made of all colours. Blue light bounces around the most — so that's what we see. 🌤️ Why do sunsets look orange and red?",
       provider: "mock",
       status: "completed",
-      created_at: new Date(now.getTime() - 30 * 60 * 1000), // 30 min ago
+      created_at: new Date(now.getTime() - 30 * 60 * 1000),
     });
-    console.log(run3Created ? "  ✓ Sample run 3" : "  · Sample run 3 (exists)");
+    console.log("  ✓ Sample runs");
 
     console.log(`
 ✅  Demo seed complete!
 
 ┌─────────────────────────────────────────────┐
 │  PARENT LOGIN (share this with reviewers)   │
-│  URL:      /sign-in                         │
+│  URL:      /sign-in  (or click Try Demo)    │
 │  Email:    ${DEMO_EMAIL.padEnd(33)}│
 │  Password: ${DEMO_PASSWORD.padEnd(33)}│
 ├─────────────────────────────────────────────┤
