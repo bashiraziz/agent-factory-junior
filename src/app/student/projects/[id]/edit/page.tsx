@@ -41,6 +41,140 @@ const SAFETY_CHECKS = [
 
 type SaveState = "saved" | "saving" | "unsaved";
 
+function InspectorContent({
+  dsl,
+  blockCount,
+  id,
+  onRun,
+}: {
+  dsl: ProjectDSL | null;
+  blockCount: number;
+  id: string;
+  onRun: () => void;
+}) {
+  return (
+    <>
+      {/* Inspector */}
+      <div className="p-4 border-b-2" style={{ borderColor: "#F0E7D6" }}>
+        <div className="font-mono text-[10px] uppercase tracking-widest mb-3" style={{ color: "#8A8071" }}>
+          INSPECTOR
+        </div>
+
+        {dsl?.goal ? (
+          <div className="rounded-block p-3" style={{ background: "#FBF6EC", border: "2px solid #FFC53D33" }}>
+            <div className="font-mono text-[10px] uppercase tracking-widest mb-1" style={{ color: "#8A8071" }}>
+              GOAL
+            </div>
+            <div className="font-sans text-sm" style={{ color: "#2A2A3C" }}>
+              {dsl.goal}
+            </div>
+          </div>
+        ) : (
+          <div className="rounded-block p-3 text-center" style={{ background: "#FBF6EC", border: "2px dashed #F0E7D6" }}>
+            <div className="font-sans text-sm" style={{ color: "#8A8071" }}>
+              Select a block to inspect it, or start by adding a Goal block.
+            </div>
+          </div>
+        )}
+
+        {dsl && dsl.knowledge.length > 0 && (
+          <div className="mt-3 space-y-2">
+            <div className="font-mono text-[10px] uppercase tracking-widest" style={{ color: "#8A8071" }}>
+              KNOWLEDGE ({dsl.knowledge.length})
+            </div>
+            {dsl.knowledge.map((k, i) => (
+              <div key={i} className="rounded-block px-3 py-2 font-sans text-xs" style={{ background: "#EFF7FF", color: "#1F6FB0", border: "2px solid #3DA5F422" }}>
+                {k.content}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {dsl && dsl.rules.length > 0 && (
+          <div className="mt-3 space-y-2">
+            <div className="font-mono text-[10px] uppercase tracking-widest" style={{ color: "#8A8071" }}>
+              SAFETY RULES ({dsl.rules.length})
+            </div>
+            {dsl.rules.map((r, i) => (
+              <div key={i} className="rounded-block px-3 py-2 font-sans text-xs" style={{ background: "#FFF0F0", color: "#C0443A", border: "2px solid #FF6B6B22" }}>
+                {r}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Safety checklist */}
+      <div className="p-4 border-b-2" style={{ borderColor: "#F0E7D6" }}>
+        <div className="font-mono text-[10px] uppercase tracking-widest mb-3" style={{ color: "#8A8071" }}>
+          SAFETY CHECKLIST
+        </div>
+        <div className="space-y-2">
+          {SAFETY_CHECKS.map((check) => (
+            <div key={check.label} className="flex items-center gap-2.5">
+              <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: "#D1FAE5", color: "#2E9B52" }}>
+                <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
+                  <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </div>
+              <span className="font-sans text-xs" style={{ color: "#2A2A3C" }}>{check.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* DSL preview */}
+      {dsl && blockCount > 0 && (
+        <div className="p-4 border-b-2" style={{ borderColor: "#F0E7D6" }}>
+          <div className="font-mono text-[10px] uppercase tracking-widest mb-2" style={{ color: "#8A8071" }}>
+            STEPS ({dsl.steps.length})
+          </div>
+          <div className="space-y-1">
+            {dsl.steps.map((step, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <div className="w-5 h-5 rounded-full flex items-center justify-center font-mono text-[9px] font-bold flex-shrink-0" style={{ background: "#F4F0FF", color: "#7C5CFF" }}>
+                  {i + 1}
+                </div>
+                <span className="font-sans text-xs capitalize" style={{ color: "#2A2A3C" }}>
+                  {step.type.replace(/_/g, " ")}
+                  {"style" in step ? ` (${step.style})` : ""}
+                  {"question_count" in step ? ` · ${step.question_count}q` : ""}
+                  {"prompt" in step ? `: "${step.prompt.slice(0, 30)}…"` : ""}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Run panel */}
+      <div className="mt-auto p-4" style={{ background: "#FBF6EC", borderTop: "2px solid #F0E7D6" }}>
+        <button
+          onClick={onRun}
+          className="w-full py-3.5 rounded-pill font-sans font-extrabold text-white text-base flex items-center justify-center gap-2 transition-transform hover:-translate-y-0.5"
+          style={{ background: "#46C46A", boxShadow: "0 5px 0 #2E9B52" }}
+        >
+          <span>▶</span> Run my AI Worker
+        </button>
+        <div className="font-mono text-[10px] uppercase tracking-widest text-center mt-3" style={{ color: "#8A8071" }}>
+          You get a set number of runs each day — a grown-up can change it.
+        </div>
+
+        <div className="mt-4 p-3 rounded-block" style={{ background: "#FFFFFF", border: "2px solid #F0E7D6" }}>
+          <div className="font-mono text-[10px] uppercase tracking-widest mb-1" style={{ color: "#8A8071" }}>
+            TIP
+          </div>
+          <div className="font-sans text-xs" style={{ color: "#5C5747" }}>
+            Start with a <span style={{ color: "#FFC53D", fontWeight: 700 }}>Goal</span> block, add{" "}
+            <span style={{ color: "#3DA5F4", fontWeight: 700 }}>Knowledge</span>, then build your{" "}
+            <span style={{ color: "#9B6DFF", fontWeight: 700 }}>steps</span>.
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
 export default function EditProjectPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
@@ -69,12 +203,15 @@ export default function EditProjectPage() {
   const latestBlocklyJson = useRef<object | null>(null);
   const addBlockRef = useRef<((type: string) => void) | null>(null);
   const clearBlocksRef = useRef<(() => void) | null>(null);
+  const resizeWorkspaceRef = useRef<(() => void) | null>(null);
   const [confirmClear, setConfirmClear] = useState(false);
+  const [inspectorOpen, setInspectorOpen] = useState(false);
 
   const handleWorkspaceReady = useCallback(
-    ({ addBlock, clearBlocks }: { addBlock: (type: string) => void; clearBlocks: () => void }) => {
+    ({ addBlock, clearBlocks, resizeWorkspace }: { addBlock: (type: string) => void; clearBlocks: () => void; resizeWorkspace: () => void }) => {
       addBlockRef.current = addBlock;
       clearBlocksRef.current = clearBlocks;
+      resizeWorkspaceRef.current = resizeWorkspace;
     },
     []
   );
@@ -180,8 +317,41 @@ export default function EditProjectPage() {
     );
   }
 
+  const openInspector = () => {
+    setInspectorOpen(true);
+    setTimeout(() => resizeWorkspaceRef.current?.(), 50);
+  };
+  const closeInspector = () => {
+    setInspectorOpen(false);
+    setTimeout(() => resizeWorkspaceRef.current?.(), 300);
+  };
+
   return (
-    <div className="flex flex-col h-screen overflow-hidden" style={{ background: "#FFFDF7" }}>
+    <>
+    {/* ── PHONE GATE (< 768px) ── */}
+    <div
+      className="flex md:hidden min-h-screen flex-col items-center justify-center gap-6 px-6 text-center"
+      style={{ background: "#FFFDF7" }}
+    >
+      <div className="text-6xl">🖥️</div>
+      <h1 className="font-display text-2xl font-semibold" style={{ color: "#2A2A3C" }}>
+        Let&apos;s build on a bigger screen!
+      </h1>
+      <p className="font-sans text-base max-w-xs" style={{ color: "#5C5747" }}>
+        Building your AI Worker needs a tablet or computer so you have room for all the blocks.
+        Come back on one of those and we&apos;ll be ready! 🧩
+      </p>
+      <Link
+        href="/student/projects"
+        className="px-6 py-3 rounded-pill font-sans font-extrabold text-white"
+        style={{ background: "#7C5CFF", boxShadow: "0 4px 0 #5B3FCC" }}
+      >
+        ← Back to my Workers
+      </Link>
+    </div>
+
+    {/* ── REAL EDITOR (≥ 768px) ── */}
+    <div className="hidden md:flex flex-col h-screen overflow-hidden" style={{ background: "#FFFDF7" }}>
       {/* ── TOPBAR ── */}
       <header
         className="flex-shrink-0 h-16 flex items-center justify-between px-4"
@@ -367,6 +537,15 @@ export default function EditProjectPage() {
             />
           </div>
 
+          {/* Floating inspector button — tablet only (< 1024px) */}
+          <button
+            className="lg:hidden absolute bottom-20 right-4 z-10 flex items-center gap-2 px-4 py-3 rounded-pill font-sans font-extrabold text-sm text-white shadow-lg transition-transform hover:-translate-y-0.5"
+            style={{ background: "#7C5CFF", boxShadow: "0 4px 0 #5B3FCC", minHeight: "44px" }}
+            onClick={openInspector}
+          >
+            ⚙️ Block settings
+          </button>
+
           {/* Zoom controls */}
           <div
             className="absolute bottom-4 left-4 flex gap-2 z-10"
@@ -394,155 +573,60 @@ export default function EditProjectPage() {
           </div>
         </main>
 
-        {/* ── RIGHT RAIL ── */}
+        {/* ── RIGHT RAIL — desktop only (≥ 1024px) ── */}
         <aside
-          className="flex-shrink-0 w-[312px] flex flex-col overflow-y-auto"
+          className="hidden lg:flex flex-shrink-0 w-[312px] flex-col overflow-y-auto"
           style={{ background: "#FFFFFF", borderLeft: "2px solid #F0E7D6" }}
         >
-          {/* Inspector */}
-          <div className="p-4 border-b-2" style={{ borderColor: "#F0E7D6" }}>
-            <div className="font-mono text-[10px] uppercase tracking-widest mb-3" style={{ color: "#8A8071" }}>
-              INSPECTOR
-            </div>
-
-            {dsl?.goal ? (
-              <div
-                className="rounded-block p-3"
-                style={{ background: "#FBF6EC", border: "2px solid #FFC53D33" }}
-              >
-                <div className="font-mono text-[10px] uppercase tracking-widest mb-1" style={{ color: "#8A8071" }}>
-                  GOAL
-                </div>
-                <div className="font-sans text-sm" style={{ color: "#2A2A3C" }}>
-                  {dsl.goal || "Not set yet"}
-                </div>
-              </div>
-            ) : (
-              <div
-                className="rounded-block p-3 text-center"
-                style={{ background: "#FBF6EC", border: "2px dashed #F0E7D6" }}
-              >
-                <div className="font-sans text-sm" style={{ color: "#8A8071" }}>
-                  Select a block to inspect it, or start by adding a Goal block.
-                </div>
-              </div>
-            )}
-
-            {dsl && dsl.knowledge.length > 0 && (
-              <div className="mt-3 space-y-2">
-                <div className="font-mono text-[10px] uppercase tracking-widest" style={{ color: "#8A8071" }}>
-                  KNOWLEDGE ({dsl.knowledge.length})
-                </div>
-                {dsl.knowledge.map((k, i) => (
-                  <div
-                    key={i}
-                    className="rounded-block px-3 py-2 font-sans text-xs"
-                    style={{ background: "#EFF7FF", color: "#1F6FB0", border: "2px solid #3DA5F422" }}
-                  >
-                    {k.content}
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {dsl && dsl.rules.length > 0 && (
-              <div className="mt-3 space-y-2">
-                <div className="font-mono text-[10px] uppercase tracking-widest" style={{ color: "#8A8071" }}>
-                  SAFETY RULES ({dsl.rules.length})
-                </div>
-                {dsl.rules.map((r, i) => (
-                  <div
-                    key={i}
-                    className="rounded-block px-3 py-2 font-sans text-xs"
-                    style={{ background: "#FFF0F0", color: "#C0443A", border: "2px solid #FF6B6B22" }}
-                  >
-                    {r}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Safety checklist */}
-          <div className="p-4 border-b-2" style={{ borderColor: "#F0E7D6" }}>
-            <div className="font-mono text-[10px] uppercase tracking-widest mb-3" style={{ color: "#8A8071" }}>
-              SAFETY CHECKLIST
-            </div>
-            <div className="space-y-2">
-              {SAFETY_CHECKS.map((check) => (
-                <div key={check.label} className="flex items-center gap-2.5">
-                  <div
-                    className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0"
-                    style={{ background: "#D1FAE5", color: "#2E9B52" }}
-                  >
-                    <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
-                      <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  </div>
-                  <span className="font-sans text-xs" style={{ color: "#2A2A3C" }}>
-                    {check.label}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* DSL preview (collapsible) */}
-          {dsl && blockCount > 0 && (
-            <div className="p-4 border-b-2" style={{ borderColor: "#F0E7D6" }}>
-              <div className="font-mono text-[10px] uppercase tracking-widest mb-2" style={{ color: "#8A8071" }}>
-                STEPS ({dsl.steps.length})
-              </div>
-              <div className="space-y-1">
-                {dsl.steps.map((step, i) => (
-                  <div key={i} className="flex items-center gap-2">
-                    <div
-                      className="w-5 h-5 rounded-full flex items-center justify-center font-mono text-[9px] font-bold flex-shrink-0"
-                      style={{ background: "#F4F0FF", color: "#7C5CFF" }}
-                    >
-                      {i + 1}
-                    </div>
-                    <span className="font-sans text-xs capitalize" style={{ color: "#2A2A3C" }}>
-                      {step.type.replace(/_/g, " ")}
-                      {"style" in step ? ` (${step.style})` : ""}
-                      {"question_count" in step ? ` · ${step.question_count}q` : ""}
-                      {"prompt" in step ? `: "${step.prompt.slice(0, 30)}…"` : ""}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Run panel */}
-          <div
-            className="mt-auto p-4"
-            style={{ background: "#FBF6EC", borderTop: "2px solid #F0E7D6" }}
-          >
-            <button
-              onClick={() => router.push(`/student/projects/${id}/run`)}
-              className="w-full py-3.5 rounded-pill font-sans font-extrabold text-white text-base flex items-center justify-center gap-2 transition-transform hover:-translate-y-0.5"
-              style={{ background: "#46C46A", boxShadow: "0 5px 0 #2E9B52" }}
-            >
-              <span>▶</span> Run my AI Worker
-            </button>
-            <div className="font-mono text-[10px] uppercase tracking-widest text-center mt-3" style={{ color: "#8A8071" }}>
-              5 OF 5 RUNS LEFT TODAY
-            </div>
-
-            <div className="mt-4 p-3 rounded-block" style={{ background: "#FFFFFF", border: "2px solid #F0E7D6" }}>
-              <div className="font-mono text-[10px] uppercase tracking-widest mb-1" style={{ color: "#8A8071" }}>
-                TIP
-              </div>
-              <div className="font-sans text-xs" style={{ color: "#5C5747" }}>
-                Start with a <span style={{ color: "#FFC53D", fontWeight: 700 }}>Goal</span> block, add{" "}
-                <span style={{ color: "#3DA5F4", fontWeight: 700 }}>Knowledge</span>, then build your{" "}
-                <span style={{ color: "#9B6DFF", fontWeight: 700 }}>steps</span>.
-              </div>
-            </div>
-          </div>
+          <InspectorContent
+            dsl={dsl}
+            blockCount={blockCount}
+            id={id}
+            onRun={() => router.push(`/student/projects/${id}/run`)}
+          />
         </aside>
       </div>
+
+      {/* ── INSPECTOR DRAWER — tablet only (< 1024px) ── */}
+      {inspectorOpen && (
+        <>
+          {/* Scrim */}
+          <div
+            className="lg:hidden fixed inset-0 z-20"
+            style={{ background: "rgba(0,0,0,0.3)" }}
+            onClick={closeInspector}
+          />
+          {/* Sheet */}
+          <div
+            className="lg:hidden fixed inset-y-0 right-0 z-30 w-[312px] flex flex-col overflow-y-auto shadow-2xl"
+            style={{ background: "#FFFFFF", borderLeft: "2px solid #F0E7D6" }}
+          >
+            <div
+              className="flex-shrink-0 flex items-center justify-between px-4 py-3 border-b-2"
+              style={{ borderColor: "#F0E7D6" }}
+            >
+              <span className="font-display text-base font-semibold" style={{ color: "#2A2A3C" }}>
+                ⚙️ Block settings
+              </span>
+              <button
+                onClick={closeInspector}
+                className="w-9 h-9 rounded-full flex items-center justify-center font-sans font-bold"
+                style={{ background: "#F0E7D6", color: "#5C5747" }}
+                aria-label="Close inspector"
+              >
+                ✕
+              </button>
+            </div>
+            <InspectorContent
+              dsl={dsl}
+              blockCount={blockCount}
+              id={id}
+              onRun={() => { closeInspector(); router.push(`/student/projects/${id}/run`); }}
+            />
+          </div>
+        </>
+      )}
     </div>
+    </>
   );
 }

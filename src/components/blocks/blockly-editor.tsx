@@ -20,7 +20,7 @@ interface BlocklyEditorProps {
   onDslChange: (dsl: ProjectDSL, name: string) => void;
   onBlocklyChange: (json: object) => void;
   projectName: string;
-  onWorkspaceReady?: (controls: { addBlock: (type: string) => void; clearBlocks: () => void }) => void;
+  onWorkspaceReady?: (controls: { addBlock: (type: string) => void; clearBlocks: () => void; resizeWorkspace: () => void }) => void;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -271,19 +271,22 @@ export default function BlocklyEditor({
 
       if (!divRef.current) return;
 
+      const isCoarse = typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches;
+
       workspace = Blockly.inject(divRef.current, {
         theme,
         grid: { spacing: 28, length: 2, colour: "#EFE7D6", snap: true },
         zoom: {
-          controls: false,
+          controls: isCoarse,
           wheel: true,
-          startScale: 1.0,
+          startScale: isCoarse ? 1.15 : 1.0,
           maxScale: 1.5,
           minScale: 0.5,
           scaleSpeed: 1.2,
+          pinch: true,
         },
         trashcan: false,
-        move: { scrollbars: true, drag: false, wheel: false },
+        move: { scrollbars: true, drag: isCoarse, wheel: false },
       });
 
       workspaceRef.current = workspace;
@@ -307,7 +310,11 @@ export default function BlocklyEditor({
           try { ws.render?.(); } catch { /* ignore */ }
           handleChange(Blockly);
         };
-        onWorkspaceReady({ addBlock, clearBlocks });
+        onWorkspaceReady({
+          addBlock,
+          clearBlocks,
+          resizeWorkspace: () => { if (workspaceRef.current) Blockly.svgResize(workspaceRef.current); },
+        });
       }
 
       // Load initial state
