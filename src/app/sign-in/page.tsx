@@ -102,6 +102,16 @@ export default function SignInPage() {
             Sign up free
           </Link>
         </p>
+
+        <div
+          className="rounded-xl px-4 py-3 font-sans text-sm text-center"
+          style={{ background: "#FBF6EC", border: "1.5px solid #F0E7D6", color: "#5C5747" }}
+        >
+          🎒 <strong>Student?</strong>{" "}
+          <Link href="/child/sign-in" className="font-bold hover:underline" style={{ color: "#46C46A" }}>
+            Sign in with your username &amp; PIN
+          </Link>
+        </div>
       </div>
     </main>
   );
