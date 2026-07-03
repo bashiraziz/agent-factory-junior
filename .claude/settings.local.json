@@ -28,7 +28,11 @@
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000)",
       "WebFetch(domain:appinventor.mit.edu)",
       "WebFetch(domain:code.appinventor.mit.edu)",
-      "WebFetch(domain:login.appinventor.mit.edu)"
+      "WebFetch(domain:login.appinventor.mit.edu)",
+      "Bash(python3 -c ' *)",
+      "Bash(python -c ' *)",
+      "Bash(git restore *)",
+      "Bash(git rm *)"
     ]
   }
 }
