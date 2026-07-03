@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "db:migrate": "npx tsx scripts/init-db.ts",
-    "db:seed-demo": "npx tsx scripts/seed-demo.ts"
+    "db:seed-demo": "npx tsx scripts/seed-demo.ts",
+    "db:reset": "npx tsx scripts/reset-db.ts"
   },
   "dependencies": {
     "@ai-sdk/google": "^4.0.3",
