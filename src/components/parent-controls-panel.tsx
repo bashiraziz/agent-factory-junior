@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 
 interface WorkerRow {
@@ -179,7 +179,7 @@ export function ParentControlsPanel(props: Props) {
         </div>
 
         {/* Reset today */}
-        <div className="flex items-center justify-between py-3">
+        <div className="flex items-center justify-between py-3" style={{ borderBottom: "1px solid #F0E7D6" }}>
           <div>
             <div className="font-sans font-extrabold text-sm" style={{ color: "#2A2A3C" }}>Reset today's counter</div>
             <div className="font-sans text-xs" style={{ color: "#5C5747" }}>
@@ -195,6 +195,9 @@ export function ParentControlsPanel(props: Props) {
             Reset
           </button>
         </div>
+
+        {/* Change PIN */}
+        <ChangePinRow studentId={props.studentId} busy={busy} setBusy={setBusy} flash={flash} />
       </div>
 
       {/* Preferences card */}
@@ -284,6 +287,87 @@ export function ParentControlsPanel(props: Props) {
             })}
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+function ChangePinRow({
+  studentId,
+  busy,
+  setBusy,
+  flash,
+}: {
+  studentId: string;
+  busy: string | null;
+  setBusy: (v: string | null) => void;
+  flash: (msg: string) => void;
+}) {
+  const [pin, setPin] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleChange = async () => {
+    if (!/^\d{4}$/.test(pin)) {
+      setError("Enter exactly 4 digits.");
+      inputRef.current?.focus();
+      return;
+    }
+    setError(null);
+    setBusy("pin");
+    try {
+      const res = await fetch(`/api/parent/children/${studentId}/pin`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pin }),
+      });
+      if (!res.ok) throw new Error((await res.json()).error || "Failed");
+      setPin("");
+      flash("PIN changed ✓");
+    } catch (e) {
+      flash(e instanceof Error ? e.message : "Error");
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  return (
+    <div className="flex items-center justify-between py-3">
+      <div>
+        <div className="font-sans font-extrabold text-sm" style={{ color: "#2A2A3C" }}>Change PIN</div>
+        <div className="font-sans text-xs" style={{ color: "#5C5747" }}>
+          Let them sign in with a new 4-digit code.
+        </div>
+        {error && (
+          <div className="font-sans text-xs mt-1" style={{ color: "#C0443A" }}>{error}</div>
+        )}
+      </div>
+      <div className="flex items-center gap-2">
+        <input
+          ref={inputRef}
+          type="password"
+          inputMode="numeric"
+          pattern="\d{4}"
+          maxLength={4}
+          value={pin}
+          onChange={(e) => {
+            const v = e.target.value.replace(/\D/g, "").slice(0, 4);
+            setPin(v);
+            if (error) setError(null);
+          }}
+          placeholder="••••"
+          disabled={busy !== null}
+          className="w-16 text-center font-mono text-sm rounded-block px-2 py-2 disabled:opacity-40"
+          style={{ border: "2px solid #D6CFC0", background: "#FBF6EC", color: "#2A2A3C" }}
+        />
+        <button
+          onClick={handleChange}
+          disabled={busy !== null || pin.length !== 4}
+          className="px-4 py-2 rounded-pill font-sans font-extrabold text-sm text-white disabled:opacity-40"
+          style={{ background: "#7C5CFF", boxShadow: "0 3px 0 #5A3ECC" }}
+        >
+          Change
+        </button>
       </div>
     </div>
   );
