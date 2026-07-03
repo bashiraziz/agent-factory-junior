@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { auth } from "@/lib/auth";
 
 const DEMO_EMAIL    = "demo@agentfactoryjr.com";
@@ -8,30 +9,28 @@ export async function GET(request: NextRequest) {
   const origin = new URL(request.url).origin;
 
   try {
-    const res = await auth.api.signInEmail({
+    // Sign in server-side — returns { token, user } with no cookie-forwarding needed
+    const result = await auth.api.signInEmail({
       body: { email: DEMO_EMAIL, password: DEMO_PASSWORD, rememberMe: true },
-      asResponse: true,
-    });
+      headers: new Headers(),
+    }) as { token?: string; user?: { id: string } } | null;
 
-    if (!res.ok) {
-      console.error("Demo login failed:", res.status, await res.text());
+    if (!result?.token) {
+      console.error("Demo login: no token returned", result);
       return NextResponse.redirect(new URL("/sign-in", origin));
     }
 
-    const redirect = NextResponse.redirect(new URL("/parent/dashboard", origin));
+    // Set the Better Auth session cookie directly
+    const jar = await cookies();
+    jar.set("better-auth.session_token", result.token, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 30,
+    });
 
-    // getSetCookie() returns each Set-Cookie header as a separate string,
-    // preserving attributes (Path, HttpOnly, SameSite, etc.)
-    const cookies: string[] =
-      typeof (res.headers as unknown as { getSetCookie?: () => string[] }).getSetCookie === "function"
-        ? (res.headers as unknown as { getSetCookie: () => string[] }).getSetCookie()
-        : res.headers.get("set-cookie")?.split(/,(?=\s*\w+=)/) ?? [];
-
-    for (const cookie of cookies) {
-      redirect.headers.append("set-cookie", cookie);
-    }
-
-    return redirect;
+    return NextResponse.redirect(new URL("/parent/dashboard", origin));
   } catch (err) {
     console.error("Demo login error:", err);
     return NextResponse.redirect(new URL("/sign-in", origin));
