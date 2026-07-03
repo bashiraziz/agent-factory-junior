@@ -146,6 +146,8 @@ export default function Home() {
             Made with care · Dedicated to my teachers at St. Lawrence&rsquo;s Boys School, Karachi.
           </p>
           <div className="flex items-center gap-4">
+            <Link href="/about" style={{ fontSize: 13, color: "#7C5CFF", fontWeight: 700, textDecoration: "none" }}>About</Link>
+            <span style={{ color: "#D8CFBB" }}>·</span>
             <Link href="/privacy" style={{ fontSize: 13, color: "#7C5CFF", fontWeight: 700, textDecoration: "none" }}>Privacy</Link>
             <span style={{ color: "#D8CFBB" }}>·</span>
             <Link href="/terms" style={{ fontSize: 13, color: "#7C5CFF", fontWeight: 700, textDecoration: "none" }}>Terms</Link>

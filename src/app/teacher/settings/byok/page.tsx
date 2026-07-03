@@ -65,6 +65,15 @@ export default async function TeacherBYOKPage() {
             </div>
           </div>
         </div>
+        <div className="flex justify-center pt-2">
+          <Link
+            href="/about"
+            className="font-sans font-bold text-sm"
+            style={{ color: "#8A8071", textDecoration: "none" }}
+          >
+            About Agent Factory Junior
+          </Link>
+        </div>
       </main>
     </div>
   );
