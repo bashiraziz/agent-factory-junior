@@ -137,6 +137,21 @@ export default function Home() {
           ))}
         </div>
 
+        {/* Quiet dedication + links */}
+        <footer className="mt-14 flex flex-col items-center gap-2">
+          <p
+            className="font-sans"
+            style={{ fontSize: 13, color: "#A89E8C", fontWeight: 600, textAlign: "center" }}
+          >
+            Made with care · Dedicated to my teachers at St. Lawrence&rsquo;s Boys School, Karachi.
+          </p>
+          <div className="flex items-center gap-4">
+            <Link href="/privacy" style={{ fontSize: 13, color: "#7C5CFF", fontWeight: 700, textDecoration: "none" }}>Privacy</Link>
+            <span style={{ color: "#D8CFBB" }}>·</span>
+            <Link href="/terms" style={{ fontSize: 13, color: "#7C5CFF", fontWeight: 700, textDecoration: "none" }}>Terms</Link>
+          </div>
+        </footer>
+
       </div>
     </main>
   );
