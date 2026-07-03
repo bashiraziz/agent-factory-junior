@@ -1,40 +1,39 @@
-import { NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 
 const DEMO_EMAIL    = "demo@agentfactoryjr.com";
 const DEMO_PASSWORD = "Demo1234!";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const origin = new URL(request.url).origin;
+
   try {
-    // Sign in server-side so Better Auth sets the session cookie itself
     const res = await auth.api.signInEmail({
       body: { email: DEMO_EMAIL, password: DEMO_PASSWORD, rememberMe: true },
       asResponse: true,
     });
 
     if (!res.ok) {
-      const body = await res.text();
-      console.error("Demo login failed:", res.status, body);
-      return NextResponse.redirect(
-        new URL("/sign-in?demo_error=1", process.env.BETTER_AUTH_URL || "http://localhost:3000")
-      );
+      console.error("Demo login failed:", res.status, await res.text());
+      return NextResponse.redirect(new URL("/sign-in", origin));
     }
 
-    // Forward the Set-Cookie headers from Better Auth into the redirect response
-    const redirect = NextResponse.redirect(
-      new URL("/parent/dashboard", process.env.BETTER_AUTH_URL || "http://localhost:3000")
-    );
-    res.headers.forEach((value, key) => {
-      if (key.toLowerCase() === "set-cookie") {
-        redirect.headers.append("set-cookie", value);
-      }
-    });
+    const redirect = NextResponse.redirect(new URL("/parent/dashboard", origin));
+
+    // getSetCookie() returns each Set-Cookie header as a separate string,
+    // preserving attributes (Path, HttpOnly, SameSite, etc.)
+    const cookies: string[] =
+      typeof (res.headers as unknown as { getSetCookie?: () => string[] }).getSetCookie === "function"
+        ? (res.headers as unknown as { getSetCookie: () => string[] }).getSetCookie()
+        : res.headers.get("set-cookie")?.split(/,(?=\s*\w+=)/) ?? [];
+
+    for (const cookie of cookies) {
+      redirect.headers.append("set-cookie", cookie);
+    }
 
     return redirect;
   } catch (err) {
     console.error("Demo login error:", err);
-    return NextResponse.redirect(
-      new URL("/sign-in", process.env.BETTER_AUTH_URL || "http://localhost:3000")
-    );
+    return NextResponse.redirect(new URL("/sign-in", origin));
   }
 }
