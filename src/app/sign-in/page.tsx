@@ -6,25 +6,41 @@ import Link from "next/link";
 import { signIn } from "@/lib/auth-client";
 import { Mascot } from "@/components/mascot";
 
+const DEMO_EMAIL    = "demo@agentfactoryjr.com";
+const DEMO_PASSWORD = "Demo1234!";
+
 export default function SignInPage() {
   const router = useRouter();
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [demoLoading, setDemoLoading] = useState(false);
+
+  const doSignIn = async (email: string, password: string) => {
+    const { error: err } = await signIn.email({ email, password, rememberMe: true });
+    if (err) throw new Error(err.message ?? "Sign-in failed");
+    router.push("/onboarding");
+    router.refresh();
+  };
+
+  const handleDemo = async () => {
+    setError(null);
+    setDemoLoading(true);
+    try {
+      await doSignIn(DEMO_EMAIL, DEMO_PASSWORD);
+    } catch (ex) {
+      setError(ex instanceof Error ? ex.message : "Demo sign-in failed");
+    } finally {
+      setDemoLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
     try {
-      const { error: err } = await signIn.email({
-        email: form.email,
-        password: form.password,
-        rememberMe: true,
-      });
-      if (err) { setError(err.message ?? "Sign-in failed"); return; }
-      router.push("/onboarding");
-      router.refresh();
+      await doSignIn(form.email, form.password);
     } catch (ex) {
       setError(ex instanceof Error ? ex.message : "Sign-in failed");
     } finally {
@@ -41,6 +57,34 @@ export default function SignInPage() {
             Welcome back!
           </h1>
           <p className="font-sans" style={{ color: "#5C5747" }}>Sign in to your Agent Factory account</p>
+        </div>
+
+        {/* Demo banner */}
+        <div
+          className="rounded-card p-5 space-y-3 text-center"
+          style={{ background: "#F0EBFF", border: "2px solid #D4C8FF" }}
+        >
+          <div className="font-sans font-extrabold text-sm" style={{ color: "#2A2A3C" }}>
+            🎮 Just here to explore?
+          </div>
+          <p className="font-sans text-xs" style={{ color: "#5C5747" }}>
+            Jump straight into a pre-loaded demo account — no sign-up needed.
+          </p>
+          <button
+            type="button"
+            onClick={handleDemo}
+            disabled={demoLoading || loading}
+            className="w-full py-3 rounded-pill font-sans font-extrabold text-base text-white transition-transform hover:-translate-y-0.5 disabled:opacity-60"
+            style={{ background: "#7C5CFF", boxShadow: "0 4px 0 #5B43E0" }}
+          >
+            {demoLoading ? "Opening demo…" : "Try the demo →"}
+          </button>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <div className="flex-1 h-px" style={{ background: "#F0E7D6" }} />
+          <span className="font-sans text-xs font-extrabold uppercase tracking-widest" style={{ color: "#8A8071" }}>or sign in</span>
+          <div className="flex-1 h-px" style={{ background: "#F0E7D6" }} />
         </div>
 
         <form onSubmit={handleSubmit} className="rounded-card p-8 space-y-4" style={{ background: "#FFFFFF", boxShadow: "0 18px 50px rgba(58,46,28,.12)", border: "2px solid #F0E7D6" }}>
