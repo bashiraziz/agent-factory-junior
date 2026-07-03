@@ -50,13 +50,14 @@ function normalizeMessages(raw: z.infer<typeof ResponseSchema>): LLMResponse {
 
 export async function callGemini(
   prompt: string,
-  _dsl: ProjectDSL
+  _dsl: ProjectDSL,
+  apiKey?: string
 ): Promise<LLMResponse> {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) throw new Error("GEMINI_API_KEY is not set.");
+  const resolvedKey = apiKey ?? process.env.GEMINI_API_KEY;
+  if (!resolvedKey) throw new Error("GEMINI_API_KEY is not set.");
 
   const model = process.env.GEMINI_MODEL ?? "gemini-2.0-flash";
-  const google = createGoogleGenerativeAI({ apiKey });
+  const google = createGoogleGenerativeAI({ apiKey: resolvedKey });
   const cleanPrompt = stripPromptJsonBlock(prompt);
 
   try {

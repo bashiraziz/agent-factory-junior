@@ -10,6 +10,10 @@ import { CHILD_COOKIE } from "@/lib/child-session";
 const MAX_ATTEMPTS = 5;
 const LOCKOUT_MINUTES = 15;
 
+// Precomputed so unknown-username responses take the same time as wrong-PIN responses.
+// Generated with: bcrypt.hashSync("0000", 10)
+const DUMMY_HASH = bcrypt.hashSync("0000", 10);
+
 // Same message for unknown username and wrong PIN — prevents username enumeration.
 const GENERIC_ERROR = "That username and PIN don't match. Try again!";
 const LOCKED_ERROR = `Too many tries! Take a ${LOCKOUT_MINUTES}-minute break, then try again.`;
@@ -32,6 +36,8 @@ export async function POST(req: NextRequest) {
     .where(eq(childCredentials.username, username));
 
   if (!cred) {
+    // Constant-time response prevents username enumeration via timing.
+    await bcrypt.compare(pin, DUMMY_HASH);
     return NextResponse.json({ error: GENERIC_ERROR }, { status: 401 });
   }
 

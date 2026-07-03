@@ -33,24 +33,24 @@ export async function GET(
   const ctx = await requireTeacher(id);
   if (!ctx) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const codes = await db
-    .select()
+  const rows = await db
+    .select({
+      id: classroomSeatCodes.id,
+      classroomId: classroomSeatCodes.classroomId,
+      code: classroomSeatCodes.code,
+      profileId: classroomSeatCodes.profileId,
+      sessionToken: classroomSeatCodes.sessionToken,
+      isActive: classroomSeatCodes.isActive,
+      joinedAt: classroomSeatCodes.joinedAt,
+      expiresAt: classroomSeatCodes.expiresAt,
+      createdAt: classroomSeatCodes.createdAt,
+      nickname: profiles.displayName,
+    })
     .from(classroomSeatCodes)
+    .leftJoin(profiles, eq(classroomSeatCodes.profileId, profiles.id))
     .where(eq(classroomSeatCodes.classroomId, id));
 
-  // Attach nickname from profile if joined
-  const enriched = await Promise.all(
-    codes.map(async (seat) => {
-      if (!seat.profileId) return { ...seat, nickname: null };
-      const [profile] = await db
-        .select()
-        .from(profiles)
-        .where(eq(profiles.id, seat.profileId));
-      return { ...seat, nickname: profile?.displayName ?? null };
-    })
-  );
-
-  return NextResponse.json(enriched);
+  return NextResponse.json(rows);
 }
 
 export async function POST(
@@ -114,7 +114,7 @@ export async function DELETE(
   const { codeId } = await req.json();
   await db
     .update(classroomSeatCodes)
-    .set({ isActive: false })
+    .set({ isActive: false, sessionToken: null })
     .where(and(eq(classroomSeatCodes.id, codeId), eq(classroomSeatCodes.classroomId, id)));
 
   return NextResponse.json({ ok: true });

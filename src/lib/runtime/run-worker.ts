@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { agentRuns, replays, projects } from "@/db/schema";
+import { agentRuns, replays, projects, providerKeys } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { validateProject } from "./validate-project";
 import { buildSafePrompt } from "./build-safe-prompt";
@@ -8,6 +8,12 @@ import type { ProjectDSL } from "./types";
 import { nanoid } from "@/lib/utils";
 import { assertNotPaused, assertApproved, consumeRun } from "./guardrails";
 import { moderateOutput } from "./moderate-output";
+import { resolveGeminiKey } from "./resolve-key";
+
+function isAuthOrQuotaError(err: unknown): boolean {
+  const msg = String(err instanceof Error ? err.message : err);
+  return /401|403|API_KEY_INVALID|quota|RESOURCE_EXHAUSTED/i.test(msg);
+}
 
 export async function runWorker(projectId: string, studentId: string) {
   const [project] = await db
@@ -27,12 +33,43 @@ export async function runWorker(projectId: string, studentId: string) {
     throw new Error(`Invalid project: ${validation.errors.join(", ")}`);
   }
 
-  // Reserve one run against the limit *before* the LLM call so parallel
-  // requests can't slip past the ceiling.
-  const counters = await consumeRun(studentId, usage, 1);
+  // Resolve the API key before consuming the run slot.
+  const { apiKey, source, ownerProfileId } = await resolveGeminiKey(studentId);
+  const byokActive = source === "byok";
+
+  // Reserve one run against the limit *before* the LLM call.
+  const counters = await consumeRun(studentId, usage, { byokActive });
 
   const prompt = buildSafePrompt(dsl);
-  const llmResult = await callLLM(prompt, dsl);
+
+  let llmResult;
+  let providerLabel =
+    process.env.LLM_PROVIDER === "gemini"
+      ? byokActive ? "gemini-byok" : "gemini"
+      : process.env.LLM_PROVIDER ?? "mock";
+
+  try {
+    llmResult = await callLLM(prompt, dsl, apiKey);
+  } catch (err) {
+    if (byokActive && ownerProfileId && isAuthOrQuotaError(err)) {
+      // Mark the BYOK key as invalid so the owner sees a reconnect banner.
+      await db
+        .update(providerKeys)
+        .set({ status: "invalid", updatedAt: new Date() })
+        .where(eq(providerKeys.ownerProfileId, ownerProfileId));
+
+      // Retry transparently with the platform key — child sees nothing scary.
+      const platformKey = process.env.GEMINI_API_KEY;
+      if (platformKey) {
+        llmResult = await callLLM(prompt, dsl, platformKey);
+        providerLabel = "gemini"; // fell back to platform
+      } else {
+        throw err;
+      }
+    } else {
+      throw err;
+    }
+  }
 
   let outputText = llmResult.messages
     .map((m) => {
@@ -55,7 +92,6 @@ export async function runWorker(projectId: string, studentId: string) {
 
   const runId = nanoid();
   const replayId = nanoid();
-  const provider = process.env.LLM_PROVIDER || "mock";
 
   await db.transaction(async (tx) => {
     await tx.insert(agentRuns).values({
@@ -63,7 +99,7 @@ export async function runWorker(projectId: string, studentId: string) {
       projectId,
       studentId,
       output: outputText,
-      provider,
+      provider: providerLabel,
       status,
       safetyFlags,
     });
@@ -80,7 +116,7 @@ export async function runWorker(projectId: string, studentId: string) {
       approvalRequired: dsl.approval_required.map((a) => a.action),
       safetyFlags,
       output: outputText,
-      provider,
+      provider: providerLabel,
     });
   });
 
@@ -92,6 +128,6 @@ export async function runWorker(projectId: string, studentId: string) {
     safetyFlags,
     runsUsedToday: counters.runsUsedToday,
     dailyRunLimit: counters.dailyRunLimit,
-    provider,
+    provider: providerLabel,
   };
 }

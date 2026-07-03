@@ -3,10 +3,11 @@ import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { db } from "@/db";
-import { profiles, parentChildLinks, agentRuns } from "@/db/schema";
+import { profiles, parentChildLinks, agentRuns, providerKeys } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { AvatarChip } from "@/components/avatar-chip";
 import { StatusPill } from "@/components/status-pill";
+import { BYOKEntryCard } from "@/components/byok-entry-card";
 
 export default async function ParentDashboard() {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -39,6 +40,8 @@ export default async function ParentDashboard() {
 
   const childIds = validChildren.map((c) => c.id);
   const childRuns = allRuns.filter((r) => childIds.includes(r.studentId));
+
+  const [pk] = await db.select().from(providerKeys).where(eq(providerKeys.ownerProfileId, profile.id));
 
   const firstName = profile.displayName.split(" ")[0];
 
@@ -182,6 +185,18 @@ export default async function ParentDashboard() {
                 </div>
               </section>
             )}
+
+            {/* BYOK key card */}
+            <section>
+              <div className="font-mono text-xs uppercase tracking-widest mb-3" style={{ color: "#8A8071" }}>
+                AI KEY
+              </div>
+              <BYOKEntryCard
+                connected={!!pk}
+                keyTail={pk?.keyTail ?? null}
+                status={pk?.status ?? null}
+              />
+            </section>
 
             {/* Reassurance strip */}
             <div

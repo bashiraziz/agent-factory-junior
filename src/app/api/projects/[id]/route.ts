@@ -57,13 +57,21 @@ export async function PATCH(
   if (body.name !== undefined) allowed.name = body.name;
   if (body.description !== undefined) allowed.description = body.description;
   if (body.dslJson !== undefined) {
+    if (JSON.stringify(body.dslJson).length > 200_000) {
+      return NextResponse.json({ error: "That's a lot of blocks! Try simplifying your Worker a bit." }, { status: 400 });
+    }
     const v = validateProject(body.dslJson);
     if (!v.valid) {
       return NextResponse.json({ error: v.errors[0] ?? "Project blocks aren't ready yet." }, { status: 400 });
     }
     allowed.dslJson = body.dslJson;
   }
-  if (body.blocklyJson !== undefined) allowed.blocklyJson = body.blocklyJson;
+  if (body.blocklyJson !== undefined) {
+    if (JSON.stringify(body.blocklyJson).length > 200_000) {
+      return NextResponse.json({ error: "That's a lot of blocks! Try simplifying your Worker a bit." }, { status: 400 });
+    }
+    allowed.blocklyJson = body.blocklyJson;
+  }
   if (body.status !== undefined) allowed.status = body.status;
   // Editing blocks clears parent approval — must be re-approved before next run.
   if (body.dslJson !== undefined || body.blocklyJson !== undefined) {

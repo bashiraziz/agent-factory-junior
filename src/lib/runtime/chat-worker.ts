@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { projects, chatMessages } from "@/db/schema";
+import { projects, chatMessages, providerKeys } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { generateText } from "ai";
@@ -8,10 +8,10 @@ import { nanoid } from "@/lib/utils";
 import {
   assertNotPaused,
   assertApproved,
-  consumeRun,
-  CHAT_TURNS_PER_RUN,
+  consumeChatTurn,
 } from "./guardrails";
 import { moderateOutput } from "./moderate-output";
+import { resolveGeminiKey } from "./resolve-key";
 
 type ChatTurn =
   | { role: "worker"; content: string }
@@ -67,10 +67,12 @@ export async function chatWorker(
   if (!project) throw new Error("Project not found.");
   if (project.ownerId !== studentId) throw new Error("Unauthorized.");
 
+  const { apiKey: resolvedKey, source, ownerProfileId } = await resolveGeminiKey(studentId);
+  const byokActive = source === "byok";
+
   const usage = await assertNotPaused(studentId);
   await assertApproved(project, studentId);
-  // Each chat turn counts as 1/CHAT_TURNS_PER_RUN of a run against the daily limit.
-  await consumeRun(studentId, usage, 1 / CHAT_TURNS_PER_RUN);
+  await consumeChatTurn(studentId, usage, { byokActive });
 
   const dsl = project.dslJson as ProjectDSL;
   const system = buildSystemPrompt(dsl);
@@ -90,16 +92,37 @@ export async function chatWorker(
     content =
       "Thanks for your answer! (This chat needs the real Gemini model — set LLM_PROVIDER=gemini in .env.local to enable back-and-forth replies.)";
   } else {
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) throw new Error("GEMINI_API_KEY is not set.");
     const model = process.env.GEMINI_MODEL ?? "gemini-2.0-flash";
-    const google = createGoogleGenerativeAI({ apiKey });
-    const { text } = await generateText({
-      model: google(model),
-      system,
-      prompt: historyToPrompt(history, userMessage),
-    });
-    content = text.trim() || "Hmm, let's try that again — can you rephrase?";
+
+    async function callWithKey(key: string): Promise<string> {
+      const google = createGoogleGenerativeAI({ apiKey: key });
+      const { text } = await generateText({
+        model: google(model),
+        system,
+        prompt: historyToPrompt(history, userMessage),
+      });
+      return text.trim() || "Hmm, let's try that again — can you rephrase?";
+    }
+
+    try {
+      content = await callWithKey(resolvedKey);
+    } catch (err) {
+      const msg = String(err instanceof Error ? err.message : err);
+      if (byokActive && ownerProfileId && /401|403|API_KEY_INVALID|quota|RESOURCE_EXHAUSTED/i.test(msg)) {
+        await db
+          .update(providerKeys)
+          .set({ status: "invalid", updatedAt: new Date() })
+          .where(eq(providerKeys.ownerProfileId, ownerProfileId));
+        const platformKey = process.env.GEMINI_API_KEY;
+        if (platformKey) {
+          content = await callWithKey(platformKey);
+        } else {
+          throw err;
+        }
+      } else {
+        throw err;
+      }
+    }
   }
 
   const moderation = moderateOutput(content);

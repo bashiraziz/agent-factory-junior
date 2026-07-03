@@ -10,7 +10,7 @@ if (!databaseUrl) {
 
 const pool = new Pool({
   connectionString: databaseUrl,
-  ssl: databaseUrl.includes("neon.tech") ? { rejectUnauthorized: false } : undefined,
+  ssl: databaseUrl.includes("neon.tech") ? true : undefined,
 });
 
 async function initDb() {
@@ -250,6 +250,69 @@ async function initDb() {
     await client.query(`CREATE INDEX IF NOT EXISTS child_credentials_session_token_idx ON child_credentials(session_token);`);
     await client.query(`CREATE INDEX IF NOT EXISTS parent_child_links_parent_id_idx ON parent_child_links(parent_id);`);
     await client.query(`CREATE INDEX IF NOT EXISTS parent_child_links_student_id_idx ON parent_child_links(student_id);`);
+
+    // Chat turn counter — separate integer avoids the fractional-increment rounding bug
+    await client.query(`
+      ALTER TABLE usage_limits ADD COLUMN IF NOT EXISTS chat_turns_used_today INTEGER NOT NULL DEFAULT 0;
+    `);
+
+    // Foreign key constraints — wrapped in DO blocks because Postgres lacks IF NOT EXISTS for constraints
+    await client.query(`
+      DO $$ BEGIN
+        ALTER TABLE projects ADD CONSTRAINT projects_owner_id_fkey
+          FOREIGN KEY (owner_id) REFERENCES profiles(id);
+      EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+    `);
+    await client.query(`
+      DO $$ BEGIN
+        ALTER TABLE agent_runs ADD CONSTRAINT agent_runs_project_id_fkey
+          FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
+      EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+    `);
+    await client.query(`
+      DO $$ BEGIN
+        ALTER TABLE replays ADD CONSTRAINT replays_run_id_fkey
+          FOREIGN KEY (run_id) REFERENCES agent_runs(id) ON DELETE CASCADE;
+      EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+    `);
+    await client.query(`
+      DO $$ BEGIN
+        ALTER TABLE classroom_members ADD CONSTRAINT classroom_members_classroom_id_fkey
+          FOREIGN KEY (classroom_id) REFERENCES classrooms(id) ON DELETE CASCADE;
+      EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+    `);
+    await client.query(`
+      DO $$ BEGIN
+        ALTER TABLE chat_messages ADD CONSTRAINT chat_messages_project_id_fkey
+          FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
+      EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+    `);
+    await client.query(`
+      DO $$ BEGIN
+        ALTER TABLE child_credentials ADD CONSTRAINT child_credentials_profile_id_fkey
+          FOREIGN KEY (profile_id) REFERENCES profiles(id);
+      EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+    `);
+    await client.query(`
+      DO $$ BEGIN
+        ALTER TABLE classroom_seat_codes ADD CONSTRAINT classroom_seat_codes_classroom_id_fkey
+          FOREIGN KEY (classroom_id) REFERENCES classrooms(id);
+      EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+    `);
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS provider_keys (
+        id TEXT PRIMARY KEY,
+        owner_profile_id TEXT NOT NULL UNIQUE REFERENCES profiles(id),
+        provider TEXT NOT NULL DEFAULT 'gemini',
+        encrypted_key TEXT NOT NULL,
+        key_tail TEXT NOT NULL,
+        status TEXT NOT NULL DEFAULT 'active',
+        last_validated_at TIMESTAMPTZ,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+    `);
 
     // Parent control columns (idempotent)
     await client.query(`

@@ -14,7 +14,7 @@ export async function getSeatProfile() {
     .from(classroomSeatCodes)
     .where(eq(classroomSeatCodes.sessionToken, token));
 
-  if (!seat?.isActive || !seat.profileId) return null;
+  if (!seat?.isActive || !seat.profileId || (seat.expiresAt && seat.expiresAt < new Date())) return null;
 
   const [profile] = await db
     .select()

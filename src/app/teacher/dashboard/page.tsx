@@ -3,12 +3,13 @@ import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { db } from "@/db";
-import { profiles, classrooms, classroomMembers, agentRuns, projects } from "@/db/schema";
+import { profiles, classrooms, classroomMembers, agentRuns, projects, providerKeys } from "@/db/schema";
 import { eq, desc, inArray } from "drizzle-orm";
 import { AvatarChip } from "@/components/avatar-chip";
 import { StatusPill } from "@/components/status-pill";
 import { LogoutButton } from "@/components/logout-button";
 import { HelpButton } from "@/components/help-button";
+import { BYOKEntryCard } from "@/components/byok-entry-card";
 
 export default async function TeacherDashboard() {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -65,6 +66,8 @@ export default async function TeacherDashboard() {
   const totalStudents = studentIds.length;
   const flaggedRuns = enrichedRuns.filter((r) => r.run.status === "flagged");
   const firstName = profile.displayName.split(" ")[0];
+
+  const [pk] = await db.select().from(providerKeys).where(eq(providerKeys.ownerProfileId, profile.id));
 
   return (
     <div className="min-h-screen" style={{ background: "#FFFDF7" }}>
@@ -229,6 +232,18 @@ export default async function TeacherDashboard() {
               })}
             </div>
           )}
+        </section>
+
+        {/* BYOK key card */}
+        <section>
+          <div className="font-mono text-xs uppercase tracking-widest mb-3" style={{ color: "#8A8071" }}>
+            AI KEY
+          </div>
+          <BYOKEntryCard
+            connected={!!pk}
+            keyTail={pk?.keyTail ?? null}
+            status={pk?.status ?? null}
+          />
         </section>
 
         {/* Recent safety flags */}

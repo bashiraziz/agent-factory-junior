@@ -64,3 +64,48 @@ Every LLM path goes through:
 - No `Math.random` in token/code generation
 - Two parallel run requests cannot exceed the daily limit
 - Flagged output never reaches the child UI
+
+## Bring your own key (optional)
+
+Parents and teachers can connect their own free [Google AI Studio](https://aistudio.google.com/apikey) (Gemini) key to give their kids/students higher daily run limits. The platform key is the default and remains the fallback.
+
+### What it does
+
+- **Default limit:** 5 runs/day (platform key)
+- **BYOK limit:** `max(parent-set limit, 25)` runs/day when a key is connected
+- All safety controls (pause, approval, moderation, prompt hardening) remain fully enforced — BYOK only changes the ceiling, not the rules
+
+### Resolution order
+
+When a student runs a Worker, the key is selected in this order:
+
+1. Parent key — any parent linked to the student with an active `provider_keys` row
+2. Teacher key — the teacher of any classroom the student belongs to with an active key
+3. Platform fallback — `GEMINI_API_KEY` environment variable
+
+### Setup
+
+**1. Generate an encryption secret** (required once):
+```bash
+openssl rand -base64 32
+```
+Add the output to your `.env.local`:
+```
+KEY_ENCRYPTION_SECRET=<your-32-byte-base64-secret>
+```
+
+**2. Parents** connect their key at `/parent/settings/byok` (linked from the parent dashboard).  
+**3. Teachers** connect their key at `/teacher/settings/byok` (linked from the teacher hub).
+
+### Key failure handling
+
+If Google rejects a BYOK key (401/403/quota exhausted), the system automatically:
+1. Marks the key `status: invalid` so the owner sees a "reconnect" banner on their dashboard
+2. Retries the request with the platform key — the child sees no error and the run completes normally
+
+### Security notes
+
+- Keys are stored encrypted with AES-256-GCM; the plaintext key is never logged or returned to any client
+- Only the last 4 characters (`keyTail`) are shown in the UI
+- `KEY_ENCRYPTION_SECRET` is not needed at boot if no BYOK keys exist; a clear error is thrown only when a key is actually accessed
+- Students always get 403 on all `/api/provider-key` endpoints

@@ -5,6 +5,8 @@ import { nanoid } from "@/lib/utils";
 import type { InferSelectModel } from "drizzle-orm";
 
 export const CHAT_TURNS_PER_RUN = 5;
+// Default daily run limit granted when a parent/teacher BYOK key is active.
+export const BYOK_DAILY_RUN_LIMIT = 25;
 
 type Project = InferSelectModel<typeof projects>;
 type UsageLimits = InferSelectModel<typeof usageLimits>;
@@ -25,6 +27,15 @@ function isSameCalendarDay(a: Date, b: Date): boolean {
   );
 }
 
+// DEV_UNLIMITED_RUNS is silently ignored when NODE_ENV=production.
+function devBypass(): boolean {
+  return (
+    process.env.NODE_ENV !== "production" &&
+    !!process.env.DEV_UNLIMITED_RUNS &&
+    process.env.DEV_UNLIMITED_RUNS !== "0"
+  );
+}
+
 async function loadOrCreateUsage(studentId: string, now: Date): Promise<UsageLimits> {
   const [existing] = await db
     .select()
@@ -38,6 +49,7 @@ async function loadOrCreateUsage(studentId: string, now: Date): Promise<UsageLim
       userId: studentId,
       dailyRunLimit: 5,
       runsUsedToday: 0,
+      chatTurnsUsedToday: 0,
       periodStart: now,
     })
     .returning();
@@ -52,9 +64,9 @@ export async function assertNotPaused(studentId: string): Promise<UsageLimits> {
   if (!isSameCalendarDay(new Date(usage.periodStart), now)) {
     await db
       .update(usageLimits)
-      .set({ runsUsedToday: 0, periodStart: now, updatedAt: now })
+      .set({ runsUsedToday: 0, chatTurnsUsedToday: 0, periodStart: now, updatedAt: now })
       .where(eq(usageLimits.userId, studentId));
-    usage = { ...usage, runsUsedToday: 0, periodStart: now };
+    usage = { ...usage, runsUsedToday: 0, chatTurnsUsedToday: 0, periodStart: now };
   }
 
   if (usage.paused) {
@@ -84,49 +96,76 @@ export async function assertApproved(project: Project, studentId: string): Promi
 }
 
 /**
- * Check the run limit and atomically bump the counter. Returns the *new*
- * counter value so callers can report progress.
- *
- * `weight` lets chat count as a fraction of a run (see CHAT_TURNS_PER_RUN).
+ * Atomically consume one full run against the daily limit.
+ * Pass byokActive=true when a BYOK key is in use to apply the boosted ceiling.
  */
 export async function consumeRun(
   studentId: string,
   usage: UsageLimits,
-  weight = 1
+  { byokActive = false }: { byokActive?: boolean } = {}
 ): Promise<{ runsUsedToday: number; dailyRunLimit: number }> {
-  const bypass =
-    !!process.env.DEV_UNLIMITED_RUNS && process.env.DEV_UNLIMITED_RUNS !== "0";
-  if (!bypass && usage.runsUsedToday >= usage.dailyRunLimit) {
-    throw new GuardrailError(
-      `Daily run limit reached (${usage.dailyRunLimit} runs). Try again tomorrow!`
-    );
+  if (devBypass()) {
+    return { runsUsedToday: usage.runsUsedToday, dailyRunLimit: usage.dailyRunLimit };
   }
+
+  const effectiveLimit = byokActive
+    ? Math.max(usage.dailyRunLimit, BYOK_DAILY_RUN_LIMIT)
+    : usage.dailyRunLimit;
 
   const now = new Date();
   const [updated] = await db
     .update(usageLimits)
-    .set({
-      runsUsedToday: sql`${usageLimits.runsUsedToday} + ${weight}`,
-      updatedAt: now,
-    })
-    .where(eq(usageLimits.userId, studentId))
-    .returning({ runsUsedToday: usageLimits.runsUsedToday, dailyRunLimit: usageLimits.dailyRunLimit });
+    .set({ runsUsedToday: sql`${usageLimits.runsUsedToday} + 1`, updatedAt: now })
+    .where(
+      and(
+        eq(usageLimits.userId, studentId),
+        sql`${usageLimits.runsUsedToday} < ${effectiveLimit}`
+      )
+    )
+    .returning({
+      runsUsedToday: usageLimits.runsUsedToday,
+      dailyRunLimit: usageLimits.dailyRunLimit,
+    });
 
-  // Post-check: if a parallel request pushed us over, we can't undo cleanly
-  // without a transaction. Enforce the ceiling by re-checking after write.
-  if (!bypass && updated.runsUsedToday > updated.dailyRunLimit) {
-    // Roll back the increment we just made.
-    await db
-      .update(usageLimits)
-      .set({
-        runsUsedToday: sql`${usageLimits.runsUsedToday} - ${weight}`,
-        updatedAt: now,
-      })
-      .where(eq(usageLimits.userId, studentId));
+  if (!updated) {
     throw new GuardrailError(
-      `Daily run limit reached (${updated.dailyRunLimit} runs). Try again tomorrow!`
+      `Daily run limit reached (${effectiveLimit} runs). Try again tomorrow!`
     );
   }
 
   return updated;
+}
+
+/**
+ * Atomically consume one chat turn. Every CHAT_TURNS_PER_RUN turns counts as
+ * one full run. Pass byokActive=true to apply the boosted ceiling.
+ */
+export async function consumeChatTurn(
+  studentId: string,
+  usage: UsageLimits,
+  { byokActive = false }: { byokActive?: boolean } = {}
+): Promise<void> {
+  if (devBypass()) return;
+
+  const effectiveLimit = byokActive
+    ? Math.max(usage.dailyRunLimit, BYOK_DAILY_RUN_LIMIT)
+    : usage.dailyRunLimit;
+
+  const now = new Date();
+  const [updated] = await db
+    .update(usageLimits)
+    .set({ chatTurnsUsedToday: sql`${usageLimits.chatTurnsUsedToday} + 1`, updatedAt: now })
+    .where(
+      and(
+        eq(usageLimits.userId, studentId),
+        sql`${usageLimits.chatTurnsUsedToday} < (${effectiveLimit} - ${usageLimits.runsUsedToday}) * ${CHAT_TURNS_PER_RUN}`
+      )
+    )
+    .returning({ chatTurnsUsedToday: usageLimits.chatTurnsUsedToday });
+
+  if (!updated) {
+    throw new GuardrailError(
+      `Daily run limit reached (${effectiveLimit} runs). Try again tomorrow!`
+    );
+  }
 }

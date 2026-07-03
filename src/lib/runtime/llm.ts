@@ -6,13 +6,14 @@ export type { LLMResponse } from "./mock-llm";
 
 export async function callLLM(
   prompt: string,
-  dsl: ProjectDSL
+  dsl: ProjectDSL,
+  apiKey?: string
 ) {
   const provider = process.env.LLM_PROVIDER ?? "mock";
 
   switch (provider) {
     case "gemini":
-      return callGemini(prompt, dsl);
+      return callGemini(prompt, dsl, apiKey);
     default:
       return callMock(prompt, dsl);
   }

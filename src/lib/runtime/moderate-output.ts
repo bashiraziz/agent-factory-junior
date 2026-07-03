@@ -19,8 +19,11 @@ const BLOCK_PATTERNS: { name: string; re: RegExp }[] = [
   { name: "self_harm", re: /\b(kill\s*yourself|suicide|self[- ]harm|hang\s*yourself)\b/i },
   { name: "violence", re: /\b(kill\s+(a|the|your|him|her|them)|shoot\s+(a|the|him|her|them)|stab|behead)\b/i },
   { name: "sexual", re: /\b(porn|nude|naked\s+(child|kid|boy|girl)|sexual)\b/i },
-  { name: "personal_info", re: /\b(\d{3}[-.\s]?\d{2}[-.\s]?\d{4})\b/ }, // SSN-like
-  { name: "contact", re: /\b(?:\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b/ }, // phone
+  // SSN: separators required — avoids flagging plain 9-digit numbers (e.g. zip+4)
+  { name: "personal_info", re: /\b\d{3}[-.\s]\d{2}[-.\s]\d{4}\b/ },
+  // Phone: separators/parens required — avoids flagging plain 10-digit numbers (e.g. "3141592653" in math output)
+  // "5551234567" → OK  |  "555-123-4567" → flagged  |  "(555) 123-4567" → flagged
+  { name: "contact", re: /\b(?:\+?\d{1,3}[-.\s])?\(?\d{3}\)?[-.\s]\d{3}[-.\s]\d{4}\b/ },
   { name: "external_link", re: /https?:\/\/\S+/i },
 ];
 
