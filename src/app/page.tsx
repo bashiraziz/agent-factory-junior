@@ -73,8 +73,25 @@ export default function Home() {
           then see exactly what it does, every time.
         </p>
 
-        {/* Button pair */}
+        {/* Button group */}
         <div className="flex flex-wrap items-center justify-center gap-4 mt-8">
+          <Link
+            href="/sign-in?demo=1"
+            className="inline-flex items-center justify-center gap-2 font-sans transition-transform hover:-translate-y-px active:translate-y-0"
+            style={{
+              padding: "16px 32px",
+              borderRadius: 14,
+              background: "#46C46A",
+              color: "#FFFFFF",
+              fontWeight: 800,
+              fontSize: 18,
+              boxShadow: "0 5px 0 #2E9B52",
+              textDecoration: "none",
+            }}
+          >
+            🎮 Try the demo
+          </Link>
+
           <Link
             href="/sign-up"
             className="inline-flex items-center justify-center font-sans transition-transform hover:-translate-y-px active:translate-y-0"
