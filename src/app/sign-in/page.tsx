@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, type FormEvent } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useState, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { signIn } from "@/lib/auth-client";
 import { Mascot } from "@/components/mascot";
@@ -11,19 +11,10 @@ const DEMO_PASSWORD = "Demo1234!";
 
 export default function SignInPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [demoLoading, setDemoLoading] = useState(false);
-
-  // Auto-trigger demo login when landing from ?demo=1
-  useEffect(() => {
-    if (searchParams.get("demo") === "1") {
-      handleDemo();
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const doSignIn = async (email: string, password: string) => {
     const { error: err } = await signIn.email({ email, password, rememberMe: true });

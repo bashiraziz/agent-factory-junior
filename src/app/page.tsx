@@ -76,7 +76,7 @@ export default function Home() {
         {/* Button group */}
         <div className="flex flex-wrap items-center justify-center gap-4 mt-8">
           <Link
-            href="/sign-in?demo=1"
+            href="/demo"
             className="inline-flex items-center justify-center gap-2 font-sans transition-transform hover:-translate-y-px active:translate-y-0"
             style={{
               padding: "16px 32px",
