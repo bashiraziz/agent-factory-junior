@@ -35,7 +35,12 @@
       "Bash(git rm *)",
       "Bash(unzip -o design_handoff_responsive_editor.zip -d design_handoff_responsive_editor)",
       "Bash(git merge *)",
-      "Bash(git branch *)"
+      "Bash(git branch *)",
+      "Bash(unzip -o \"/c/Users/user/Documents/github/agent-factory-junior/Teachers Dashboard.zip\" -d /c/Users/user/Documents/github/agent-factory-junior/teachers_dashboard_brief)",
+      "Bash(git worktree *)",
+      "Bash(unzip *)",
+      "Bash(npx drizzle-kit *)",
+      "Bash(npx tsx *)"
     ]
   }
 }
