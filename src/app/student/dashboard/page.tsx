@@ -1,7 +1,9 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 import { db } from "@/db";
-import { projects, usageLimits } from "@/db/schema";
+import { projects, usageLimits, parentChildLinks, classroomMembers } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { Mascot } from "@/components/mascot";
 import { StatusPill } from "@/components/status-pill";
@@ -11,10 +13,24 @@ import { DeleteWorkerButton } from "@/components/delete-worker-button";
 import { LogoutButton } from "@/components/logout-button";
 import { HelpButton } from "@/components/help-button";
 
+const DEMO_EMAIL = process.env.DEMO_EMAIL ?? "demo@agentfactoryjr.com";
+
 export default async function StudentDashboard() {
   const profile = await resolveStudentProfile();
   if (!profile) redirect("/join");
   if (profile.role !== "student") redirect(`/${profile.role}/dashboard`);
+
+  // Supervision gate — every student must have a parent or classroom link
+  const session = await auth.api.getSession({ headers: await headers() });
+  const isDemoAccount = session?.user?.email === DEMO_EMAIL;
+
+  if (!isDemoAccount) {
+    const [parentLink] = await db.select({ id: parentChildLinks.id })
+      .from(parentChildLinks).where(eq(parentChildLinks.studentId, profile.id));
+    const [classroomLink] = await db.select({ id: classroomMembers.id })
+      .from(classroomMembers).where(eq(classroomMembers.studentId, profile.id));
+    if (!parentLink && !classroomLink) redirect("/student/connect");
+  }
 
   const myProjects = await db
     .select()
