@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import type { BookChapter } from "@/lib/lessons/book-chapters";
 import { CORE_CHAPTERS } from "@/lib/lessons/book-chapters";
 
@@ -112,23 +111,21 @@ export function Celebration({ chapter, completedIds, isPathComplete, onClose }: 
 
         <div className="flex flex-col gap-2">
           {nextCore && !isPathComplete && (
-            <Link
+            <a
               href={`/student/learn/${nextCore.id}`}
-              className="block py-3 rounded-pill font-sans font-extrabold text-sm text-white"
+              className="block py-3 rounded-pill font-sans font-extrabold text-sm text-white text-center"
               style={{ background: chapter.color, boxShadow: `0 4px 0 ${chapter.shadowColor}` }}
-              onClick={onClose}
             >
               Next chapter →
-            </Link>
+            </a>
           )}
-          <Link
+          <a
             href="/student/learn"
-            className="block py-3 rounded-pill font-sans font-extrabold text-sm"
+            className="block py-3 rounded-pill font-sans font-extrabold text-sm text-center"
             style={{ background: "#F4F0FF", color: "#7C5CFF" }}
-            onClick={onClose}
           >
             Back to learning path
-          </Link>
+          </a>
           <button
             onClick={onClose}
             className="font-sans text-sm"

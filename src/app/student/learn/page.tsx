@@ -75,6 +75,7 @@ export default async function LearnPage() {
                   done={done}
                   locked={locked}
                   order={ch.order}
+                  prevTitle={i > 0 ? CORE_CHAPTERS[i - 1].title : undefined}
                 />
               );
             })}
@@ -111,10 +112,10 @@ export default async function LearnPage() {
 }
 
 function ChapterCard({
-  id, title, emoji, color, badgeEmoji, done, locked, order, isBonus,
+  id, title, emoji, color, badgeEmoji, done, locked, order, isBonus, prevTitle,
 }: {
   id: string; title: string; emoji: string; color: string;
-  badgeEmoji: string; done: boolean; locked: boolean; order: number; isBonus?: boolean;
+  badgeEmoji: string; done: boolean; locked: boolean; order: number; isBonus?: boolean; prevTitle?: string;
 }) {
   const inner = (
     <div
@@ -123,7 +124,7 @@ function ChapterCard({
         background: done ? color + "18" : "#FFFFFF",
         border: `2px solid ${done ? color + "55" : "#F0E7D6"}`,
         boxShadow: locked ? "none" : "0 4px 16px rgba(58,46,28,.08)",
-        opacity: locked ? 0.55 : 1,
+        opacity: locked ? 0.6 : 1,
       }}
     >
       <div
@@ -139,12 +140,15 @@ function ChapterCard({
         <div className="font-sans font-extrabold text-sm leading-snug" style={{ color: "#2A2A3C" }}>
           {title}
         </div>
+        {locked && prevTitle && (
+          <div className="font-sans text-xs mt-0.5" style={{ color: "#8A8071" }}>
+            Finish &quot;{prevTitle}&quot; first
+          </div>
+        )}
       </div>
       {done ? (
         <span className="text-xl">✅</span>
-      ) : locked ? (
-        <span className="font-mono text-xs" style={{ color: "#8A8071" }}>LOCKED</span>
-      ) : (
+      ) : locked ? null : (
         <span className="font-sans text-sm font-extrabold" style={{ color: color }}>Start →</span>
       )}
     </div>
