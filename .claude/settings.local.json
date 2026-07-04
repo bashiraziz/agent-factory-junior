@@ -32,7 +32,10 @@
       "Bash(python3 -c ' *)",
       "Bash(python -c ' *)",
       "Bash(git restore *)",
-      "Bash(git rm *)"
+      "Bash(git rm *)",
+      "Bash(unzip -o design_handoff_responsive_editor.zip -d design_handoff_responsive_editor)",
+      "Bash(git merge *)",
+      "Bash(git branch *)"
     ]
   }
 }
