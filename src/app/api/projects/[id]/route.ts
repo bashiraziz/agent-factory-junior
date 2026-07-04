@@ -3,7 +3,6 @@ import { db } from "@/db";
 import { projects } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { resolveStudentProfile } from "@/lib/student-auth";
-import { validateProject } from "@/lib/runtime/validate-project";
 import { z } from "zod";
 
 const patchSchema = z.object({
@@ -59,10 +58,6 @@ export async function PATCH(
   if (body.dslJson !== undefined) {
     if (JSON.stringify(body.dslJson).length > 200_000) {
       return NextResponse.json({ error: "That's a lot of blocks! Try simplifying your Worker a bit." }, { status: 400 });
-    }
-    const v = validateProject(body.dslJson);
-    if (!v.valid) {
-      return NextResponse.json({ error: v.errors[0] ?? "Project blocks aren't ready yet." }, { status: 400 });
     }
     allowed.dslJson = body.dslJson;
   }

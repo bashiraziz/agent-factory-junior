@@ -1,12 +1,13 @@
 import { db } from "@/db";
-import { projects } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { projects, agentRuns, providerKeys } from "@/db/schema";
+import { eq, and, desc } from "drizzle-orm";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { generateObject, generateText, NoObjectGeneratedError } from "ai";
 import { z } from "zod";
 import type { ProjectDSL } from "./types";
 import { assertNotPaused, assertApproved } from "./guardrails";
 import { moderateOutput } from "./moderate-output";
+import { resolveGeminiKey } from "./resolve-key";
 
 type ChatTurn =
   | { role: "worker"; content: string }
@@ -48,6 +49,25 @@ function convoText(history: ChatTurn[]): string {
     .join("\n");
 }
 
+function isAuthOrQuotaError(err: unknown): boolean {
+  const msg = String(err instanceof Error ? err.message : err);
+  return /401|403|API_KEY_INVALID|quota|RESOURCE_EXHAUSTED/i.test(msg);
+}
+
+async function flagLatestRun(projectId: string, studentId: string, reasons: string[]) {
+  const [run] = await db
+    .select({ id: agentRuns.id, safetyFlags: agentRuns.safetyFlags })
+    .from(agentRuns)
+    .where(and(eq(agentRuns.projectId, projectId), eq(agentRuns.studentId, studentId)))
+    .orderBy(desc(agentRuns.createdAt))
+    .limit(1);
+  if (!run) return;
+  await db
+    .update(agentRuns)
+    .set({ status: "flagged", safetyFlags: [...(run.safetyFlags as string[]), ...reasons] })
+    .where(eq(agentRuns.id, run.id));
+}
+
 export async function advanceWorker(
   projectId: string,
   studentId: string,
@@ -73,29 +93,41 @@ export async function advanceWorker(
     | undefined;
   const questionCount = quizStep?.question_count ?? 3;
 
-  const apiKey = process.env.GEMINI_API_KEY;
   const provider = process.env.LLM_PROVIDER || "mock";
-
-  if (provider !== "gemini" || !apiKey) {
+  if (provider !== "gemini") {
     if (phase === "quiz") {
       return {
         kind: "quiz",
-        questions: [
-          {
-            q: "Sample question — did you follow along?",
-            choices: ["Yes", "Kind of", "Not yet"],
-            answer: 0,
-          },
-        ],
+        questions: [{ q: "Sample question — did you follow along?", choices: ["Yes", "Kind of", "Not yet"], answer: 0 }],
       };
     }
     return { kind: "worker", content: "Great job today! Keep exploring 🌟" };
   }
 
+  const { apiKey, source, ownerProfileId } = await resolveGeminiKey(studentId);
+  const byokActive = source === "byok";
   const model = process.env.GEMINI_MODEL ?? "gemini-2.0-flash";
-  const google = createGoogleGenerativeAI({ apiKey });
   const system = baseSystem(dsl);
   const convo = convoText(history);
+
+  async function makeGoogle(key: string) {
+    return createGoogleGenerativeAI({ apiKey: key })(model);
+  }
+
+  async function withByokFallback<T>(fn: (key: string) => Promise<T>): Promise<T> {
+    try {
+      return await fn(apiKey);
+    } catch (err) {
+      if (byokActive && ownerProfileId && isAuthOrQuotaError(err)) {
+        await db.update(providerKeys)
+          .set({ status: "invalid", updatedAt: new Date() })
+          .where(eq(providerKeys.ownerProfileId, ownerProfileId));
+        const platformKey = process.env.GEMINI_API_KEY;
+        if (platformKey) return await fn(platformKey);
+      }
+      throw err;
+    }
+  }
 
   if (phase === "quiz") {
     const prompt = `Based on the conversation below, create exactly ${questionCount} multiple-choice question(s) to check the student's understanding. Each question must have 3 answer choices. Mark the correct answer with a 0-based index. For each question, include a short, kid-friendly "explanation" (1-2 sentences) that says *why* the correct answer is right — this is shown to the student after they submit so they learn from mistakes.
@@ -103,19 +135,13 @@ export async function advanceWorker(
 Conversation so far:
 ${convo}`;
     try {
-      const { object } = await generateObject({
-        model: google(model),
-        schema: QuizSchema,
-        prompt,
-        system,
-      });
+      const { object } = await withByokFallback((key) =>
+        generateObject({ model: createGoogleGenerativeAI({ apiKey: key })(model), schema: QuizSchema, prompt, system })
+      );
       return { kind: "quiz", questions: object.questions.slice(0, questionCount) };
     } catch (err) {
       if (err instanceof NoObjectGeneratedError || (err as Error)?.name === "NoObjectGeneratedError") {
-        return {
-          kind: "worker",
-          content: "I couldn't build a quiz this time — try wrapping up instead!",
-        };
+        return { kind: "worker", content: "I couldn't build a quiz this time — try wrapping up instead!" };
       }
       throw err;
     }
@@ -126,15 +152,13 @@ ${convo}`;
 
 Conversation so far:
 ${convo}`;
-  const { text } = await generateText({
-    model: google(model),
-    system,
-    prompt,
-  });
+  const { text } = await withByokFallback((key) =>
+    generateText({ model: createGoogleGenerativeAI({ apiKey: key })(model), system, prompt })
+  );
   const raw = text.trim() || "Great work today — keep exploring! 🌟";
   const moderation = await moderateOutput(raw);
-  return {
-    kind: "worker",
-    content: moderation.ok ? raw : moderation.replacement,
-  };
+  if (!moderation.ok) {
+    await flagLatestRun(projectId, studentId, moderation.reasons);
+  }
+  return { kind: "worker", content: moderation.ok ? raw : moderation.replacement };
 }

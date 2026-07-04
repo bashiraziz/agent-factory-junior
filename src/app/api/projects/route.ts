@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { projects } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 import { nanoid } from "@/lib/utils";
 import { resolveStudentProfile } from "@/lib/student-auth";
 import { getTemplate, dslToBlocklyJson } from "@/lib/templates/starter-templates";
@@ -21,9 +21,9 @@ export async function GET() {
     .select()
     .from(projects)
     .where(eq(projects.ownerId, profile.id))
-    .orderBy(projects.updatedAt);
+    .orderBy(desc(projects.updatedAt));
 
-  return NextResponse.json(rows.reverse());
+  return NextResponse.json(rows);
 }
 
 export async function POST(req: NextRequest) {
