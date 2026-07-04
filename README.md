@@ -45,7 +45,10 @@ npm run db:seed-demo
 | `/child/sign-in` | Kids (username + PIN) |
 | `/parent/dashboard` | Parent home |
 | `/teacher/dashboard` | Teacher home |
+| `/student/dashboard` | Child home |
 | `/student/projects` | Child's worker list |
+| `/student/learn` | Guided lessons path map (8 core + 4 explorer) |
+| `/student/learn/[chapterId]` | Individual lesson — read, mission, quiz, badge |
 | `/about` | About page |
 | `/privacy` | Privacy policy |
 | `/terms` | Terms stub |

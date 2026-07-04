@@ -65,6 +65,7 @@ export default async function StudentDashboard() {
             tips={[
               { icon: "🤖", title: "New AI Worker", body: "Click + New AI Worker to start building a helper with visual blocks." },
               { icon: "▶", title: "Run a worker", body: "Green Run button uses one of your daily runs. You get 5 per day." },
+              { icon: "📖", title: "Learn about AI", body: "Tap the Learn tab at the bottom to work through the Meet the AI book. Read chapters, complete missions, and earn badges!" },
               { icon: "✏", title: "Edit or delete", body: "Edit changes the blocks. The trash icon on each card deletes the worker permanently." },
               { icon: "❓", title: "Full guide", body: "Tap 'See full help' for detailed instructions and safety info." },
             ]}

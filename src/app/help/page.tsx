@@ -18,6 +18,19 @@ const SECTIONS: Section[] = [
     ],
   },
   {
+    id: "student-learn",
+    title: "For students — guided lessons",
+    audience: "student",
+    items: [
+      { q: "What is the Learn tab?", a: "Tap 📖 Learn in the bottom bar. You'll find 'Meet the AI' — a book with 8 core chapters that teach you about AI, plus 4 Explorer chapters you can read any time." },
+      { q: "How do I earn a badge?", a: "Read the chapter, tick 'I read this chapter', complete the mission in the builder, then answer the quiz. When all three are done the Earn badge button lights up — tap it to claim your badge!" },
+      { q: "Why is the next chapter locked?", a: "Core chapters unlock one at a time. Finish the current chapter (read + mission + quiz) and the next one opens automatically. Explorer chapters are always open." },
+      { q: "What is the mission?", a: "Each chapter has a small mission — usually adding a block to your AI Buddy in the builder. Tap 'Open the builder →' to jump straight there, then come back to tick the box." },
+      { q: "Can I re-read a chapter I already finished?", a: "Yes, tap it on the learning path and it opens normally. Your badge is kept — you just won't see the earn button again." },
+      { q: "What is the Explorer Track?", a: "Four bonus chapters you can read in any order, any time: How to talk to AI, Who made this AI, AI and your feelings, and When NOT to use AI. Each earns its own badge." },
+    ],
+  },
+  {
     id: "student-editor",
     title: "For students — the block editor",
     audience: "student",

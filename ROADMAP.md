@@ -240,9 +240,11 @@ self-declaration needed.
 | v1 | Google OAuth (convenience) | Teachers, parents, 13+ students |
 | v1 | Parent account path + child activation | Under-13 home use, supervised |
 | v1 | Teacher sets `grade_level` on classroom | Age-based feature gating signal |
+| v1 | Parent controls — pause, run cap, approval, email on flag | In-app parental oversight |
+| v1 | Guided lessons — "Meet the AI" book | 8-chapter core path + 4 explorer chapters, badge per chapter |
 | v2 | Clever/ClassLink SSO | Paying school districts |
-| v2 | Parent control settings | Pause, run cap, approval mode |
-| v3 | Teacher assignment mode | Structured curriculum use |
+| v2 | Teacher assignment mode | Structured curriculum use |
+| v3 | Quiz auto-grading via AI | Replace self-report completion with verified answers |
 
 ---
 
