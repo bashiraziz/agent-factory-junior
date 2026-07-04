@@ -20,7 +20,7 @@ interface BlocklyEditorProps {
   onDslChange: (dsl: ProjectDSL, name: string) => void;
   onBlocklyChange: (json: object) => void;
   projectName: string;
-  onWorkspaceReady?: (controls: { addBlock: (type: string) => void; clearBlocks: () => void; resizeWorkspace: () => void }) => void;
+  onWorkspaceReady?: (controls: { addBlock: (type: string) => void; clearBlocks: () => void; resizeWorkspace: () => void; setScale: (scale: number) => void }) => void;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -103,7 +103,7 @@ function processBlock(block: AnyBlockly, dsl: ProjectDSL) {
   }
 }
 
-function registerBlocks(Blockly: AnyBlockly) {
+function registerBlocks(Blockly: AnyBlockly, isCoarse: boolean) {
   if (Blockly.Blocks["afj_goal"]) return; // already registered
 
   function makeBlock(type: string, label: string, fields: Array<{ factory: () => AnyBlockly; name: string }>) {
@@ -113,7 +113,9 @@ function registerBlocks(Blockly: AnyBlockly) {
         dummy.appendField(label);
         for (const field of fields) {
           const row = this.appendDummyInput();
-          row.appendField(field.factory(), field.name);
+          const f = field.factory();
+          if (isCoarse && typeof f.setWidth === "function") f.setWidth(220);
+          row.appendField(f, field.name);
         }
         this.setColour(BLOCK_COLORS[type] || "#888");
         this.setPreviousStatement(true, null);
@@ -244,7 +246,8 @@ export default function BlocklyEditor({
       divRef.current.innerHTML = "";
       Blockly = mod.default || mod;
 
-      registerBlocks(Blockly);
+      const isCoarse = typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches;
+      registerBlocks(Blockly, isCoarse);
 
       // Build custom theme
       let theme: AnyBlockly;
@@ -262,7 +265,7 @@ export default function BlocklyEditor({
           fontStyle: {
             family: "Nunito, sans-serif",
             weight: "700",
-            size: 12,
+            size: isCoarse ? 14 : 12,
           },
         });
       } catch {
@@ -270,8 +273,6 @@ export default function BlocklyEditor({
       }
 
       if (!divRef.current) return;
-
-      const isCoarse = typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches;
 
       workspace = Blockly.inject(divRef.current, {
         theme,
@@ -310,10 +311,16 @@ export default function BlocklyEditor({
           try { ws.render?.(); } catch { /* ignore */ }
           handleChange(Blockly);
         };
+        const setScale = (scale: number) => {
+          if (!workspaceRef.current) return;
+          workspaceRef.current.setScale(scale / 100);
+          Blockly.svgResize(workspaceRef.current);
+        };
         onWorkspaceReady({
           addBlock,
           clearBlocks,
           resizeWorkspace: () => { if (workspaceRef.current) Blockly.svgResize(workspaceRef.current); },
+          setScale,
         });
       }
 

@@ -206,14 +206,17 @@ export default function EditProjectPage() {
   const addBlockRef = useRef<((type: string) => void) | null>(null);
   const clearBlocksRef = useRef<(() => void) | null>(null);
   const resizeWorkspaceRef = useRef<(() => void) | null>(null);
+  const setScaleRef = useRef<((scale: number) => void) | null>(null);
   const [confirmClear, setConfirmClear] = useState(false);
   const [inspectorOpen, setInspectorOpen] = useState(false);
+  const [paletteExpanded, setPaletteExpanded] = useState(true);
 
   const handleWorkspaceReady = useCallback(
-    ({ addBlock, clearBlocks, resizeWorkspace }: { addBlock: (type: string) => void; clearBlocks: () => void; resizeWorkspace: () => void }) => {
+    ({ addBlock, clearBlocks, resizeWorkspace, setScale }: { addBlock: (type: string) => void; clearBlocks: () => void; resizeWorkspace: () => void; setScale: (scale: number) => void }) => {
       addBlockRef.current = addBlock;
       clearBlocksRef.current = clearBlocks;
       resizeWorkspaceRef.current = resizeWorkspace;
+      setScaleRef.current = setScale;
     },
     []
   );
@@ -281,6 +284,13 @@ export default function EditProjectPage() {
     },
     []
   );
+
+  useEffect(() => {
+    const check = () => setPaletteExpanded(window.innerWidth >= 900);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
 
   const getSaveLabel = () => {
     if (saveState === "saving") return "SAVING…";
@@ -353,7 +363,7 @@ export default function EditProjectPage() {
     </div>
 
     {/* ── REAL EDITOR (≥ 768px) ── */}
-    <div className="hidden md:flex flex-col h-screen overflow-hidden" style={{ background: "#FFFDF7" }}>
+    <div className="hidden md:flex flex-col h-screen overflow-hidden" style={{ background: "#FFFDF7", paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
       {/* ── TOPBAR ── */}
       <header
         className="flex-shrink-0 h-16 flex items-center justify-between px-4"
@@ -441,78 +451,99 @@ export default function EditProjectPage() {
 
         {/* ── PALETTE COLUMN ── */}
         <aside
-          className="flex-shrink-0 w-[248px] flex flex-col overflow-y-auto"
+          className={`flex-shrink-0 flex flex-col overflow-y-auto transition-[width] duration-200 ${paletteExpanded ? "w-[248px]" : "w-[52px]"}`}
           style={{ background: "#FBF6EC", borderRight: "2px solid #F0E7D6" }}
         >
-          <div className="p-4 pb-2">
-            <div className="font-mono text-[10px] uppercase tracking-widest mb-1" style={{ color: "#8A8071" }}>
-              BLOCKS
-            </div>
-            <div className="font-sans text-xs" style={{ color: "#5C5747" }}>
-              Click a block to add it. Drag blocks to connect them. Right-click to delete.
-            </div>
+          {/* Toggle */}
+          <div className="p-2 flex justify-center border-b-2" style={{ borderColor: "#F0E7D6" }}>
+            <button
+              onClick={() => { setPaletteExpanded((e) => !e); setTimeout(() => resizeWorkspaceRef.current?.(), 220); }}
+              className="w-9 h-9 rounded-block flex items-center justify-center font-bold text-base transition-colors"
+              style={{ background: "#F0E7D6", color: "#5C5747" }}
+              title={paletteExpanded ? "Collapse palette" : "Expand palette"}
+            >
+              {paletteExpanded ? "‹" : "›"}
+            </button>
           </div>
 
-          <div className="p-3 space-y-2">
-            {BLOCK_PALETTE.map((block) => (
-              <div
-                key={block.type}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-block cursor-pointer select-none transition-transform hover:-translate-y-0.5 active:translate-y-0"
-                style={{
-                  background: "#FFFFFF",
-                  border: `2px solid ${block.color}22`,
-                  boxShadow: `0 3px 0 ${block.color}44`,
-                }}
-                title={block.hint}
-                onClick={() => addBlockRef.current?.(block.type)}
-              >
+          {paletteExpanded && (
+            <div className="p-4 pb-2">
+              <div className="font-mono text-[10px] uppercase tracking-widest mb-1" style={{ color: "#8A8071" }}>BLOCKS</div>
+              <div className="font-sans text-xs" style={{ color: "#5C5747" }}>Click a block to add it. Drag blocks to connect them. Right-click to delete.</div>
+            </div>
+          )}
+
+          <div className="p-2 space-y-2">
+            {BLOCK_PALETTE.map((block) =>
+              paletteExpanded ? (
                 <div
-                  className="w-8 h-8 rounded-[10px] flex items-center justify-center text-base flex-shrink-0"
-                  style={{ background: block.color }}
+                  key={block.type}
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-block cursor-pointer select-none transition-transform hover:-translate-y-0.5 active:translate-y-0"
+                  style={{ background: "#FFFFFF", border: `2px solid ${block.color}22`, boxShadow: `0 3px 0 ${block.color}44` }}
+                  title={block.hint}
+                  onClick={() => addBlockRef.current?.(block.type)}
+                >
+                  <div className="w-8 h-8 rounded-[10px] flex items-center justify-center text-base flex-shrink-0" style={{ background: block.color }}>
+                    <span style={{ filter: "brightness(0) invert(1)" }}>{block.icon}</span>
+                  </div>
+                  <div>
+                    <div className="font-sans font-extrabold text-sm leading-tight" style={{ color: "#2A2A3C" }}>{block.label}</div>
+                    <div className="font-sans text-xs" style={{ color: "#8A8071" }}>{block.hint}</div>
+                  </div>
+                </div>
+              ) : (
+                <div
+                  key={block.type}
+                  className="w-9 h-9 mx-auto rounded-[10px] flex items-center justify-center cursor-pointer text-base transition-transform hover:-translate-y-0.5"
+                  style={{ background: block.color, minHeight: "44px", minWidth: "44px" }}
+                  title={block.hint}
+                  onClick={() => addBlockRef.current?.(block.type)}
                 >
                   <span style={{ filter: "brightness(0) invert(1)" }}>{block.icon}</span>
                 </div>
-                <div>
-                  <div className="font-sans font-extrabold text-sm leading-tight" style={{ color: "#2A2A3C" }}>
-                    {block.label}
-                  </div>
-                  <div className="font-sans text-xs" style={{ color: "#8A8071" }}>
-                    {block.hint}
-                  </div>
-                </div>
-              </div>
-            ))}
+              )
+            )}
           </div>
 
-          {/* Clear canvas */}
-          <div className="p-3 mt-auto border-t-2" style={{ borderColor: "#F0E7D6" }}>
-            {confirmClear ? (
-              <div className="space-y-2">
-                <div className="font-sans text-xs text-center" style={{ color: "#5C5747" }}>Remove all blocks?</div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => { clearBlocksRef.current?.(); setConfirmClear(false); }}
-                    className="flex-1 py-1.5 rounded-pill font-sans font-extrabold text-xs text-white"
-                    style={{ background: "#E5393A" }}
-                  >
-                    Clear all
-                  </button>
-                  <button
-                    onClick={() => setConfirmClear(false)}
-                    className="flex-1 py-1.5 rounded-pill font-sans font-extrabold text-xs"
-                    style={{ background: "#F0E7D6", color: "#5C5747" }}
-                  >
-                    Cancel
-                  </button>
+          <div className="p-2 mt-auto border-t-2" style={{ borderColor: "#F0E7D6" }}>
+            {paletteExpanded ? (
+              confirmClear ? (
+                <div className="space-y-2">
+                  <div className="font-sans text-xs text-center" style={{ color: "#5C5747" }}>Remove all blocks?</div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => { clearBlocksRef.current?.(); setConfirmClear(false); }}
+                      className="flex-1 py-1.5 rounded-pill font-sans font-extrabold text-xs text-white"
+                      style={{ background: "#E5393A" }}
+                    >
+                      Clear all
+                    </button>
+                    <button
+                      onClick={() => setConfirmClear(false)}
+                      className="flex-1 py-1.5 rounded-pill font-sans font-extrabold text-xs"
+                      style={{ background: "#F0E7D6", color: "#5C5747" }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <button
+                  onClick={() => setConfirmClear(true)}
+                  className="w-full py-2 rounded-pill font-sans font-extrabold text-xs transition-colors"
+                  style={{ background: "#FFF0F0", color: "#C0443A", border: "1.5px solid #FFCCCC" }}
+                >
+                  🗑 Clear canvas
+                </button>
+              )
             ) : (
               <button
                 onClick={() => setConfirmClear(true)}
-                className="w-full py-2 rounded-pill font-sans font-extrabold text-xs transition-colors"
-                style={{ background: "#FFF0F0", color: "#C0443A", border: "1.5px solid #FFCCCC" }}
+                className="w-9 h-9 mx-auto flex items-center justify-center rounded-block text-base"
+                style={{ background: "#FFF0F0", color: "#C0443A", minHeight: "44px", minWidth: "44px" }}
+                title="Clear canvas"
               >
-                🗑 Clear canvas
+                🗑
               </button>
             )}
           </div>
@@ -542,8 +573,8 @@ export default function EditProjectPage() {
 
           {/* Floating inspector button — tablet only (< 1024px) */}
           <button
-            className="lg:hidden absolute bottom-20 right-4 z-10 flex items-center gap-2 px-4 py-3 rounded-pill font-sans font-extrabold text-sm text-white shadow-lg transition-transform hover:-translate-y-0.5"
-            style={{ background: "#7C5CFF", boxShadow: "0 4px 0 #5B3FCC", minHeight: "44px" }}
+            className="lg:hidden absolute z-10 flex items-center gap-2 px-4 py-3 rounded-pill font-sans font-extrabold text-sm text-white shadow-lg transition-transform hover:-translate-y-0.5"
+            style={{ background: "#7C5CFF", boxShadow: "0 4px 0 #5B3FCC", minHeight: "44px", bottom: "calc(5rem + env(safe-area-inset-bottom, 0px))", right: "1rem" }}
             onClick={openInspector}
           >
             ⚙️ Block settings
@@ -554,14 +585,14 @@ export default function EditProjectPage() {
             className="absolute bottom-4 left-4 flex gap-2 z-10"
           >
             <button
-              onClick={() => setZoom((z) => Math.min(150, z + 10))}
+              onClick={() => { const next = Math.min(150, zoom + 10); setZoom(next); setScaleRef.current?.(next); }}
               className="w-9 h-9 rounded-block font-sans font-extrabold text-lg flex items-center justify-center shadow-sm transition-colors"
               style={{ background: "#FFFFFF", border: "2px solid #F0E7D6", color: "#2A2A3C" }}
             >
               +
             </button>
             <button
-              onClick={() => setZoom((z) => Math.max(50, z - 10))}
+              onClick={() => { const next = Math.max(50, zoom - 10); setZoom(next); setScaleRef.current?.(next); }}
               className="w-9 h-9 rounded-block font-sans font-extrabold text-lg flex items-center justify-center shadow-sm transition-colors"
               style={{ background: "#FFFFFF", border: "2px solid #F0E7D6", color: "#2A2A3C" }}
             >
