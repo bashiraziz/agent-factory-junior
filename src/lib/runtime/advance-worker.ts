@@ -132,7 +132,7 @@ ${convo}`;
     prompt,
   });
   const raw = text.trim() || "Great work today — keep exploring! 🌟";
-  const moderation = moderateOutput(raw);
+  const moderation = await moderateOutput(raw);
   return {
     kind: "worker",
     content: moderation.ok ? raw : moderation.replacement,

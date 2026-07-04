@@ -79,7 +79,7 @@ export async function runWorker(projectId: string, studentId: string) {
     })
     .join("\n\n");
 
-  const moderation = moderateOutput(outputText);
+  const moderation = await moderateOutput(outputText);
   let safetyFlags = [...llmResult.safety_flags];
   let messages = llmResult.messages;
   let status: "completed" | "flagged" = safetyFlags.length > 0 ? "flagged" : "completed";

@@ -125,7 +125,7 @@ export async function chatWorker(
     }
   }
 
-  const moderation = moderateOutput(content);
+  const moderation = await moderateOutput(content);
   const flagged = !moderation.ok;
   const finalContent = flagged ? moderation.replacement : content;
 
