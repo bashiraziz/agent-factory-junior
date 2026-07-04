@@ -325,6 +325,9 @@ async function initDb() {
       ALTER TABLE parent_child_links ADD COLUMN IF NOT EXISTS require_approval BOOLEAN NOT NULL DEFAULT FALSE;
     `);
     await client.query(`
+      ALTER TABLE parent_child_links ADD COLUMN IF NOT EXISTS email_weekly_report BOOLEAN NOT NULL DEFAULT FALSE;
+    `);
+    await client.query(`
       ALTER TABLE projects ADD COLUMN IF NOT EXISTS parent_approved_at TIMESTAMPTZ;
     `);
 

@@ -238,6 +238,7 @@ export default async function ParentChildDetailPage({
           runsUsedToday={usage?.runsUsedToday ?? 0}
           initialPaused={usage?.paused ?? false}
           initialEmailOnFlag={link.emailOnFlag ?? false}
+          initialEmailWeeklyReport={link.emailWeeklyReport ?? false}
           initialRequireApproval={link.requireApproval ?? false}
           workers={childProjects.map((p) => ({
             id: p.id,

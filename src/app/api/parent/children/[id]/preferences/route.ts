@@ -15,9 +15,10 @@ export async function PATCH(
   const link = await verifyParentChildLink(parent.id, studentId);
   if (!link) return NextResponse.json({ error: "Not your child" }, { status: 403 });
 
-  const { emailOnFlag, requireApproval } = await req.json();
+  const { emailOnFlag, emailWeeklyReport, requireApproval } = await req.json();
   const patch: Record<string, unknown> = {};
   if (typeof emailOnFlag === "boolean") patch.emailOnFlag = emailOnFlag;
+  if (typeof emailWeeklyReport === "boolean") patch.emailWeeklyReport = emailWeeklyReport;
   if (typeof requireApproval === "boolean") patch.requireApproval = requireApproval;
   if (Object.keys(patch).length === 0) {
     return NextResponse.json({ error: "Nothing to update" }, { status: 400 });

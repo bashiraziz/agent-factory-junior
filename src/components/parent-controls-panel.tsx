@@ -2,6 +2,8 @@
 
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { Toggle } from "./toggle";
+import { WorkersList } from "./parent-controls-workers";
 
 interface WorkerRow {
   id: string;
@@ -15,6 +17,7 @@ interface Props {
   runsUsedToday: number;
   initialPaused: boolean;
   initialEmailOnFlag: boolean;
+  initialEmailWeeklyReport: boolean;
   initialRequireApproval: boolean;
   workers: WorkerRow[];
 }
@@ -24,48 +27,34 @@ export function ParentControlsPanel(props: Props) {
   const [dailyLimit, setDailyLimit] = useState(props.initialDailyLimit);
   const [paused, setPaused] = useState(props.initialPaused);
   const [requireApproval, setRequireApproval] = useState(props.initialRequireApproval);
+  const [emailWeekly, setEmailWeekly] = useState(props.initialEmailWeeklyReport);
   const [busy, setBusy] = useState<string | null>(null);
   const [note, setNote] = useState<string | null>(null);
 
-  const flash = (msg: string) => {
-    setNote(msg);
-    setTimeout(() => setNote(null), 1800);
-  };
+  const flash = (msg: string) => { setNote(msg); setTimeout(() => setNote(null), 1800); };
 
   const patchLimits = async (body: Record<string, unknown>, label: string) => {
     setBusy(label);
     try {
       const res = await fetch(`/api/parent/children/${props.studentId}/limits`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
+        method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
       });
       if (!res.ok) throw new Error((await res.json()).error || "Failed");
-      flash("Saved ✓");
-      router.refresh();
-    } catch (e) {
-      flash(e instanceof Error ? e.message : "Error");
-    } finally {
-      setBusy(null);
-    }
+      flash("Saved ✓"); router.refresh();
+    } catch (e) { flash(e instanceof Error ? e.message : "Error"); }
+    finally { setBusy(null); }
   };
 
   const patchPrefs = async (body: Record<string, unknown>) => {
     setBusy("prefs");
     try {
       const res = await fetch(`/api/parent/children/${props.studentId}/preferences`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
+        method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
       });
       if (!res.ok) throw new Error((await res.json()).error || "Failed");
-      flash("Saved ✓");
-      router.refresh();
-    } catch (e) {
-      flash(e instanceof Error ? e.message : "Error");
-    } finally {
-      setBusy(null);
-    }
+      flash("Saved ✓"); router.refresh();
+    } catch (e) { flash(e instanceof Error ? e.message : "Error"); }
+    finally { setBusy(null); }
   };
 
   const approveWorker = async (id: string) => {
@@ -73,13 +62,9 @@ export function ParentControlsPanel(props: Props) {
     try {
       const res = await fetch(`/api/parent/projects/${id}`, { method: "POST" });
       if (!res.ok) throw new Error((await res.json()).error || "Failed");
-      flash("Approved ✓");
-      router.refresh();
-    } catch (e) {
-      flash(e instanceof Error ? e.message : "Error");
-    } finally {
-      setBusy(null);
-    }
+      flash("Approved ✓"); router.refresh();
+    } catch (e) { flash(e instanceof Error ? e.message : "Error"); }
+    finally { setBusy(null); }
   };
 
   const deleteWorker = async (id: string, name: string) => {
@@ -88,326 +73,112 @@ export function ParentControlsPanel(props: Props) {
     try {
       const res = await fetch(`/api/parent/projects/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error((await res.json()).error || "Failed");
-      flash("Deleted ✓");
-      router.refresh();
-    } catch (e) {
-      flash(e instanceof Error ? e.message : "Error");
-    } finally {
-      setBusy(null);
-    }
+      flash("Deleted ✓"); router.refresh();
+    } catch (e) { flash(e instanceof Error ? e.message : "Error"); }
+    finally { setBusy(null); }
   };
-
-  const pendingWorkers = props.workers.filter((w) => !w.parentApprovedAt);
 
   return (
     <div className="space-y-6">
       {note && (
-        <div
-          className="rounded-block px-4 py-2 text-center font-sans text-sm font-extrabold"
-          style={{ background: "#D1FAE5", color: "#2E9B52" }}
-        >
+        <div className="rounded-block px-4 py-2 text-center font-sans text-sm font-extrabold" style={{ background: "#D1FAE5", color: "#2E9B52" }}>
           {note}
         </div>
       )}
 
       {/* Controls card */}
-      <div
-        className="rounded-card p-6"
-        style={{ background: "#FFFFFF", border: "2px solid #F0E7D6", boxShadow: "0 4px 12px rgba(58,46,28,.08)" }}
-      >
-        <div className="font-mono text-[10px] uppercase tracking-widest mb-4" style={{ color: "#8A8071" }}>
-          CONTROLS
-        </div>
+      <div className="rounded-card p-6" style={{ background: "#FFFFFF", border: "2px solid #F0E7D6", boxShadow: "0 4px 12px rgba(58,46,28,.08)" }}>
+        <div className="font-mono text-[10px] uppercase tracking-widest mb-4" style={{ color: "#8A8071" }}>CONTROLS</div>
 
-        {/* Daily limit stepper */}
         <div className="flex items-center justify-between py-3" style={{ borderBottom: "1px solid #F0E7D6" }}>
           <div>
             <div className="font-sans font-extrabold text-sm" style={{ color: "#2A2A3C" }}>Daily run limit</div>
-            <div className="font-sans text-xs" style={{ color: "#5C5747" }}>
-              {props.runsUsedToday} of {dailyLimit} used today
-            </div>
+            <div className="font-sans text-xs" style={{ color: "#5C5747" }}>{props.runsUsedToday} of {dailyLimit} used today</div>
           </div>
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => {
-                const next = Math.max(1, dailyLimit - 1);
-                setDailyLimit(next);
-                patchLimits({ dailyRunLimit: next }, "limit");
-              }}
-              disabled={busy !== null || dailyLimit <= 1}
-              className="w-9 h-9 rounded-full font-extrabold text-lg disabled:opacity-40"
-              style={{ background: "#F4F0FF", color: "#7C5CFF" }}
-            >
-              −
-            </button>
-            <div className="font-display text-2xl font-semibold w-10 text-center" style={{ color: "#2A2A3C" }}>
-              {dailyLimit}
-            </div>
-            <button
-              onClick={() => {
-                const next = Math.min(50, dailyLimit + 1);
-                setDailyLimit(next);
-                patchLimits({ dailyRunLimit: next }, "limit");
-              }}
-              disabled={busy !== null || dailyLimit >= 50}
-              className="w-9 h-9 rounded-full font-extrabold text-lg disabled:opacity-40"
-              style={{ background: "#F4F0FF", color: "#7C5CFF" }}
-            >
-              +
-            </button>
+            <button onClick={() => { const n = Math.max(1, dailyLimit - 1); setDailyLimit(n); patchLimits({ dailyRunLimit: n }, "limit"); }} disabled={busy !== null || dailyLimit <= 1} className="w-9 h-9 rounded-full font-extrabold text-lg disabled:opacity-40" style={{ background: "#F4F0FF", color: "#7C5CFF" }}>−</button>
+            <div className="font-display text-2xl font-semibold w-10 text-center" style={{ color: "#2A2A3C" }}>{dailyLimit}</div>
+            <button onClick={() => { const n = Math.min(50, dailyLimit + 1); setDailyLimit(n); patchLimits({ dailyRunLimit: n }, "limit"); }} disabled={busy !== null || dailyLimit >= 50} className="w-9 h-9 rounded-full font-extrabold text-lg disabled:opacity-40" style={{ background: "#F4F0FF", color: "#7C5CFF" }}>+</button>
           </div>
         </div>
 
-        {/* Pause switch */}
         <div className="flex items-center justify-between py-3" style={{ borderBottom: "1px solid #F0E7D6" }}>
           <div>
-            <div className="font-sans font-extrabold text-sm" style={{ color: "#2A2A3C" }}>
-              {paused ? "🔴 Paused" : "🟢 Runs enabled"}
-            </div>
-            <div className="font-sans text-xs" style={{ color: "#5C5747" }}>
-              Kill switch — blocks all AI Worker runs until you turn it back on.
-            </div>
+            <div className="font-sans font-extrabold text-sm" style={{ color: "#2A2A3C" }}>{paused ? "🔴 Paused" : "🟢 Runs enabled"}</div>
+            <div className="font-sans text-xs" style={{ color: "#5C5747" }}>Kill switch — blocks all AI Worker runs until you turn it back on.</div>
           </div>
-          <Toggle
-            checked={paused}
-            disabled={busy !== null}
-            onChange={(v) => {
-              setPaused(v);
-              patchLimits({ paused: v }, "pause");
-            }}
-          />
+          <Toggle checked={paused} disabled={busy !== null} onChange={(v) => { setPaused(v); patchLimits({ paused: v }, "pause"); }} />
         </div>
 
-        {/* Reset today */}
         <div className="flex items-center justify-between py-3" style={{ borderBottom: "1px solid #F0E7D6" }}>
           <div>
-            <div className="font-sans font-extrabold text-sm" style={{ color: "#2A2A3C" }}>Reset today's counter</div>
-            <div className="font-sans text-xs" style={{ color: "#5C5747" }}>
-              Give them a fresh {dailyLimit} runs for the rest of today.
-            </div>
+            <div className="font-sans font-extrabold text-sm" style={{ color: "#2A2A3C" }}>Reset today&apos;s counter</div>
+            <div className="font-sans text-xs" style={{ color: "#5C5747" }}>Give them a fresh {dailyLimit} runs for the rest of today.</div>
           </div>
-          <button
-            onClick={() => patchLimits({ resetToday: true }, "reset")}
-            disabled={busy !== null || props.runsUsedToday === 0}
-            className="px-4 py-2 rounded-pill font-sans font-extrabold text-sm text-white disabled:opacity-40"
-            style={{ background: "#FF924D", boxShadow: "0 3px 0 #CC6B2A" }}
-          >
-            Reset
-          </button>
+          <button onClick={() => patchLimits({ resetToday: true }, "reset")} disabled={busy !== null || props.runsUsedToday === 0} className="px-4 py-2 rounded-pill font-sans font-extrabold text-sm text-white disabled:opacity-40" style={{ background: "#FF924D", boxShadow: "0 3px 0 #CC6B2A" }}>Reset</button>
         </div>
 
-        {/* Change PIN */}
         <ChangePinRow studentId={props.studentId} busy={busy} setBusy={setBusy} flash={flash} />
       </div>
 
       {/* Preferences card */}
-      <div
-        className="rounded-card p-6"
-        style={{ background: "#FFFFFF", border: "2px solid #F0E7D6", boxShadow: "0 4px 12px rgba(58,46,28,.08)" }}
-      >
-        <div className="font-mono text-[10px] uppercase tracking-widest mb-4" style={{ color: "#8A8071" }}>
-          PREFERENCES
+      <div className="rounded-card p-6" style={{ background: "#FFFFFF", border: "2px solid #F0E7D6", boxShadow: "0 4px 12px rgba(58,46,28,.08)" }}>
+        <div className="font-mono text-[10px] uppercase tracking-widest mb-4" style={{ color: "#8A8071" }}>PREFERENCES</div>
+
+        <div className="flex items-center justify-between py-3" style={{ borderBottom: "1px solid #F0E7D6" }}>
+          <div className="min-w-0 flex-1 pr-4">
+            <div className="font-sans font-extrabold text-sm" style={{ color: "#2A2A3C" }}>Approve each new worker first</div>
+            <div className="font-sans text-xs" style={{ color: "#5C5747" }}>New AI Workers can&apos;t run until you approve them below.</div>
+          </div>
+          <Toggle checked={requireApproval} disabled={busy !== null} onChange={(v) => { setRequireApproval(v); patchPrefs({ requireApproval: v }); }} />
         </div>
 
         <div className="flex items-center justify-between py-3">
           <div className="min-w-0 flex-1 pr-4">
-            <div className="font-sans font-extrabold text-sm" style={{ color: "#2A2A3C" }}>Approve each new worker first</div>
-            <div className="font-sans text-xs" style={{ color: "#5C5747" }}>
-              New AI Workers can't run until you approve them below.
-            </div>
+            <div className="font-sans font-extrabold text-sm" style={{ color: "#2A2A3C" }}>Weekly learning report</div>
+            <div className="font-sans text-xs" style={{ color: "#5C5747" }}>Get a summary email every Sunday with runs, badges, and lesson progress.</div>
           </div>
-          <Toggle
-            checked={requireApproval}
-            disabled={busy !== null}
-            onChange={(v) => {
-              setRequireApproval(v);
-              patchPrefs({ requireApproval: v });
-            }}
-          />
+          <Toggle checked={emailWeekly} disabled={busy !== null} onChange={(v) => { setEmailWeekly(v); patchPrefs({ emailWeeklyReport: v }); }} />
         </div>
       </div>
 
-      {/* Workers list */}
-      <div
-        className="rounded-card p-6"
-        style={{ background: "#FFFFFF", border: "2px solid #F0E7D6", boxShadow: "0 4px 12px rgba(58,46,28,.08)" }}
-      >
-        <div className="font-mono text-[10px] uppercase tracking-widest mb-4" style={{ color: "#8A8071" }}>
-          AI WORKERS · {props.workers.length}
-          {requireApproval && pendingWorkers.length > 0 && (
-            <span style={{ color: "#E0792B" }}> · {pendingWorkers.length} AWAITING APPROVAL</span>
-          )}
-        </div>
-
-        {props.workers.length === 0 ? (
-          <div className="font-sans text-sm text-center py-4" style={{ color: "#8A8071" }}>
-            No workers yet.
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {props.workers.map((w) => {
-              const awaiting = requireApproval && !w.parentApprovedAt;
-              return (
-                <div
-                  key={w.id}
-                  className="flex items-center gap-3 rounded-block px-4 py-3"
-                  style={{
-                    background: awaiting ? "#FFF6E6" : "#FBF6EC",
-                    border: `2px solid ${awaiting ? "#FFC53D66" : "#F0E7D6"}`,
-                  }}
-                >
-                  <div className="flex-1 min-w-0">
-                    <div className="font-sans font-extrabold text-sm truncate" style={{ color: "#2A2A3C" }}>
-                      {w.name}
-                    </div>
-                    <div className="font-mono text-[10px] uppercase tracking-widest" style={{ color: awaiting ? "#E0792B" : "#8A8071" }}>
-                      {awaiting ? "⏳ Awaiting your approval" : w.parentApprovedAt ? "✓ Approved" : "Not gated"}
-                    </div>
-                  </div>
-                  {awaiting && (
-                    <button
-                      onClick={() => approveWorker(w.id)}
-                      disabled={busy !== null}
-                      className="px-3 py-1.5 rounded-pill font-sans font-extrabold text-xs text-white disabled:opacity-40"
-                      style={{ background: "#46C46A", boxShadow: "0 3px 0 #2E9B52" }}
-                    >
-                      Approve
-                    </button>
-                  )}
-                  <button
-                    onClick={() => deleteWorker(w.id, w.name)}
-                    disabled={busy !== null}
-                    className="px-3 py-1.5 rounded-pill font-sans font-extrabold text-xs disabled:opacity-40"
-                    style={{ background: "#FEE2E2", color: "#C0443A" }}
-                  >
-                    Delete
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
+      <WorkersList workers={props.workers} requireApproval={requireApproval} busy={busy} onApprove={approveWorker} onDelete={deleteWorker} />
     </div>
   );
 }
 
-function ChangePinRow({
-  studentId,
-  busy,
-  setBusy,
-  flash,
-}: {
-  studentId: string;
-  busy: string | null;
-  setBusy: (v: string | null) => void;
-  flash: (msg: string) => void;
-}) {
+function ChangePinRow({ studentId, busy, setBusy, flash }: { studentId: string; busy: string | null; setBusy: (v: string | null) => void; flash: (msg: string) => void; }) {
   const [pin, setPin] = useState("");
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleChange = async () => {
-    if (!/^\d{4}$/.test(pin)) {
-      setError("Enter exactly 4 digits.");
-      inputRef.current?.focus();
-      return;
-    }
-    setError(null);
-    setBusy("pin");
+    if (!/^\d{4}$/.test(pin)) { setError("Enter exactly 4 digits."); inputRef.current?.focus(); return; }
+    setError(null); setBusy("pin");
     try {
-      const res = await fetch(`/api/parent/children/${studentId}/pin`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pin }),
-      });
+      const res = await fetch(`/api/parent/children/${studentId}/pin`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ pin }) });
       if (!res.ok) throw new Error((await res.json()).error || "Failed");
-      setPin("");
-      flash("PIN changed ✓");
-    } catch (e) {
-      flash(e instanceof Error ? e.message : "Error");
-    } finally {
-      setBusy(null);
-    }
+      setPin(""); flash("PIN changed ✓");
+    } catch (e) { flash(e instanceof Error ? e.message : "Error"); }
+    finally { setBusy(null); }
   };
 
   return (
     <div className="flex items-center justify-between py-3">
       <div>
         <div className="font-sans font-extrabold text-sm" style={{ color: "#2A2A3C" }}>Change PIN</div>
-        <div className="font-sans text-xs" style={{ color: "#5C5747" }}>
-          Let them sign in with a new 4-digit code.
-        </div>
-        {error && (
-          <div className="font-sans text-xs mt-1" style={{ color: "#C0443A" }}>{error}</div>
-        )}
+        <div className="font-sans text-xs" style={{ color: "#5C5747" }}>Let them sign in with a new 4-digit code.</div>
+        {error && <div className="font-sans text-xs mt-1" style={{ color: "#C0443A" }}>{error}</div>}
       </div>
       <div className="flex items-center gap-2">
-        <input
-          ref={inputRef}
-          type="password"
-          inputMode="numeric"
-          pattern="\d{4}"
-          maxLength={4}
-          value={pin}
-          onChange={(e) => {
-            const v = e.target.value.replace(/\D/g, "").slice(0, 4);
-            setPin(v);
-            if (error) setError(null);
-          }}
-          placeholder="••••"
-          disabled={busy !== null}
+        <input ref={inputRef} type="password" inputMode="numeric" pattern="\d{4}" maxLength={4} value={pin}
+          onChange={(e) => { const v = e.target.value.replace(/\D/g, "").slice(0, 4); setPin(v); if (error) setError(null); }}
+          placeholder="••••" disabled={busy !== null}
           className="w-16 text-center font-mono text-sm rounded-block px-2 py-2 disabled:opacity-40"
           style={{ border: "2px solid #D6CFC0", background: "#FBF6EC", color: "#2A2A3C" }}
         />
-        <button
-          onClick={handleChange}
-          disabled={busy !== null || pin.length !== 4}
-          className="px-4 py-2 rounded-pill font-sans font-extrabold text-sm text-white disabled:opacity-40"
-          style={{ background: "#7C5CFF", boxShadow: "0 3px 0 #5A3ECC" }}
-        >
-          Change
-        </button>
+        <button onClick={handleChange} disabled={busy !== null || pin.length !== 4} className="px-4 py-2 rounded-pill font-sans font-extrabold text-sm text-white disabled:opacity-40" style={{ background: "#7C5CFF", boxShadow: "0 3px 0 #5A3ECC" }}>Change</button>
       </div>
     </div>
-  );
-}
-
-function Toggle({
-  checked,
-  disabled,
-  onChange,
-}: {
-  checked: boolean;
-  disabled?: boolean;
-  onChange: (v: boolean) => void;
-}) {
-  return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={checked}
-      disabled={disabled}
-      onClick={() => onChange(!checked)}
-      className="relative flex-shrink-0 transition-colors disabled:opacity-40"
-      style={{
-        width: 48,
-        height: 28,
-        borderRadius: 999,
-        background: checked ? "#46C46A" : "#D6CFC0",
-      }}
-    >
-      <span
-        className="absolute top-1 transition-all"
-        style={{
-          left: checked ? 22 : 4,
-          width: 20,
-          height: 20,
-          borderRadius: 999,
-          background: "#FFFFFF",
-          boxShadow: "0 2px 4px rgba(0,0,0,.2)",
-        }}
-      />
-    </button>
   );
 }

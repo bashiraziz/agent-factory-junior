@@ -43,6 +43,7 @@ export const parentChildLinks = pgTable("parent_child_links", {
   studentId: text("student_id").notNull(),
   linkCode: text("link_code").notNull(),
   emailOnFlag: boolean("email_on_flag").notNull().default(false),
+  emailWeeklyReport: boolean("email_weekly_report").notNull().default(false),
   requireApproval: boolean("require_approval").notNull().default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 }, (table) => ({
