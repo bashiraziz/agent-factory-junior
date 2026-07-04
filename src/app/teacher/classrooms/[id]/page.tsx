@@ -106,6 +106,12 @@ export default async function ClassroomDetailPage({
       return new Date(b.lastRun).getTime() - new Date(a.lastRun).getTime();
     });
 
+  const pendingShares = studentIds.length
+    ? await db.select({ id: projects.id }).from(projects)
+        .where(and(inArray(projects.ownerId, studentIds), eq(projects.shareStatus, "pending")))
+    : [];
+  const pendingCount = pendingShares.length;
+
   let lessonProgressMap: Record<string, number> = {};
   try {
     const { lessonProgress } = await import("@/db/schema");
@@ -138,11 +144,19 @@ export default async function ClassroomDetailPage({
           <span className="font-display text-xl" style={{ color: "#2A2A3C" }}>Classroom</span>
         </div>
         <div className="flex items-center gap-3">
+          <Link
+            href={`/teacher/classrooms/${id}/gallery`}
+            className="px-3 py-1.5 rounded-pill font-sans font-extrabold text-sm transition-colors"
+            style={{ background: pendingCount > 0 ? "#FFF0E0" : "#F0E7D6", color: pendingCount > 0 ? "#E0792B" : "#5C5747" }}
+          >
+            🖼 Gallery{pendingCount > 0 ? ` (${pendingCount})` : ""}
+          </Link>
           <HelpButton screenKey="teacher-classroom" title="Classroom detail" tips={[
             { icon: "🔑", title: "Join code", body: "Share the code so students can join." },
             { icon: "🎟", title: "Seat codes", body: "Pre-generate codes for kids without email." },
             { icon: "👀", title: "Recent runs", body: "Click Replay to see exactly what happened." },
             { icon: "⚠", title: "Flagged runs", body: "Yellow rows tripped a safety rule — click Review first." },
+            { icon: "🖼", title: "Gallery", body: "Students can share their finished Workers. You approve or reject from the Gallery tab before classmates see them." },
           ]} />
           <LogoutButton />
           <AvatarChip name={profile.displayName} size={36} />

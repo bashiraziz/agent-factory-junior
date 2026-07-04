@@ -189,8 +189,10 @@ export default function EditProjectPage() {
     dslJson: ProjectDSL | null;
     blocklyJson: object | null;
     status: string;
+    shareStatus: string | null;
     updatedAt: string;
   } | null>(null);
+  const [shareLoading, setShareLoading] = useState(false);
 
   const [dsl, setDsl] = useState<ProjectDSL | null>(null);
   const [blocklyJson, setBlocklyJson] = useState<object | null>(null);
@@ -411,6 +413,35 @@ export default function EditProjectPage() {
 
         {/* Right */}
         <div className="flex items-center gap-2 flex-shrink-0">
+          {project.status === "published" && (() => {
+            const ss = project.shareStatus;
+            if (ss === "approved") {
+              return <span className="px-3 py-1.5 rounded-pill font-sans font-extrabold text-xs" style={{ background: "#D1FAE5", color: "#2E9B52" }}>In gallery ✓</span>;
+            }
+            if (ss === "pending") {
+              return <span className="px-3 py-1.5 rounded-pill font-sans font-extrabold text-xs" style={{ background: "#F0E7D6", color: "#8A8071" }}>Waiting for teacher ⏳</span>;
+            }
+            const isRejected = ss === "rejected";
+            return (
+              <div className="flex flex-col items-end gap-0.5">
+                {isRejected && <span className="font-sans text-[10px]" style={{ color: "#E0792B" }}>Your teacher had a note</span>}
+                <button
+                  disabled={shareLoading}
+                  onClick={async () => {
+                    setShareLoading(true);
+                    try {
+                      const r = await fetch(`/api/projects/${id}/share`, { method: "POST" });
+                      if (r.ok) setProject((p) => p ? { ...p, shareStatus: "pending" } : p);
+                    } finally { setShareLoading(false); }
+                  }}
+                  className="px-3 py-1.5 rounded-pill font-sans font-extrabold text-xs transition-transform hover:-translate-y-0.5"
+                  style={{ background: isRejected ? "#FFF0E0" : "transparent", color: isRejected ? "#E0792B" : "#7C5CFF", border: `2px solid ${isRejected ? "#E0792B" : "#7C5CFF"}` }}
+                >
+                  {isRejected ? "Resubmit →" : "Share with class →"}
+                </button>
+              </div>
+            );
+          })()}
           <HelpButton
             screenKey="student-editor"
             title="Block editor"

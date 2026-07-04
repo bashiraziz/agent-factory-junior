@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
-import { projects } from "@/db/schema";
-import { eq, and } from "drizzle-orm";
+import { projects, classroomMembers } from "@/db/schema";
+import { eq, and, inArray } from "drizzle-orm";
 import { resolveStudentProfile } from "@/lib/student-auth";
 import { z } from "zod";
 
@@ -26,9 +26,23 @@ export async function GET(
     .from(projects)
     .where(and(eq(projects.id, id), eq(projects.ownerId, profile.id)));
 
-  if (!project) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (project) return NextResponse.json(project);
 
-  return NextResponse.json(project);
+  // Allow reading approved gallery projects from the same classroom
+  const [galleryProject] = await db.select().from(projects)
+    .where(and(eq(projects.id, id), eq(projects.shareStatus, "approved")));
+  if (galleryProject) {
+    const myClassrooms = (await db.select({ c: classroomMembers.classroomId })
+      .from(classroomMembers).where(eq(classroomMembers.studentId, profile.id)))
+      .map((r) => r.c);
+    if (myClassrooms.length) {
+      const [shared] = await db.select().from(classroomMembers)
+        .where(and(eq(classroomMembers.studentId, galleryProject.ownerId), inArray(classroomMembers.classroomId, myClassrooms)));
+      if (shared) return NextResponse.json(galleryProject);
+    }
+  }
+
+  return NextResponse.json({ error: "Not found" }, { status: 404 });
 }
 
 export async function PATCH(

@@ -46,3 +46,6 @@ FOLLOWUP_BRIEF_ROUND2.md
 
 # claude worktrees
 .claude/worktrees/
+
+# temp folder
+/temp/

@@ -60,6 +60,8 @@ export const projects = pgTable("projects", {
   dslJson: jsonb("dsl_json"),
   blocklyJson: jsonb("blockly_json"),
   status: text("status").notNull().default("draft"), // draft | published
+  shareStatus: text("share_status"), // null | "pending" | "approved" | "rejected"
+  sharedAt: timestamp("shared_at"),
   parentApprovedAt: timestamp("parent_approved_at"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),

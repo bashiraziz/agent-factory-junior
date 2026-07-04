@@ -330,6 +330,12 @@ async function initDb() {
     await client.query(`
       ALTER TABLE projects ADD COLUMN IF NOT EXISTS parent_approved_at TIMESTAMPTZ;
     `);
+    await client.query(`
+      ALTER TABLE projects ADD COLUMN IF NOT EXISTS share_status TEXT;
+    `);
+    await client.query(`
+      ALTER TABLE projects ADD COLUMN IF NOT EXISTS shared_at TIMESTAMPTZ;
+    `);
 
     await client.query(`
       CREATE TABLE IF NOT EXISTS lesson_progress (

@@ -1,6 +1,6 @@
 import { db } from "@/db";
-import { agentRuns, replays, projects, providerKeys } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { agentRuns, replays, projects, providerKeys, classroomMembers } from "@/db/schema";
+import { eq, and, inArray } from "drizzle-orm";
 import { validateProject } from "./validate-project";
 import { buildSafePrompt } from "./build-safe-prompt";
 import { callLLM } from "./llm";
@@ -22,10 +22,22 @@ export async function runWorker(projectId: string, studentId: string) {
     .where(eq(projects.id, projectId));
 
   if (!project) throw new Error("Project not found.");
-  if (project.ownerId !== studentId) throw new Error("Unauthorized.");
+
+  const isOwner = project.ownerId === studentId;
+  if (!isOwner) {
+    if (project.shareStatus !== "approved") throw new Error("Unauthorized.");
+    // Verify viewer and owner share a classroom
+    const ownerClassrooms = (await db.select({ classroomId: classroomMembers.classroomId })
+      .from(classroomMembers).where(eq(classroomMembers.studentId, project.ownerId)))
+      .map((r) => r.classroomId);
+    if (!ownerClassrooms.length) throw new Error("Unauthorized.");
+    const [shared] = await db.select().from(classroomMembers)
+      .where(and(eq(classroomMembers.studentId, studentId), inArray(classroomMembers.classroomId, ownerClassrooms)));
+    if (!shared) throw new Error("Unauthorized.");
+  }
 
   const usage = await assertNotPaused(studentId);
-  await assertApproved(project, studentId);
+  if (isOwner) await assertApproved(project, studentId);
 
   const dsl = project.dslJson as ProjectDSL;
   const validation = validateProject(dsl);
