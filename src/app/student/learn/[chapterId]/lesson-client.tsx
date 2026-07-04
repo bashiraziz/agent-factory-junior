@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import type { BookChapter } from "@/lib/lessons/book-chapters";
 import { Celebration } from "./celebration";
@@ -18,6 +18,12 @@ export function LessonClient({ chapter, completedIds, alreadyDone }: Props) {
   const [newlyCompletedIds, setNewlyCompletedIds] = useState<string[]>(completedIds);
   const [pathComplete, setPathComplete] = useState(false);
   const [completing, setCompleting] = useState(false);
+  const [pathProjectId, setPathProjectId] = useState<string | null>(null);
+  useEffect(() => {
+    fetch("/api/lessons/path-project").then((r) => r.json()).then((d) => d.projectId && setPathProjectId(d.projectId)).catch(() => {});
+  }, []);
+  const builderHref = pathProjectId ? `/student/projects/${pathProjectId}/edit?lesson=${chapter.id}` : "/student/projects";
+
   const allMissionDone = missionChecked.every(Boolean);
   const quizCorrect = quizSubmitted && quizAnswer === chapter.quiz.answer;
   const allDone = readChecked && allMissionDone && quizCorrect;
@@ -134,7 +140,7 @@ export function LessonClient({ chapter, completedIds, alreadyDone }: Props) {
               />
             ))}
             <Link
-              href="/student/projects"
+              href={builderHref}
               className="inline-block mt-1 font-sans text-sm font-extrabold"
               style={{ color: "#7C5CFF" }}
             >
@@ -188,13 +194,9 @@ export function LessonClient({ chapter, completedIds, alreadyDone }: Props) {
                 Check answer
               </button>
             ) : quizCorrect ? (
-              <div className="font-sans text-sm font-extrabold text-center" style={{ color: "#2E9B52" }}>
-                ✅ Correct! Great job.
-              </div>
+              <div className="font-sans text-sm font-extrabold text-center" style={{ color: "#2E9B52" }}>✅ Correct! Great job.</div>
             ) : (
-              <div className="font-sans text-sm text-center" style={{ color: "#C0443A" }}>
-                Not quite — the correct answer is highlighted above.
-              </div>
+              <div className="font-sans text-sm text-center" style={{ color: "#C0443A" }}>Not quite — the correct answer is highlighted above.</div>
             )}
           </div>
 

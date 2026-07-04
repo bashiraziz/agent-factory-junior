@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useSession, signOut } from "@/lib/auth-client";
@@ -178,6 +178,8 @@ function InspectorContent({
 export default function EditProjectPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const lessonReturn = searchParams.get("lesson");
   const { data: session } = useSession();
 
   const [project, setProject] = useState<{
@@ -360,15 +362,16 @@ export default function EditProjectPage() {
         {/* Left */}
         <div className="flex items-center gap-3 min-w-0">
           <Link
-            href="/student/projects"
-            className="flex-shrink-0 w-9 h-9 rounded-block flex items-center justify-center transition-colors"
+            href={lessonReturn ? `/student/learn/${lessonReturn}` : "/student/projects"}
+            className="flex-shrink-0 rounded-block flex items-center gap-1.5 px-2 h-9 transition-colors font-sans text-sm font-extrabold"
             style={{ color: "#7C5CFF" }}
             onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "#F4F0FF"; }}
             onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
               <path d="M15 18l-6-6 6-6" />
             </svg>
+            {lessonReturn ? "Back to lesson" : "Workers"}
           </Link>
 
           <div
