@@ -29,9 +29,12 @@ export default async function LearnPage() {
       >
         <div className="flex items-center gap-3">
           <span className="text-2xl">📖</span>
-          <span className="font-display text-xl" style={{ color: "#2A2A3C" }}>
-            Meet the <span style={{ color: "#7C5CFF" }}>AI</span>
-          </span>
+          <div>
+            <span className="font-display text-xl" style={{ color: "#2A2A3C" }}>
+              Meet the <span style={{ color: "#7C5CFF" }}>AI</span>
+            </span>
+            <div className="font-sans text-xs" style={{ color: "#8A8071" }}>For ages 8–12</div>
+          </div>
         </div>
         <div
           className="px-3 py-1 rounded-pill font-mono text-xs font-bold"
@@ -64,6 +67,7 @@ export default async function LearnPage() {
             {CORE_CHAPTERS.map((ch, i) => {
               const done = completed.has(ch.id);
               const locked = !done && i > 0 && !completed.has(CORE_CHAPTERS[i - 1].id);
+              const isCurrent = !done && !locked;
               return (
                 <ChapterCard
                   key={ch.id}
@@ -74,6 +78,7 @@ export default async function LearnPage() {
                   badgeEmoji={ch.badge.emoji}
                   done={done}
                   locked={locked}
+                  isCurrent={isCurrent}
                   order={ch.order}
                   prevTitle={i > 0 ? CORE_CHAPTERS[i - 1].title : undefined}
                 />
@@ -112,18 +117,22 @@ export default async function LearnPage() {
 }
 
 function ChapterCard({
-  id, title, emoji, color, badgeEmoji, done, locked, order, isBonus, prevTitle,
+  id, title, emoji, color, badgeEmoji, done, locked, isCurrent, order, isBonus, prevTitle,
 }: {
   id: string; title: string; emoji: string; color: string;
-  badgeEmoji: string; done: boolean; locked: boolean; order: number; isBonus?: boolean; prevTitle?: string;
+  badgeEmoji: string; done: boolean; locked: boolean; isCurrent?: boolean; order: number; isBonus?: boolean; prevTitle?: string;
 }) {
   const inner = (
     <div
-      className="flex items-center gap-4 p-4 rounded-card"
+      className={`flex items-center gap-4 p-4 rounded-card${isCurrent ? " afj-glow" : ""}`}
       style={{
         background: done ? color + "18" : "#FFFFFF",
         border: `2px solid ${done ? color + "55" : "#F0E7D6"}`,
-        boxShadow: locked ? "none" : "0 4px 16px rgba(58,46,28,.08)",
+        boxShadow: locked
+          ? "none"
+          : isCurrent
+          ? `0 0 0 3px ${color}88, 0 4px 20px ${color}44`
+          : "0 4px 16px rgba(58,46,28,.08)",
         opacity: locked ? 0.6 : 1,
       }}
     >
