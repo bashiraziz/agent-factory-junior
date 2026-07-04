@@ -6,6 +6,7 @@ import {
   jsonb,
   boolean,
   index,
+  unique,
 } from "drizzle-orm/pg-core";
 
 export const profiles = pgTable("profiles", {
@@ -163,3 +164,14 @@ export const providerKeys = pgTable("provider_keys", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
+
+export const lessonProgress = pgTable("lesson_progress", {
+  id: text("id").primaryKey(),
+  studentId: text("student_id").notNull().references(() => profiles.id),
+  chapterId: text("chapter_id").notNull(),
+  completedAt: timestamp("completed_at").notNull().defaultNow(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (t) => ({
+  studentIdx: index("lesson_progress_student_id_idx").on(t.studentId),
+  studentChapterUniq: unique("lesson_progress_student_chapter_uniq").on(t.studentId, t.chapterId),
+}));

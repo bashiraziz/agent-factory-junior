@@ -328,6 +328,20 @@ async function initDb() {
       ALTER TABLE projects ADD COLUMN IF NOT EXISTS parent_approved_at TIMESTAMPTZ;
     `);
 
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS lesson_progress (
+        id TEXT PRIMARY KEY,
+        student_id TEXT NOT NULL REFERENCES profiles(id),
+        chapter_id TEXT NOT NULL,
+        completed_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        UNIQUE(student_id, chapter_id)
+      );
+    `);
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS lesson_progress_student_id_idx ON lesson_progress(student_id);
+    `);
+
     console.log("✅ All tables created successfully!\n");
     console.log("Next step: Set DATABASE_URL in .env.local and run: npm run db:migrate");
   } finally {
