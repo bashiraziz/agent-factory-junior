@@ -87,42 +87,43 @@ async function seed() {
     console.log("🌱  Seeding demo account…\n");
     const now = new Date();
 
-    // ── 1. Better Auth user — use BA's own API so the password hash is correct ─
-    // Delete any existing demo user first (re-seed always gets a fresh valid hash)
-    await client.query(`DELETE FROM "user" WHERE email = $1`, [DEMO_EMAIL]);
-    console.log("  · Cleared old demo auth user (if any)");
+    // ── 1. Better Auth user — sign in if exists, create only if needed ──────────
+    let baUserId = "";
+    try {
+      const signInData = await auth.api.signInEmail({
+        body: { email: DEMO_EMAIL, password: DEMO_PASSWORD },
+        headers: new Headers({ "content-type": "application/json" }),
+      }) as { user?: { id: string } };
+      baUserId = signInData?.user?.id ?? "";
+      if (baUserId) console.log("  · Demo auth user already exists (id:", baUserId, ")");
+    } catch { /* not found — will create below */ }
 
-    const signUpData = await auth.api.signUpEmail({
-      body: { email: DEMO_EMAIL, password: DEMO_PASSWORD, name: "Demo Parent" },
-      headers: new Headers({ "content-type": "application/json" }),
-    }) as { user?: { id: string } };
-    const baUserId = signUpData?.user?.id;
     if (!baUserId) {
-      console.error("❌  Better Auth signUp failed:", signUpData);
-      process.exit(1);
+      const signUpData = await auth.api.signUpEmail({
+        body: { email: DEMO_EMAIL, password: DEMO_PASSWORD, name: "Demo Parent" },
+        headers: new Headers({ "content-type": "application/json" }),
+      }) as { user?: { id: string } };
+      baUserId = signUpData?.user?.id ?? "";
+      if (!baUserId) {
+        console.error("❌  Better Auth signUp failed:", signUpData);
+        process.exit(1);
+      }
+      console.log("  ✓ Better Auth user created (id:", baUserId, ")");
     }
-    console.log("  ✓ Better Auth user created (id:", baUserId, ")");
 
-    // ── 2. Parent profile — upsert, linking to the new BA userId ──────────────
-    // Delete stale profile row if it pointed to an old userId
-    await client.query(
-      `DELETE FROM profiles WHERE id = $1 AND user_id != $2`,
-      [DEMO.parentProfileId, baUserId]
-    );
-    const parentProfileCreated = await upsertRow(client, "profiles", "id", DEMO.parentProfileId, {
+    // ── 2. Parent profile — upsert, linking to the BA userId ──────────────────
+    await upsertRow(client, "profiles", "id", DEMO.parentProfileId, {
       user_id: baUserId,
       display_name: "Demo Parent",
       role: "parent",
       created_at: now,
       updated_at: now,
     });
-    // If it already existed with the right userId, update it anyway
-    if (!parentProfileCreated) {
-      await client.query(
-        `UPDATE profiles SET user_id = $1 WHERE id = $2`,
-        [baUserId, DEMO.parentProfileId]
-      );
-    }
+    // Ensure user_id stays in sync (safe on re-runs)
+    await client.query(
+      `UPDATE profiles SET user_id = $1, role = 'parent' WHERE id = $2`,
+      [baUserId, DEMO.parentProfileId]
+    );
     console.log("  ✓ Parent profile");
 
     // ── 3. Parent usage limits ─────────────────────────────────────────────────
@@ -301,6 +302,97 @@ async function seed() {
       created_at: new Date(now.getTime() - 30 * 60 * 1000),
     });
     console.log("  ✓ Sample runs");
+
+    // ── 11. Replay records for each run ───────────────────────────────────────
+    await upsertRow(client, "replays", "id", "demo_replay_001", {
+      run_id: DEMO.run1Id,
+      project_id: DEMO.proj1Id,
+      student_id: DEMO.childProfileId,
+      goal: "Help the student practise multiplication tables by asking questions and giving hints — never give the answer directly.",
+      knowledge_used: JSON.stringify([
+        "Multiplication is repeated addition. 3×4 means 3 groups of 4.",
+        "Tricks: anything times 10 adds a zero. Anything times 5 ends in 0 or 5.",
+      ]),
+      rules_applied: JSON.stringify([
+        "Ask me one question at a time.",
+        "If I get it wrong, give a hint — don't tell me the answer.",
+        "Celebrate when I get it right!",
+      ]),
+      steps_followed: JSON.stringify([
+        "Received student question: What is 7 times 8?",
+        "Identified this as a multiplication question",
+        "Applied hint rule — did not reveal the answer",
+        "Used doubling trick as a scaffold",
+        "Posed a follow-up question to guide the student",
+      ]),
+      tools_used: JSON.stringify([]),
+      approval_required: JSON.stringify([]),
+      safety_flags: JSON.stringify([]),
+      output: "Great question! Here's a hint: 7×8 is the same as 7×4 doubled. What is 7×4? 🤔",
+      provider: "mock",
+      created_at: new Date(now.getTime() - 2 * 60 * 60 * 1000),
+    });
+
+    await upsertRow(client, "replays", "id", "demo_replay_002", {
+      run_id: DEMO.run2Id,
+      project_id: DEMO.proj2Id,
+      student_id: DEMO.childProfileId,
+      goal: "Help the student build a creative short story step by step — characters, setting, problem, and resolution.",
+      knowledge_used: JSON.stringify([
+        "A good story has a beginning, middle, and end.",
+        "Characters need a goal and a challenge to overcome.",
+        "Describing sights, sounds, and feelings makes stories vivid.",
+      ]),
+      rules_applied: JSON.stringify([
+        "Ask me what kind of story I want before starting.",
+        "Suggest ideas but let me make the final choices.",
+        "Keep the story age-appropriate and positive.",
+      ]),
+      steps_followed: JSON.stringify([
+        "Received student story idea: dragon afraid of fire",
+        "Recognised creative premise with an interesting twist",
+        "Applied rule: let student make final choices",
+        "Asked for character name to build engagement",
+        "Kept tone positive and encouraging",
+      ]),
+      tools_used: JSON.stringify([]),
+      approval_required: JSON.stringify([]),
+      safety_flags: JSON.stringify([]),
+      output: "I love it — that's a brilliant twist! 🐉 Let's give your dragon a name first. What would you like to call them?",
+      provider: "mock",
+      created_at: new Date(now.getTime() - 60 * 60 * 1000),
+    });
+
+    await upsertRow(client, "replays", "id", "demo_replay_003", {
+      run_id: DEMO.run3Id,
+      project_id: DEMO.proj3Id,
+      student_id: DEMO.childProfileId,
+      goal: "Answer the student's science questions about nature, space, animals, and the human body in a fun and easy-to-understand way.",
+      knowledge_used: JSON.stringify([
+        "Light travels at 300,000 km per second.",
+        "The solar system has 8 planets: Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, Neptune.",
+      ]),
+      rules_applied: JSON.stringify([
+        "Use simple words and fun comparisons.",
+        "Ask me a follow-up question after each answer to keep me curious.",
+        "If I ask something outside your knowledge, say so honestly.",
+      ]),
+      steps_followed: JSON.stringify([
+        "Received student question: Why is the sky blue?",
+        "Retrieved knowledge: light scattering (Rayleigh scattering)",
+        "Applied rule: use simple words and fun comparisons",
+        "Explained that blue light scatters more than other colours",
+        "Applied rule: ask a follow-up question",
+        "Posed question about sunset colours to extend curiosity",
+      ]),
+      tools_used: JSON.stringify([]),
+      approval_required: JSON.stringify([]),
+      safety_flags: JSON.stringify([]),
+      output: "The sky is blue because of scattering! Sunlight is made of all colours. Blue light bounces around the most — so that's what we see. 🌤️ Why do sunsets look orange and red?",
+      provider: "mock",
+      created_at: new Date(now.getTime() - 30 * 60 * 1000),
+    });
+    console.log("  ✓ Replay records");
 
     console.log(`
 ✅  Demo seed complete!
