@@ -85,7 +85,7 @@ export default async function ParentDashboard() {
           <p className="font-sans text-lg mt-1" style={{ color: "#5C5747" }}>
             {validChildren.length > 0
               ? `Keeping an eye on ${validChildren.map((c) => c.displayName.split(" ")[0]).join(" & ")}'s learning`
-              : "Link a child to see their learning activity"}
+              : "Create or link a child account to see their learning activity"}
           </p>
         </div>
 
@@ -240,7 +240,7 @@ function CreateChildButton() {
       className="px-5 py-2.5 rounded-pill font-sans font-extrabold text-white text-sm inline-block"
       style={{ background: "#7C5CFF", boxShadow: "0 4px 0 #5B43E0" }}
     >
-      + Create Account
+      + Create Child Account
     </a>
   );
 }
@@ -253,7 +253,7 @@ function LinkChildButton() {
         className="px-5 py-2.5 rounded-pill font-sans font-extrabold text-sm"
         style={{ background: "#F4F0FF", color: "#7C5CFF", border: "2px solid #7C5CFF33" }}
       >
-        Link Existing
+        Link Child Account
       </button>
     </form>
   );
