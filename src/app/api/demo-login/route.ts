@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
 import { profiles } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 
 const DEMO_EMAIL    = "demo@agentfactoryjr.com";
 const DEMO_PASSWORD = "Demo1234!";
@@ -29,6 +29,11 @@ export async function GET(request: NextRequest) {
         .update(profiles)
         .set({ role: "parent", updatedAt: new Date() })
         .where(eq(profiles.userId, result.user.id));
+
+      // Mark email as verified — demo@agentfactoryjr.com has no real inbox
+      await db.execute(
+        sql`UPDATE "user" SET "emailVerified" = true WHERE id = ${result.user.id}`
+      );
     }
 
     const jar = await cookies();
