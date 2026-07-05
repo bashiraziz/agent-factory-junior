@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { SEAT_COOKIE } from "@/lib/seat-session";
 
+const CHILD_COOKIE = "afj-child-session";
 const ROLE_PREFIXES = ["student", "teacher", "parent", "admin"];
 
 export async function proxy(request: NextRequest) {
@@ -16,16 +17,19 @@ export async function proxy(request: NextRequest) {
     request.cookies.get("better-auth.session_token") ||
     request.cookies.get("__Secure-better-auth.session_token");
 
+  // Child-credential session covers /student/* (PIN-based, no Better Auth account)
+  const childCookie = request.cookies.get(CHILD_COOKIE);
+
   // Seat-code session covers /student/* only (no account, Track A)
   const seatCookie = request.cookies.get(SEAT_COOKIE);
 
+  const isStudent = matchedRole === "student";
   const isAuthenticated =
     !!sessionCookie?.value ||
-    (matchedRole === "student" && !!seatCookie?.value);
+    (isStudent && (!!seatCookie?.value || !!childCookie?.value));
 
   if (!isAuthenticated) {
-    if (matchedRole === "student") {
-      // Offer both sign-in and /join for unauthenticated student routes
+    if (isStudent) {
       const url = request.nextUrl.clone();
       url.pathname = "/join";
       url.searchParams.set("next", pathname);
@@ -38,9 +42,10 @@ export async function proxy(request: NextRequest) {
   }
 
   // Role-mismatch check: read the afj-role cookie set by the profile API after onboarding.
-  // If missing, let the request through — the server component will handle the redirect.
+  // Skip when a child cookie is present — children are always students regardless of any
+  // adult session that may be lingering in the same browser (e.g. demo parent + demo student).
   const roleCookie = request.cookies.get("afj-role");
-  if (roleCookie?.value && roleCookie.value !== matchedRole) {
+  if (!childCookie?.value && roleCookie?.value && roleCookie.value !== matchedRole) {
     const url = request.nextUrl.clone();
     url.pathname = `/${roleCookie.value}/dashboard`;
     return NextResponse.redirect(url);
