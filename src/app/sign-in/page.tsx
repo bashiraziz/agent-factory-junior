@@ -6,6 +6,9 @@ import Link from "next/link";
 import { signIn } from "@/lib/auth-client";
 import { Mascot } from "@/components/mascot";
 
+const DEMO_EMAIL = "demo@agentfactoryjr.com";
+const DEMO_PASSWORD = "Demo1234!";
+
 export default function SignInPage() {
   const router = useRouter();
   const [form, setForm] = useState({ email: "", password: "" });
@@ -20,11 +23,20 @@ export default function SignInPage() {
     router.refresh();
   };
 
-  const handleDemo = () => {
+  const handleDemo = async () => {
+    setError(null);
     setDemoLoading(true);
-    // Use the dedicated demo-login route: sets session cookie, resets demo data,
-    // marks email verified, and redirects straight to /parent/dashboard.
-    window.location.href = "/api/demo-login";
+    try {
+      const { error: err } = await signIn.email({ email: DEMO_EMAIL, password: DEMO_PASSWORD, rememberMe: true });
+      if (err) throw new Error(err.message ?? "Demo sign-in failed");
+      // Server-side cleanup: verify email + purge stale demo children
+      await fetch("/api/demo-setup", { method: "POST" });
+      router.push("/parent/dashboard");
+      router.refresh();
+    } catch (ex) {
+      setError(ex instanceof Error ? ex.message : "Demo sign-in failed");
+      setDemoLoading(false);
+    }
   };
 
   const handleSubmit = async (e: FormEvent) => {
