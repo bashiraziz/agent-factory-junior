@@ -150,6 +150,8 @@ export default function Home() {
             <span style={{ color: "#D8CFBB" }}>·</span>
             <Link href="/privacy" style={{ fontSize: 13, color: "#7C5CFF", fontWeight: 700, textDecoration: "none" }}>Privacy</Link>
             <span style={{ color: "#D8CFBB" }}>·</span>
+            <Link href="/credits" style={{ fontSize: 13, color: "#7C5CFF", fontWeight: 700, textDecoration: "none" }}>Credits</Link>
+            <span style={{ color: "#D8CFBB" }}>·</span>
             <Link href="/terms" style={{ fontSize: 13, color: "#7C5CFF", fontWeight: 700, textDecoration: "none" }}>Terms</Link>
           </div>
         </footer>

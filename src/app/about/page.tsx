@@ -85,6 +85,14 @@ export default function AboutPage() {
             </Link>
             <span style={{ color: "#D8CFBB" }}>·</span>
             <Link
+              href="/credits"
+              className="font-sans font-bold text-sm"
+              style={{ color: "#7C5CFF", textDecoration: "none" }}
+            >
+              Credits
+            </Link>
+            <span style={{ color: "#D8CFBB" }}>·</span>
+            <Link
               href="/help"
               className="font-sans font-bold text-sm"
               style={{ color: "#7C5CFF", textDecoration: "none" }}
