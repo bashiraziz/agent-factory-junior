@@ -223,12 +223,13 @@ export default function EditProjectPage() {
     []
   );
 
-  // Load project
+  // Load project — no session guard: child users have no Better Auth session but
+  // the API accepts their child cookie via resolveStudentProfile().
   useEffect(() => {
-    if (!session?.user) return;
     fetch(`/api/projects/${id}`)
       .then((r) => r.json())
       .then((p) => {
+        if (p.error) { setError(p.error); setLoading(false); return; }
         setProject(p);
         setDsl(p.dslJson as ProjectDSL);
         setBlocklyJson(p.blocklyJson as object | null);
@@ -238,7 +239,7 @@ export default function EditProjectPage() {
         setError("Could not load project");
         setLoading(false);
       });
-  }, [id, session]);
+  }, [id]);
 
   // Auto-save with debounce
   const scheduleSave = useCallback(() => {
@@ -462,7 +463,15 @@ export default function EditProjectPage() {
             ▶ Run
           </Link>
           <button
-            onClick={() => signOut().then(() => router.push("/sign-in"))}
+            onClick={async () => {
+              if (session?.user) {
+                await signOut();
+                router.push("/sign-in");
+              } else {
+                await fetch("/api/child/sign-out", { method: "POST" });
+                router.push("/child/sign-in");
+              }
+            }}
             className="px-3 py-1.5 rounded-pill font-sans font-extrabold text-xs transition-colors"
             style={{ background: "#F0E7D6", color: "#5C5747" }}
           >
