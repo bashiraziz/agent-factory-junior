@@ -219,7 +219,7 @@ export default async function ParentChildDetailPage({
                     <StatusPill status={status} />
 
                     <Link
-                      href={`/student/projects/${run.projectId}/replay/${run.id}`}
+                      href={`/parent/children/${id}/replay/${run.id}`}
                       className="font-sans font-extrabold text-xs px-3 py-1.5 rounded-pill flex-shrink-0"
                       style={{ background: "#F4F0FF", color: "#7C5CFF" }}
                     >
