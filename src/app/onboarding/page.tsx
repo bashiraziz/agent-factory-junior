@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useSession } from "@/lib/auth-client";
 
 const ROLES = [
@@ -110,6 +111,16 @@ export default function OnboardingPage() {
         >
           {sessionLoading ? "Loading…" : loading ? "Setting up…" : "Continue →"}
         </button>
+
+        <div
+          className="rounded-xl px-4 py-3 font-sans text-sm text-center"
+          style={{ background: "#F0FDF4", border: "1.5px solid #BBF7D0", color: "#5C5747" }}
+        >
+          🎒 <strong>Are you a student?</strong>{" "}
+          <Link href="/child/sign-in" className="font-bold hover:underline" style={{ color: "#16A34A" }}>
+            Sign in with your username &amp; PIN →
+          </Link>
+        </div>
       </div>
     </main>
   );
