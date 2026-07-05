@@ -131,32 +131,45 @@ export default async function ParentDashboard() {
                 {validChildren.map((child) => {
                   const childRuns2 = childRuns.filter((r) => r.studentId === child.id);
                   const safeCount = childRuns2.filter((r) => r.status === "completed").length;
+                  const isDemoChild = child.id === "demo_profile_child_001";
                   return (
-                    <Link
-                      key={child.id}
-                      href={`/parent/children/${child.id}`}
-                      className="rounded-card p-5 flex items-center gap-4 transition-transform hover:-translate-y-1"
-                      style={{ background: "#FFFFFF", border: "2px solid #F0E7D6", boxShadow: "0 18px 50px rgba(58,46,28,.12)" }}
-                    >
-                      <AvatarChip name={child.displayName} size={50} />
-                      <div className="flex-1 min-w-0">
-                        <div className="font-display text-lg font-semibold" style={{ color: "#2A2A3C" }}>
-                          {child.displayName}
+                    <div key={child.id} className="space-y-2">
+                      <Link
+                        href={`/parent/children/${child.id}`}
+                        className="rounded-card p-5 flex items-center gap-4 transition-transform hover:-translate-y-1"
+                        style={{ background: "#FFFFFF", border: "2px solid #F0E7D6", boxShadow: "0 18px 50px rgba(58,46,28,.12)" }}
+                      >
+                        <AvatarChip name={child.displayName} size={50} />
+                        <div className="flex-1 min-w-0">
+                          <div className="font-display text-lg font-semibold" style={{ color: "#2A2A3C" }}>
+                            {child.displayName}
+                          </div>
+                          <div className="font-sans text-sm mt-0.5" style={{ color: "#5C5747" }}>
+                            {childRuns2.length} runs this week
+                          </div>
+                          <div
+                            className="inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 rounded-pill font-mono text-[10px] font-bold"
+                            style={{ background: "#D1FAE5", color: "#2E9B52" }}
+                          >
+                            ● {safeCount} SAFE
+                          </div>
                         </div>
-                        <div className="font-sans text-sm mt-0.5" style={{ color: "#5C5747" }}>
-                          {childRuns2.length} runs this week
-                        </div>
-                        <div
-                          className="inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 rounded-pill font-mono text-[10px] font-bold"
-                          style={{ background: "#D1FAE5", color: "#2E9B52" }}
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8A8071" strokeWidth="2.5" strokeLinecap="round">
+                          <path d="M9 18l6-6-6-6" />
+                        </svg>
+                      </Link>
+                      {isDemoChild && (
+                        <Link
+                          href="/child/sign-in?demo=1"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center justify-center gap-1.5 w-full py-2 rounded-pill font-sans font-extrabold text-sm transition-transform hover:-translate-y-0.5"
+                          style={{ background: "#F0FDF4", color: "#16A34A", border: "1.5px solid #BBF7D0" }}
                         >
-                          ● {safeCount} SAFE
-                        </div>
-                      </div>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8A8071" strokeWidth="2.5" strokeLinecap="round">
-                        <path d="M9 18l6-6-6-6" />
-                      </svg>
-                    </Link>
+                          🎒 Try as Alex (student view) →
+                        </Link>
+                      )}
+                    </div>
                   );
                 })}
               </div>

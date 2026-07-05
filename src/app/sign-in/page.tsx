@@ -6,45 +6,21 @@ import Link from "next/link";
 import { signIn } from "@/lib/auth-client";
 import { Mascot } from "@/components/mascot";
 
-const DEMO_EMAIL = "demo@agentfactoryjr.com";
-const DEMO_PASSWORD = "Demo1234!";
-
 export default function SignInPage() {
   const router = useRouter();
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [demoLoading, setDemoLoading] = useState(false);
-
-  const doSignIn = async (email: string, password: string) => {
-    const { error: err } = await signIn.email({ email, password, rememberMe: true });
-    if (err) throw new Error(err.message ?? "Sign-in failed");
-    router.push("/onboarding");
-    router.refresh();
-  };
-
-  const handleDemo = async () => {
-    setError(null);
-    setDemoLoading(true);
-    try {
-      const { error: err } = await signIn.email({ email: DEMO_EMAIL, password: DEMO_PASSWORD, rememberMe: true });
-      if (err) throw new Error(err.message ?? "Demo sign-in failed");
-      // Server-side cleanup: verify email + purge stale demo children
-      await fetch("/api/demo-setup", { method: "POST" });
-      router.push("/parent/dashboard");
-      router.refresh();
-    } catch (ex) {
-      setError(ex instanceof Error ? ex.message : "Demo sign-in failed");
-      setDemoLoading(false);
-    }
-  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
     try {
-      await doSignIn(form.email, form.password);
+      const { error: err } = await signIn.email({ email: form.email, password: form.password, rememberMe: true });
+      if (err) throw new Error(err.message ?? "Sign-in failed");
+      router.push("/onboarding");
+      router.refresh();
     } catch (ex) {
       setError(ex instanceof Error ? ex.message : "Sign-in failed");
     } finally {
@@ -72,17 +48,15 @@ export default function SignInPage() {
             🎮 Just here to explore?
           </div>
           <p className="font-sans text-xs" style={{ color: "#5C5747" }}>
-            Jump straight into a pre-loaded demo account — no sign-up needed.
+            Jump in as a parent or student — no sign-up needed.
           </p>
-          <button
-            type="button"
-            onClick={handleDemo}
-            disabled={demoLoading || loading}
-            className="w-full py-3 rounded-pill font-sans font-extrabold text-base text-white transition-transform hover:-translate-y-0.5 disabled:opacity-60"
+          <a
+            href="/demo"
+            className="block w-full py-3 rounded-pill font-sans font-extrabold text-base text-white text-center transition-transform hover:-translate-y-0.5"
             style={{ background: "#7C5CFF", boxShadow: "0 4px 0 #5B43E0" }}
           >
-            {demoLoading ? "Opening demo…" : "Try the demo →"}
-          </button>
+            Try the demo →
+          </a>
         </div>
 
         <div className="flex items-center gap-3">

@@ -1,14 +1,16 @@
 "use client";
 
-import { useState, useRef, type FormEvent } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useRef, useEffect, type FormEvent } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Mascot } from "@/components/mascot";
 
 export default function ChildSignInPage() {
   const router = useRouter();
-  const [username, setUsername] = useState("");
-  const [pin, setPin] = useState("");
+  const searchParams = useSearchParams();
+  const isDemo = searchParams.get("demo") === "1";
+  const [username, setUsername] = useState(isDemo ? "alex_demo" : "");
+  const [pin, setPin] = useState(isDemo ? "1234" : "");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const pinRef = useRef<HTMLInputElement>(null);
@@ -52,6 +54,20 @@ export default function ChildSignInPage() {
             Enter your username and secret PIN to jump back in.
           </p>
         </div>
+
+        {isDemo && (
+          <div
+            className="rounded-xl px-4 py-3 text-center space-y-1"
+            style={{ background: "#F0FDF4", border: "1.5px solid #BBF7D0" }}
+          >
+            <div className="font-sans font-extrabold text-sm" style={{ color: "#16A34A" }}>
+              🎮 Demo student — fields pre-filled!
+            </div>
+            <div className="font-mono text-xs" style={{ color: "#5C5747" }}>
+              username: alex_demo &nbsp;·&nbsp; PIN: 1234
+            </div>
+          </div>
+        )}
 
         <form
           onSubmit={handleSubmit}
