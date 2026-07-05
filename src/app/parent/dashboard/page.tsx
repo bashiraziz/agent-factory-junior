@@ -89,20 +89,23 @@ export default async function ParentDashboard() {
           </p>
         </div>
 
-        {/* Link a child CTA */}
+        {/* Empty state / first-child CTA */}
         {validChildren.length === 0 ? (
           <div
             className="rounded-card p-10 text-center"
             style={{ background: "#FFFFFF", border: "2px dashed #F0E7D6", boxShadow: "0 18px 50px rgba(58,46,28,.12)" }}
           >
-            <div className="text-6xl mb-4">🔗</div>
+            <div className="text-6xl mb-4">👶</div>
             <div className="font-display text-2xl mb-2" style={{ color: "#2A2A3C" }}>
-              Link your child's account
+              Add your first child
             </div>
             <p className="font-sans mb-6" style={{ color: "#5C5747" }}>
-              Ask your child for their link code. You'll find it in their profile.
+              Create a child account directly, or link an existing one with their link code.
             </p>
-            <LinkChildButton />
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              <CreateChildButton />
+              <LinkChildButton />
+            </div>
           </div>
         ) : (
           <>
@@ -112,12 +115,16 @@ export default async function ParentDashboard() {
                 <div>
                   <div className="font-mono text-xs uppercase tracking-widest mb-1" style={{ color: "#8A8071" }}>
                     MY CHILDREN
+
                   </div>
                   <h2 className="font-display text-2xl" style={{ color: "#2A2A3C" }}>
                     {validChildren.length} linked
                   </h2>
                 </div>
-                <LinkChildButton />
+                <div className="flex items-center gap-2">
+                  <CreateChildButton />
+                  <LinkChildButton />
+                </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -226,15 +233,27 @@ export default async function ParentDashboard() {
   );
 }
 
+function CreateChildButton() {
+  return (
+    <a
+      href="/parent/children/create"
+      className="px-5 py-2.5 rounded-pill font-sans font-extrabold text-white text-sm inline-block"
+      style={{ background: "#7C5CFF", boxShadow: "0 4px 0 #5B43E0" }}
+    >
+      + Create Account
+    </a>
+  );
+}
+
 function LinkChildButton() {
   return (
     <form action="/parent/children/link" method="get">
       <button
         type="submit"
-        className="px-5 py-2.5 rounded-pill font-sans font-extrabold text-white text-sm"
-        style={{ background: "#18B5A0", boxShadow: "0 4px 0 #0E8A78" }}
+        className="px-5 py-2.5 rounded-pill font-sans font-extrabold text-sm"
+        style={{ background: "#F4F0FF", color: "#7C5CFF", border: "2px solid #7C5CFF33" }}
       >
-        + Link a Child
+        Link Existing
       </button>
     </form>
   );
