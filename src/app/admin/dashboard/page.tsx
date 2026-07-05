@@ -5,6 +5,7 @@ import { db } from "@/db";
 import { profiles, classrooms, projects, agentRuns } from "@/db/schema";
 import { eq, count } from "drizzle-orm";
 import { AvatarChip } from "@/components/avatar-chip";
+import { AdminDemoResetButton } from "@/components/admin-demo-reset-button";
 
 export default async function AdminDashboard() {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -184,6 +185,13 @@ export default async function AdminDashboard() {
               </div>
             ))}
           </div>
+        </section>
+        {/* Demo account management */}
+        <section className="space-y-3">
+          <div className="font-mono text-xs uppercase tracking-widest" style={{ color: "#8A8071" }}>
+            DEMO ACCOUNT
+          </div>
+          <AdminDemoResetButton />
         </section>
       </main>
     </div>
