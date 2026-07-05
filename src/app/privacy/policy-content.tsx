@@ -5,7 +5,7 @@ const SECTIONS = [
   },
   {
     title: "2. How accounts are created",
-    body: "Parents or teachers create and manage all accounts. Children never provide an email address or any personal information directly to us. A child's username is chosen by the parent or teacher, and should not include the child's real name.",
+    body: "Parents or teachers create and manage all accounts. Children never provide an email address or any personal information directly to us. A child's display name and username are chosen by the parent. Both should be nicknames — not the child's real name. The platform encourages anonymous, fun identifiers (e.g. RocketPanda, cool-coder-42) and rejects usernames that appear to contain a birth year.",
   },
   {
     title: "3. What we collect",

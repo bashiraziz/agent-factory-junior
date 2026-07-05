@@ -35,6 +35,12 @@ export async function POST(req: NextRequest) {
       { status: 400 }
     );
   }
+  if (/\b(199\d|20[0-2]\d)\b/.test(usernameRaw)) {
+    return NextResponse.json(
+      { error: "Avoid using a birth year in the username — try a fun nickname instead." },
+      { status: 400 }
+    );
+  }
   if (!/^\d{4}$/.test(pin)) {
     return NextResponse.json({ error: "PIN must be exactly 4 digits." }, { status: 400 });
   }

@@ -1,8 +1,18 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useState, useCallback, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+
+const ADJECTIVES = ["happy", "cosmic", "brave", "electric", "fuzzy", "swift", "mighty", "clever", "wild", "sunny"];
+const NOUNS = ["robot", "panda", "comet", "dragon", "cactus", "penguin", "rocket", "falcon", "pixel", "turtle"];
+
+function randomUsername() {
+  const adj = ADJECTIVES[Math.floor(Math.random() * ADJECTIVES.length)];
+  const noun = NOUNS[Math.floor(Math.random() * NOUNS.length)];
+  const num = Math.floor(Math.random() * 90 + 10);
+  return `${adj}-${noun}-${num}`;
+}
 
 export default function CreateChildAccountPage() {
   const router = useRouter();
@@ -14,6 +24,9 @@ export default function CreateChildAccountPage() {
   const [error, setError] = useState<string | null>(null);
   const [consented, setConsented] = useState(false);
   const [created, setCreated] = useState<{ displayName: string; username: string; pin: string } | null>(null);
+  const [suggestions] = useState(() => Array.from({ length: 3 }, randomUsername));
+
+  const applySuggestion = useCallback((s: string) => setUsername(s), []);
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -174,7 +187,7 @@ export default function CreateChildAccountPage() {
             <form onSubmit={onSubmit} className="space-y-4">
               <div>
                 <label className="block font-mono text-xs uppercase tracking-widest mb-1.5" style={{ color: "#8A8071" }}>
-                  Child&apos;s name
+                  Nickname
                 </label>
                 <input
                   type="text"
@@ -182,10 +195,13 @@ export default function CreateChildAccountPage() {
                   maxLength={40}
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
-                  placeholder="e.g. Amina"
+                  placeholder="e.g. RocketPanda"
                   className="w-full px-4 py-3 rounded-[11px] font-sans text-base outline-none"
                   style={{ background: "#FBF6EC", border: "1.5px solid #F0E7D6", color: "#2A2A3C" }}
                 />
+                <div className="font-sans text-xs mt-1" style={{ color: "#8A8071" }}>
+                  Pick a fun nickname — not their real name.
+                </div>
               </div>
 
               <div>
@@ -198,12 +214,25 @@ export default function CreateChildAccountPage() {
                   autoComplete="off"
                   value={username}
                   onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ""))}
-                  placeholder="amina2018"
+                  placeholder="e.g. cool-coder-42"
                   className="w-full px-4 py-3 rounded-[11px] font-mono text-lg font-bold outline-none"
                   style={{ background: "#FBF6EC", border: "1.5px solid #F0E7D6", color: "#7C5CFF" }}
                 />
-                <div className="font-sans text-xs mt-1" style={{ color: "#8A8071" }}>
+                <div className="font-sans text-xs mt-1 mb-2" style={{ color: "#8A8071" }}>
                   3–20 letters, numbers, - or _. This is what they type to sign in.
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {suggestions.map((s) => (
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() => applySuggestion(s)}
+                      className="px-3 py-1 rounded-pill font-mono text-xs font-bold transition-colors"
+                      style={{ background: "#F4F0FF", color: "#7C5CFF", border: "1.5px solid #7C5CFF33" }}
+                    >
+                      {s}
+                    </button>
+                  ))}
                 </div>
               </div>
 
