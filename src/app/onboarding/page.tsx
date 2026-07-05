@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "@/lib/auth-client";
 
@@ -35,17 +35,6 @@ export default function OnboardingPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Students never reach onboarding — they're created by parents/teachers and sign in at /join.
-  useEffect(() => {
-    if (session?.user) {
-      fetch("/api/profile")
-        .then((r) => r.json())
-        .then((data) => {
-          if (data?.role === "student") router.replace("/student/dashboard");
-        })
-        .catch(() => {});
-    }
-  }, [session, router]);
 
   const handleContinue = async () => {
     if (!selected) return;
