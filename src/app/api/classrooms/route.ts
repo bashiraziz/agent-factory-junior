@@ -30,11 +30,25 @@ export async function POST(req: NextRequest) {
   if (!profile) return NextResponse.json({ error: "No profile" }, { status: 403 });
   if (profile.role !== "teacher") return NextResponse.json({ error: "Teachers only" }, { status: 403 });
 
-  const { name } = await req.json();
+  const { name, coppaConsent } = await req.json();
   if (!name?.trim()) return NextResponse.json({ error: "Name required" }, { status: 400 });
+
+  // Gap 4: First classroom requires COPPA school-official consent acknowledgment
+  const needsConsent = !profile.coppaConsentedAt;
+  if (needsConsent && !coppaConsent) {
+    return NextResponse.json(
+      { error: "Please acknowledge the data consent statement before creating your first classroom." },
+      { status: 403 }
+    );
+  }
 
   const id = nanoid();
   const now = new Date();
+
+  // Record consent on first classroom creation
+  if (needsConsent && coppaConsent) {
+    await db.update(profiles).set({ coppaConsentedAt: now }).where(eq(profiles.id, profile.id));
+  }
 
   const [classroom] = await retryOnUnique(async () => {
     return db

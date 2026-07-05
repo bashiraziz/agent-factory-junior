@@ -1,17 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "@/lib/auth-client";
 
 const ROLES = [
-  {
-    id: "student",
-    label: "I'm a Student",
-    desc: "Build AI Workers and explore learning!",
-    emoji: "🎓",
-    color: "#9B6DFF",
-  },
   {
     id: "teacher",
     label: "I'm a Teacher",
@@ -41,6 +34,18 @@ export default function OnboardingPage() {
   const [selected, setSelected] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Students never reach onboarding — they're created by parents/teachers and sign in at /join.
+  useEffect(() => {
+    if (session?.user) {
+      fetch("/api/profile")
+        .then((r) => r.json())
+        .then((data) => {
+          if (data?.role === "student") router.replace("/student/dashboard");
+        })
+        .catch(() => {});
+    }
+  }, [session, router]);
 
   const handleContinue = async () => {
     if (!selected) return;

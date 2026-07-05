@@ -1,14 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
+import { auth } from "@/lib/auth";
 import { db } from "@/db";
 import { profiles, childCredentials, parentChildLinks } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { nanoid } from "@/lib/utils";
 import { resolveParent } from "@/lib/parent-auth";
+import { headers } from "next/headers";
 
 export async function POST(req: NextRequest) {
   const parent = await resolveParent();
   if (!parent) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  // Gap 5b: Require email verification before creating a child account (COPPA "email plus" VPC)
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session?.user?.emailVerified) {
+    return NextResponse.json(
+      { error: "Please verify your email first — check your inbox or request a new link from your dashboard." },
+      { status: 403 }
+    );
+  }
 
   const body = await req.json().catch(() => null);
   const displayName = String(body?.displayName ?? "").trim();
@@ -43,6 +54,7 @@ export async function POST(req: NextRequest) {
   const profileId = nanoid();
   const userId = `child_${nanoid(16)}`;
   const linkCode = nanoid(8).toUpperCase();
+  const now = new Date();
 
   await db.insert(profiles).values({
     id: profileId,
@@ -61,11 +73,14 @@ export async function POST(req: NextRequest) {
     pinHash,
   });
 
+  // Gap 2 + 5c: Record consent timestamp and email-verification timestamp (COPPA audit trail)
   await db.insert(parentChildLinks).values({
     id: nanoid(),
     parentId: parent.id,
     studentId: profileId,
     linkCode,
+    consentedAt: now,
+    parentEmailVerifiedAt: now,
   });
 
   return NextResponse.json({ ok: true, profileId, username: usernameRaw });

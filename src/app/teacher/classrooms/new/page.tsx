@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -9,17 +9,30 @@ export default function NewClassroomPage() {
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [needsConsent, setNeedsConsent] = useState(false);
+  const [teacherConsented, setTeacherConsented] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/profile")
+      .then((r) => r.json())
+      .then((data) => {
+        // Show consent checkbox only if this teacher hasn't consented yet
+        if (data && !data.coppaConsentedAt) setNeedsConsent(true);
+      })
+      .catch(() => {});
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
+    if (needsConsent && !teacherConsented) return;
     setLoading(true);
     setError(null);
     try {
       const res = await fetch("/api/classrooms", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: name.trim() }),
+        body: JSON.stringify({ name: name.trim(), coppaConsent: needsConsent ? teacherConsented : undefined }),
       });
       if (!res.ok) {
         const data = await res.json();
@@ -119,9 +132,30 @@ export default function NewClassroomPage() {
                 </ul>
               </div>
 
+              {needsConsent && (
+                <label className="flex items-start gap-3 cursor-pointer" style={{ color: "#5C5747" }}>
+                  <input
+                    type="checkbox"
+                    required
+                    checked={teacherConsented}
+                    onChange={(e) => setTeacherConsented(e.target.checked)}
+                    className="mt-1 w-5 h-5 accent-[#3DA5F4] flex-shrink-0"
+                  />
+                  <span className="font-sans text-sm leading-relaxed">
+                    As a school official, I consent to Agent Factory Junior collecting student data
+                    (usernames, block configurations, and AI run logs) solely for educational purposes
+                    in my classroom, per the{" "}
+                    <a href="/privacy" target="_blank" className="font-bold underline" style={{ color: "#3DA5F4" }}>
+                      Privacy Policy
+                    </a>. I confirm that parents have been informed of this use, or that my school&apos;s
+                    acceptable-use policy covers educational technology tools.
+                  </span>
+                </label>
+              )}
+
               <button
                 type="submit"
-                disabled={!name.trim() || loading}
+                disabled={!name.trim() || loading || (needsConsent && !teacherConsented)}
                 className="w-full py-3.5 rounded-pill font-sans font-extrabold text-lg text-white transition-transform hover:-translate-y-0.5 disabled:opacity-40"
                 style={{ background: "#3DA5F4", boxShadow: "0 4px 0 #1F6FB0" }}
               >

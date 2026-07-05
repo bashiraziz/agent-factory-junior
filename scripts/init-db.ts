@@ -351,6 +351,17 @@ async function initDb() {
       CREATE INDEX IF NOT EXISTS lesson_progress_student_id_idx ON lesson_progress(student_id);
     `);
 
+    // COPPA compliance columns (2026-07)
+    await client.query(`
+      ALTER TABLE parent_child_links ADD COLUMN IF NOT EXISTS consented_at TIMESTAMPTZ;
+    `);
+    await client.query(`
+      ALTER TABLE parent_child_links ADD COLUMN IF NOT EXISTS parent_email_verified_at TIMESTAMPTZ;
+    `);
+    await client.query(`
+      ALTER TABLE profiles ADD COLUMN IF NOT EXISTS coppa_consented_at TIMESTAMPTZ;
+    `);
+
     console.log("✅ All tables created successfully!\n");
     console.log("Next step: Set DATABASE_URL in .env.local and run: npm run db:migrate");
   } finally {

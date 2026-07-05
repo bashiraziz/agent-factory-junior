@@ -12,6 +12,7 @@ export default function CreateChildAccountPage() {
   const [pinConfirm, setPinConfirm] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [consented, setConsented] = useState(false);
   const [created, setCreated] = useState<{ displayName: string; username: string; pin: string } | null>(null);
 
   const onSubmit = async (e: FormEvent) => {
@@ -111,6 +112,7 @@ export default function CreateChildAccountPage() {
                     setUsername("");
                     setPin("");
                     setPinConfirm("");
+                    setConsented(false);
                   }}
                   className="w-full py-2 font-sans text-sm hover:underline"
                   style={{ color: "#8A8071" }}
@@ -254,9 +256,28 @@ export default function CreateChildAccountPage() {
                 </p>
               </div>
 
+              <label className="flex items-start gap-3 cursor-pointer" style={{ color: "#5C5747" }}>
+                <input
+                  type="checkbox"
+                  required
+                  checked={consented}
+                  onChange={(e) => setConsented(e.target.checked)}
+                  className="mt-1 w-5 h-5 accent-[#7C5CFF] flex-shrink-0"
+                />
+                <span className="font-sans text-sm leading-relaxed">
+                  I am this child&apos;s parent or legal guardian. I have read the{" "}
+                  <a href="/privacy" target="_blank" className="font-bold underline" style={{ color: "#7C5CFF" }}>
+                    Privacy Policy
+                  </a>{" "}
+                  and I consent to my child&apos;s use of Agent Factory Junior, including AI processing of
+                  their block configurations by Google Gemini. I understand I can delete my child&apos;s
+                  account and all associated data at any time.
+                </span>
+              </label>
+
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || !consented}
                 className="w-full py-3.5 rounded-pill font-sans font-extrabold text-lg text-white disabled:opacity-60"
                 style={{ background: "#7C5CFF", boxShadow: "0 4px 0 #5B43E0" }}
               >

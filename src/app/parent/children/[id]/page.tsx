@@ -8,6 +8,7 @@ import { eq, and, desc } from "drizzle-orm";
 import { AvatarChip } from "@/components/avatar-chip";
 import { StatusPill } from "@/components/status-pill";
 import { ParentControlsPanel } from "@/components/parent-controls-panel";
+import { ChildDangerZone } from "@/components/child-danger-zone";
 
 export default async function ParentChildDetailPage({
   params,
@@ -262,6 +263,9 @@ export default async function ParentChildDetailPage({
             </div>
           </div>
         </div>
+
+        {/* Gap 3: COPPA data deletion */}
+        <ChildDangerZone childId={id} childName={child.displayName} />
       </main>
     </div>
   );

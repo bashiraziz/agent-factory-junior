@@ -15,6 +15,7 @@ export const profiles = pgTable("profiles", {
   displayName: text("display_name").notNull(),
   role: text("role").notNull().default("student"), // student | teacher | parent | admin
   linkCode: text("link_code").unique(), // for parent-child linking (students only)
+  coppaConsentedAt: timestamp("coppa_consented_at"), // teacher: school-official COPPA consent timestamp
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
@@ -45,6 +46,8 @@ export const parentChildLinks = pgTable("parent_child_links", {
   emailOnFlag: boolean("email_on_flag").notNull().default(false),
   emailWeeklyReport: boolean("email_weekly_report").notNull().default(false),
   requireApproval: boolean("require_approval").notNull().default(false),
+  consentedAt: timestamp("consented_at"),
+  parentEmailVerifiedAt: timestamp("parent_email_verified_at"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 }, (table) => ({
   parentIdIdx: index("parent_child_links_parent_id_idx").on(table.parentId),

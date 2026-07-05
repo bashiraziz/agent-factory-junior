@@ -8,6 +8,7 @@ import { eq, desc } from "drizzle-orm";
 import { AvatarChip } from "@/components/avatar-chip";
 import { StatusPill } from "@/components/status-pill";
 import { BYOKEntryCard } from "@/components/byok-entry-card";
+import { EmailVerificationNudge } from "@/components/email-verification-nudge";
 
 export default async function ParentDashboard() {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -68,6 +69,11 @@ export default async function ParentDashboard() {
       </header>
 
       <main className="max-w-4xl mx-auto px-6 py-10 space-y-10">
+        {/* Gap 5d: COPPA — nudge unverified parents before they can create child accounts */}
+        {!session.user.emailVerified && (
+          <EmailVerificationNudge email={session.user.email} />
+        )}
+
         {/* Greeting */}
         <div>
           <div className="font-mono text-xs uppercase tracking-widest mb-1" style={{ color: "#8A8071" }}>
