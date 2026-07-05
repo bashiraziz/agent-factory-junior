@@ -20,6 +20,12 @@ export const auth = betterAuth({
   baseURL: authUrl,
   secret: resolvedSecret,
   database,
+  trustedOrigins: [
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "http://localhost:3002",
+    process.env.NEXT_PUBLIC_APP_URL ?? "",
+  ].filter(Boolean),
   emailAndPassword: { enabled: true },
   emailVerification: {
     sendVerificationEmail: async ({ user, url }: { user: { email: string; name?: string }; url: string }) => {
