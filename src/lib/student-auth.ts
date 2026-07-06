@@ -7,10 +7,17 @@ import { getSeatProfile } from "./seat-session";
 import { getChildProfile } from "./student-session";
 
 /**
- * Resolves the current student's profile from either a Better Auth session
- * or a seat-code session cookie. Returns null if neither is present.
+ * Resolves the current student's profile from PIN cookie, seat cookie, or
+ * Better Auth session — in that order. PIN/seat take priority so a coexisting
+ * parent Better Auth session doesn't override the student identity.
  */
 export async function resolveStudentProfile() {
+  const child = await getChildProfile();
+  if (child) return child;
+
+  const seat = await getSeatProfile();
+  if (seat) return seat;
+
   const session = await auth.api.getSession({ headers: await headers() });
   if (session?.user) {
     const [profile] = await db
@@ -20,8 +27,5 @@ export async function resolveStudentProfile() {
     if (profile) return profile;
   }
 
-  const child = await getChildProfile();
-  if (child) return child;
-
-  return getSeatProfile();
+  return null;
 }
