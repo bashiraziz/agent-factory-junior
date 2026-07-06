@@ -25,19 +25,16 @@ export function validateProject(dsl: unknown): ValidationResult {
     errors.push("At least one Safety Rule block is required.");
   }
 
-  if (!Array.isArray(d.steps)) {
-    errors.push("Steps must be an array.");
-  } else {
-    for (const step of d.steps as Array<Record<string, unknown>>) {
-      if (!ALLOWED_STEP_TYPES.includes(step.type as string)) {
-        errors.push(`Unsupported block type: "${step.type}". Allowed: ${ALLOWED_STEP_TYPES.join(", ")}`);
-      }
-      if (step.type === "explain" && !ALLOWED_STYLES.includes(step.style as string)) {
-        errors.push(`Explain block has invalid style: "${step.style}".`);
-      }
-      if (step.type === "quiz" && (typeof step.question_count !== "number" || step.question_count < 1)) {
-        errors.push("Quiz block requires a valid question_count >= 1.");
-      }
+  const steps = Array.isArray(d.steps) ? (d.steps as Array<Record<string, unknown>>) : [];
+  for (const step of steps) {
+    if (!ALLOWED_STEP_TYPES.includes(step.type as string)) {
+      errors.push(`Unsupported block type: "${step.type}". Allowed: ${ALLOWED_STEP_TYPES.join(", ")}`);
+    }
+    if (step.type === "explain" && !ALLOWED_STYLES.includes(step.style as string)) {
+      errors.push(`Explain block has invalid style: "${step.style}".`);
+    }
+    if (step.type === "quiz" && (typeof step.question_count !== "number" || step.question_count < 1)) {
+      errors.push("Quiz block requires a valid question_count >= 1.");
     }
   }
 
