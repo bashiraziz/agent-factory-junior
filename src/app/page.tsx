@@ -46,7 +46,7 @@ export default function Home() {
             style={{ fontSize: 40, fontWeight: 600, lineHeight: 1, color: "#2A2A3C", whiteSpace: "nowrap" }}
           >
             Agent Factory{" "}
-            <span style={{ color: "#7C5CFF" }}>Junior</span>
+            <span style={{ color: "#7C5CFF" }}>Foundations</span>
           </span>
         </div>
 
