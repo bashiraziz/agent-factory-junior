@@ -4,7 +4,7 @@ import { db } from "@/db";
 import { profiles } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { getSeatProfile } from "./seat-session";
-import { getChildProfile } from "./child-session";
+import { getChildProfile } from "./student-session";
 
 /**
  * Resolves the current student's profile from either a Better Auth session
