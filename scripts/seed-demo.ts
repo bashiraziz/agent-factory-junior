@@ -26,10 +26,12 @@ const pool = new Pool({
   ssl: DATABASE_URL.includes("neon.tech") ? true : undefined,
 });
 
-const DEMO_EMAIL     = "demo@agentfactoryfoundations.com";
-const DEMO_PASSWORD  = "Demo1234!";
-const DEMO_PIN       = "1234";
-const CHILD_USERNAME = "alex_demo";
+const DEMO_EMAIL          = "demo@agentfactoryfoundations.com";
+const DEMO_PASSWORD       = "Demo1234!";
+const DEMO_PIN            = "1234";
+const CHILD_USERNAME      = "alex_demo";
+const TEACHER_EMAIL       = "demo-teacher@agentfactoryfoundations.com";
+const TEACHER_PASSWORD    = "Demo1234!";
 
 // Fixed IDs for app-level rows (idempotent across re-runs)
 const DEMO = {
@@ -40,6 +42,10 @@ const DEMO = {
   childCredId:        "demo_cred_child_001",
   childLinkId:        "demo_link_child_001",
   childUsageLimitId:  "demo_usage_child_001",
+  teacherUserId:      "demo_user_teacher_001",
+  teacherProfileId:   "demo_profile_teacher_001",
+  classroomId:        "demo_classroom_001",
+  classroomMemberId:  "demo_cm_001",
   proj1Id:            "demo_proj_math_001",
   proj2Id:            "demo_proj_story_001",
   proj3Id:            "demo_proj_science_001",
@@ -138,6 +144,66 @@ async function seed() {
       updated_at: now,
     });
     console.log("  ✓ Parent usage limits");
+
+    // ── 2b. Teacher Better Auth user ──────────────────────────────────────────
+    let teacherBaUserId = "";
+    try {
+      const signInData = await auth.api.signInEmail({
+        body: { email: TEACHER_EMAIL, password: TEACHER_PASSWORD },
+        headers: new Headers({ "content-type": "application/json" }),
+      }) as { user?: { id: string } };
+      teacherBaUserId = signInData?.user?.id ?? "";
+      if (teacherBaUserId) console.log("  · Demo teacher auth user already exists (id:", teacherBaUserId, ")");
+    } catch { /* not found — will create below */ }
+
+    if (!teacherBaUserId) {
+      const signUpData = await auth.api.signUpEmail({
+        body: { email: TEACHER_EMAIL, password: TEACHER_PASSWORD, name: "Demo Teacher" },
+        headers: new Headers({ "content-type": "application/json" }),
+      }) as { user?: { id: string } };
+      teacherBaUserId = signUpData?.user?.id ?? "";
+      if (!teacherBaUserId) {
+        console.error("❌  Teacher Better Auth signUp failed:", signUpData);
+        process.exit(1);
+      }
+      console.log("  ✓ Teacher Better Auth user created (id:", teacherBaUserId, ")");
+    }
+
+    // ── 2c. Teacher profile ────────────────────────────────────────────────────
+    await upsertRow(client, "profiles", "id", DEMO.teacherProfileId, {
+      user_id: teacherBaUserId,
+      display_name: "Demo Teacher",
+      role: "teacher",
+      created_at: now,
+      updated_at: now,
+    });
+    await client.query(
+      `UPDATE profiles SET user_id = $1, role = 'teacher' WHERE id = $2`,
+      [teacherBaUserId, DEMO.teacherProfileId]
+    );
+    await client.query(
+      `UPDATE "user" SET "emailVerified" = true WHERE id = $1`,
+      [teacherBaUserId]
+    );
+    console.log("  ✓ Teacher profile");
+
+    // ── 2d. Demo classroom ─────────────────────────────────────────────────────
+    await upsertRow(client, "classrooms", "id", DEMO.classroomId, {
+      teacher_id: DEMO.teacherProfileId,
+      name: "Demo Classroom",
+      join_code: "DEMO-TCH1",
+      created_at: now,
+      updated_at: now,
+    });
+    console.log("  ✓ Demo classroom");
+
+    // ── 2e. Enrol demo student in classroom ───────────────────────────────────
+    await upsertRow(client, "classroom_members", "id", DEMO.classroomMemberId, {
+      classroom_id: DEMO.classroomId,
+      student_id: DEMO.childProfileId,
+      created_at: now,
+    });
+    console.log("  ✓ Demo student enrolled in classroom");
 
     // ── 4. Child Better Auth-style user row (no real auth, internal only) ──────
     await upsertRow(client, '"user"', "id", DEMO.childUserId, {
@@ -403,10 +469,15 @@ async function seed() {
 │  Email:    ${DEMO_EMAIL.padEnd(33)}│
 │  Password: ${DEMO_PASSWORD.padEnd(33)}│
 ├─────────────────────────────────────────────┤
-│  STUDENT LOGIN (to demo the child view)     │
-│  URL:      /child/sign-in                   │
+│  STUDENT LOGIN (to demo the student view)   │
+│  URL:      /student/sign-in                 │
 │  Username: ${CHILD_USERNAME.padEnd(33)}│
 │  PIN:      ${DEMO_PIN.padEnd(33)}│
+├─────────────────────────────────────────────┤
+│  TEACHER LOGIN (to demo the teacher view)   │
+│  URL:      /sign-in  (or click Try Demo)    │
+│  Email:    ${TEACHER_EMAIL.padEnd(33)}│
+│  Password: ${TEACHER_PASSWORD.padEnd(33)}│
 └─────────────────────────────────────────────┘
 `);
   } finally {

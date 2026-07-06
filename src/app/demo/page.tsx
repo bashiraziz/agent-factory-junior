@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { Mascot } from "@/components/mascot";
 import { DemoParentButton } from "@/components/demo-parent-button";
+import { DemoTeacherButton } from "@/components/demo-teacher-button";
 
 export default function DemoPage() {
   return (
     <main className="min-h-screen flex items-center justify-center px-4 py-12" style={{ background: "#FFFDF7" }}>
-      <div className="w-full max-w-2xl space-y-8">
+      <div className="w-full max-w-5xl space-y-8">
 
         {/* Hero */}
         <div className="text-center space-y-3">
@@ -18,8 +19,8 @@ export default function DemoPage() {
           </p>
         </div>
 
-        {/* Two demo cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        {/* Demo cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
 
           {/* Parent card */}
           <div
@@ -69,6 +70,28 @@ export default function DemoPage() {
             >
               Try as Demo Student →
             </Link>
+          </div>
+
+          {/* Teacher card */}
+          <div
+            className="rounded-card p-7 flex flex-col gap-5"
+            style={{ background: "#FFFFFF", border: "2px solid #F0E7D6", boxShadow: "0 18px 50px rgba(58,46,28,.12)" }}
+          >
+            <div className="space-y-1">
+              <div className="text-4xl">👩‍🏫</div>
+              <div className="font-display text-2xl font-semibold" style={{ color: "#2A2A3C" }}>Teacher view</div>
+              <p className="font-sans text-sm" style={{ color: "#5C5747" }}>
+                Review student AI Workers, manage classrooms, and see the moderation queue.
+              </p>
+            </div>
+            <div
+              className="rounded-xl px-4 py-3 font-mono text-xs space-y-1"
+              style={{ background: "#EFF6FF", color: "#1D4ED8" }}
+            >
+              <div>Email demo-teacher@agentfactoryfoundations.com</div>
+              <div>Password Demo1234!</div>
+            </div>
+            <DemoTeacherButton />
           </div>
         </div>
 
