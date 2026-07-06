@@ -69,7 +69,7 @@ export default async function ParentDashboard() {
       </header>
 
       <main className="max-w-4xl mx-auto px-6 py-10 space-y-10">
-        {/* Gap 5d: COPPA — nudge unverified parents before they can create child accounts */}
+        {/* Gap 5d: COPPA — nudge unverified parents before they can create student accounts */}
         {!session.user.emailVerified && (
           <EmailVerificationNudge email={session.user.email} />
         )}
@@ -131,11 +131,11 @@ export default async function ParentDashboard() {
                 {validChildren.map((child) => {
                   const childRuns2 = childRuns.filter((r) => r.studentId === child.id);
                   const safeCount = childRuns2.filter((r) => r.status === "completed").length;
-                  const isDemoChild = child.id === "demo_profile_child_001";
+                  const isDemoChild = child.id === "demo_profile_student_001";
                   return (
                     <div key={child.id} className="space-y-2">
                       <Link
-                        href={`/parent/children/${child.id}`}
+                        href={`/parent/students/${child.id}`}
                         className="rounded-card p-5 flex items-center gap-4 transition-transform hover:-translate-y-1"
                         style={{ background: "#FFFFFF", border: "2px solid #F0E7D6", boxShadow: "0 18px 50px rgba(58,46,28,.12)" }}
                       >
@@ -160,7 +160,7 @@ export default async function ParentDashboard() {
                       </Link>
                       {isDemoChild && (
                         <Link
-                          href="/child/sign-in?demo=1"
+                          href="/student/sign-in?demo=1"
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex items-center justify-center gap-1.5 w-full py-2 rounded-pill font-sans font-extrabold text-sm transition-transform hover:-translate-y-0.5"
@@ -249,7 +249,7 @@ export default async function ParentDashboard() {
 function CreateChildButton() {
   return (
     <a
-      href="/parent/children/create"
+      href="/parent/students/create"
       className="px-5 py-2.5 rounded-pill font-sans font-extrabold text-white text-sm inline-block"
       style={{ background: "#7C5CFF", boxShadow: "0 4px 0 #5B43E0" }}
     >
@@ -260,7 +260,7 @@ function CreateChildButton() {
 
 function LinkChildButton() {
   return (
-    <form action="/parent/children/link" method="get">
+    <form action="/parent/students/link" method="get">
       <button
         type="submit"
         className="px-5 py-2.5 rounded-pill font-sans font-extrabold text-sm"

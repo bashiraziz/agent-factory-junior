@@ -40,11 +40,11 @@ export default async function ParentReplayPage({
     <div className="min-h-screen py-8 px-4" style={{ background: "#FBF6EC" }}>
       <div className="max-w-lg mx-auto">
         <Link
-          href={`/parent/children/${childId}`}
+          href={`/parent/students/${childId}`}
           className="inline-flex items-center gap-1 font-sans text-sm font-extrabold mb-6"
           style={{ color: "#18B5A0" }}
         >
-          ← Back to {project ? "child" : "child"}&apos;s profile
+          ← Back to student&apos;s profile
         </Link>
 
         {replay ? (
@@ -66,7 +66,7 @@ export default async function ParentReplayPage({
 
         <div className="text-center mt-6">
           <Link
-            href={`/parent/children/${childId}`}
+            href={`/parent/students/${childId}`}
             className="inline-block px-6 py-3 rounded-pill font-sans font-extrabold text-sm text-white"
             style={{ background: "#18B5A0", boxShadow: "0 4px 0 #0E8A78" }}
           >

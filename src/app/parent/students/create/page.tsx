@@ -37,7 +37,7 @@ export default function CreateChildAccountPage() {
     }
     setLoading(true);
     try {
-      const res = await fetch("/api/parent/children/create", {
+      const res = await fetch("/api/parent/students/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -66,7 +66,7 @@ export default function CreateChildAccountPage() {
           className="h-16 flex items-center px-6 gap-3"
           style={{ background: "#FFFFFF", borderBottom: "2px solid #F0E7D6" }}
         >
-          <Link href="/parent/children" className="p-2 rounded-block" style={{ color: "#7C5CFF" }}>
+          <Link href="/parent/students" className="p-2 rounded-block" style={{ color: "#7C5CFF" }}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
               <path d="M15 18l-6-6 6-6" />
             </svg>
@@ -112,7 +112,7 @@ export default function CreateChildAccountPage() {
 
               <div className="flex flex-col gap-2">
                 <Link
-                  href="/parent/children"
+                  href="/parent/students"
                   className="w-full py-3 rounded-pill font-sans font-extrabold text-white"
                   style={{ background: "#7C5CFF", boxShadow: "0 4px 0 #5B43E0" }}
                 >
@@ -146,7 +146,7 @@ export default function CreateChildAccountPage() {
         className="h-16 flex items-center px-6 gap-3"
         style={{ background: "#FFFFFF", borderBottom: "2px solid #F0E7D6" }}
       >
-        <Link href="/parent/children" className="p-2 rounded-block" style={{ color: "#7C5CFF" }}>
+        <Link href="/parent/students" className="p-2 rounded-block" style={{ color: "#7C5CFF" }}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
             <path d="M15 18l-6-6 6-6" />
           </svg>

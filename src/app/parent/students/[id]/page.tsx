@@ -8,7 +8,7 @@ import { eq, and, desc } from "drizzle-orm";
 import { AvatarChip } from "@/components/avatar-chip";
 import { StatusPill } from "@/components/status-pill";
 import { ParentControlsPanel } from "@/components/parent-controls-panel";
-import { ChildDangerZone } from "@/components/child-danger-zone";
+import { StudentDangerZone } from "@/components/student-danger-zone";
 
 export default async function ParentChildDetailPage({
   params,
@@ -98,7 +98,7 @@ export default async function ParentChildDetailPage({
         style={{ background: "#FFFFFF", borderBottom: "2px solid #F0E7D6" }}
       >
         <div className="flex items-center gap-3">
-          <Link href="/parent/children" style={{ color: "#18B5A0" }} className="p-2 rounded-block">
+          <Link href="/parent/students" style={{ color: "#18B5A0" }} className="p-2 rounded-block">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
               <path d="M15 18l-6-6 6-6" />
             </svg>
@@ -184,7 +184,7 @@ export default async function ParentChildDetailPage({
               style={{ background: "#FFFFFF", border: "2px dashed #F0E7D6" }}
             >
               <div className="font-sans" style={{ color: "#8A8071" }}>
-                No runs yet. Your child hasn't run any AI Workers.
+                No runs yet. This student hasn't run any AI Workers.
               </div>
             </div>
           ) : (
@@ -219,7 +219,7 @@ export default async function ParentChildDetailPage({
                     <StatusPill status={status} />
 
                     <Link
-                      href={`/parent/children/${id}/replay/${run.id}`}
+                      href={`/parent/students/${id}/replay/${run.id}`}
                       className="font-sans font-extrabold text-xs px-3 py-1.5 rounded-pill flex-shrink-0"
                       style={{ background: "#F4F0FF", color: "#7C5CFF" }}
                     >
@@ -265,7 +265,7 @@ export default async function ParentChildDetailPage({
         </div>
 
         {/* Gap 3: COPPA data deletion */}
-        <ChildDangerZone childId={id} childName={child.displayName} />
+        <StudentDangerZone childId={id} childName={child.displayName} />
       </main>
     </div>
   );

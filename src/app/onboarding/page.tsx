@@ -117,7 +117,7 @@ export default function OnboardingPage() {
           style={{ background: "#F0FDF4", border: "1.5px solid #BBF7D0", color: "#5C5747" }}
         >
           🎒 <strong>Are you a student?</strong>{" "}
-          <Link href="/child/sign-in" className="font-bold hover:underline" style={{ color: "#16A34A" }}>
+          <Link href="/student/sign-in" className="font-bold hover:underline" style={{ color: "#16A34A" }}>
             Sign in with your username &amp; PIN →
           </Link>
         </div>

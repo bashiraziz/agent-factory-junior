@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-export function ChildDangerZone({ childId, childName }: { childId: string; childName: string }) {
+export function StudentDangerZone({ childId, childName }: { childId: string; childName: string }) {
   const router = useRouter();
   const [showConfirm, setShowConfirm] = useState(false);
   const [confirmText, setConfirmText] = useState("");
@@ -15,13 +15,13 @@ export function ChildDangerZone({ childId, childName }: { childId: string; child
     setDeleting(true);
     setError(null);
     try {
-      const res = await fetch(`/api/parent/children/${childId}/delete`, { method: "DELETE" });
+      const res = await fetch(`/api/parent/students/${childId}/delete`, { method: "DELETE" });
       if (!res.ok) {
         const body = await res.json();
         setError(body.error ?? "Something went wrong");
         return;
       }
-      router.push("/parent/children");
+      router.push("/parent/students");
     } catch {
       setError("Network error — please try again.");
     } finally {

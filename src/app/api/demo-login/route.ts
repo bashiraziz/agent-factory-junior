@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
           .set({ role: "parent", updatedAt: new Date() })
           .where(eq(profiles.userId, result.user.id));
 
-        // Remove child accounts added by previous demo visitors
+        // Remove student accounts added by previous demo visitors
         await purgeDemoChildren(parentProfile.id);
       }
 

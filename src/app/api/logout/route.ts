@@ -4,7 +4,7 @@ import { db } from "@/db";
 import { childCredentials, classroomSeatCodes } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { SEAT_COOKIE } from "@/lib/seat-session";
-import { CHILD_COOKIE } from "@/lib/child-session";
+import { CHILD_COOKIE } from "@/lib/student-session";
 
 export async function POST() {
   const jar = await cookies();

@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
   const parent = await resolveParent();
   if (!parent) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  // Gap 5b: Require email verification before creating a child account (COPPA "email plus" VPC)
+  // Gap 5b: Require email verification before creating a student account (COPPA "email plus" VPC)
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user?.emailVerified) {
     return NextResponse.json(
@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
   const pin = String(body?.pin ?? "").trim();
 
   if (!displayName) {
-    return NextResponse.json({ error: "Please enter a name for your child." }, { status: 400 });
+    return NextResponse.json({ error: "Please enter a name for your student." }, { status: 400 });
   }
   if (!/^[a-z0-9_-]{3,20}$/.test(usernameRaw)) {
     return NextResponse.json(

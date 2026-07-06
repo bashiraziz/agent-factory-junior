@@ -13,7 +13,7 @@ export async function PATCH(
   if (!parent) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const link = await verifyParentChildLink(parent.id, studentId);
-  if (!link) return NextResponse.json({ error: "Not your child" }, { status: 403 });
+  if (!link) return NextResponse.json({ error: "Not your student" }, { status: 403 });
 
   const { emailOnFlag, emailWeeklyReport, requireApproval } = await req.json();
   const patch: Record<string, unknown> = {};

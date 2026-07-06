@@ -17,7 +17,7 @@ export default function LinkChildPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/children/link", {
+      const res = await fetch("/api/students/link", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ linkCode: code.trim().toUpperCase() }),
@@ -25,7 +25,7 @@ export default function LinkChildPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to link student");
       setSuccess(data.student?.displayName || "Student linked!");
-      setTimeout(() => router.push("/parent/children"), 1500);
+      setTimeout(() => router.push("/parent/students"), 1500);
     } catch (ex) {
       setError(ex instanceof Error ? ex.message : "Something went wrong");
       setLoading(false);
@@ -38,7 +38,7 @@ export default function LinkChildPage() {
         className="h-16 flex items-center px-6 gap-3"
         style={{ background: "#FFFFFF", borderBottom: "2px solid #F0E7D6" }}
       >
-        <Link href="/parent/children" className="p-2 rounded-block" style={{ color: "#18B5A0" }}>
+        <Link href="/parent/students" className="p-2 rounded-block" style={{ color: "#18B5A0" }}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
             <path d="M15 18l-6-6 6-6" />
           </svg>

@@ -36,7 +36,7 @@ export function ParentControlsPanel(props: Props) {
   const patchLimits = async (body: Record<string, unknown>, label: string) => {
     setBusy(label);
     try {
-      const res = await fetch(`/api/parent/children/${props.studentId}/limits`, {
+      const res = await fetch(`/api/parent/students/${props.studentId}/limits`, {
         method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
       });
       if (!res.ok) throw new Error((await res.json()).error || "Failed");
@@ -48,7 +48,7 @@ export function ParentControlsPanel(props: Props) {
   const patchPrefs = async (body: Record<string, unknown>) => {
     setBusy("prefs");
     try {
-      const res = await fetch(`/api/parent/children/${props.studentId}/preferences`, {
+      const res = await fetch(`/api/parent/students/${props.studentId}/preferences`, {
         method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
       });
       if (!res.ok) throw new Error((await res.json()).error || "Failed");
@@ -156,7 +156,7 @@ function ChangePinRow({ studentId, busy, setBusy, flash }: { studentId: string; 
     if (!/^\d{4}$/.test(pin)) { setError("Enter exactly 4 digits."); inputRef.current?.focus(); return; }
     setError(null); setBusy("pin");
     try {
-      const res = await fetch(`/api/parent/children/${studentId}/pin`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ pin }) });
+      const res = await fetch(`/api/parent/students/${studentId}/pin`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ pin }) });
       if (!res.ok) throw new Error((await res.json()).error || "Failed");
       setPin(""); flash("PIN changed ✓");
     } catch (e) { flash(e instanceof Error ? e.message : "Error"); }

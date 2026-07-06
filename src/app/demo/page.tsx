@@ -63,7 +63,7 @@ export default function DemoPage() {
               <div>PIN &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1234</div>
             </div>
             <Link
-              href="/child/sign-in?demo=1"
+              href="/student/sign-in?demo=1"
               className="block w-full py-4 rounded-pill font-sans font-extrabold text-lg text-white text-center transition-transform hover:-translate-y-0.5"
               style={{ background: "#46C46A", boxShadow: "0 5px 0 #2E9B52" }}
             >

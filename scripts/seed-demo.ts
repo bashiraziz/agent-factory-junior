@@ -36,7 +36,7 @@ const DEMO = {
   parentProfileId:    "demo_profile_parent_001",
   parentUsageLimitId: "demo_usage_parent_001",
   childUserId:        "demo_user_child_001",
-  childProfileId:     "demo_profile_child_001",
+  childProfileId:     "demo_profile_student_001",
   childCredId:        "demo_cred_child_001",
   childLinkId:        "demo_link_child_001",
   childUsageLimitId:  "demo_usage_child_001",

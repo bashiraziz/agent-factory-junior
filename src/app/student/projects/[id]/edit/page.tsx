@@ -223,8 +223,8 @@ export default function EditProjectPage() {
     []
   );
 
-  // Load project — no session guard: child users have no Better Auth session but
-  // the API accepts their child cookie via resolveStudentProfile().
+  // Load project — no session guard: PIN-auth students have no Better Auth session but
+  // the API accepts their PIN cookie via resolveStudentProfile().
   useEffect(() => {
     fetch(`/api/projects/${id}`)
       .then((r) => r.json())
@@ -468,8 +468,8 @@ export default function EditProjectPage() {
                 await signOut();
                 router.push("/sign-in");
               } else {
-                await fetch("/api/child/sign-out", { method: "POST" });
-                router.push("/child/sign-in");
+                await fetch("/api/student/sign-out", { method: "POST" });
+                router.push("/student/sign-in");
               }
             }}
             className="px-3 py-1.5 rounded-pill font-sans font-extrabold text-xs transition-colors"

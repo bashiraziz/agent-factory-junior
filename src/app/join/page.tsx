@@ -59,7 +59,7 @@ export default function JoinPage() {
     setError(null);
     setLoading(true);
     try {
-      const res = await fetch("/api/child/sign-in", {
+      const res = await fetch("/api/student/sign-in", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username: username.trim().toLowerCase(), pin }),

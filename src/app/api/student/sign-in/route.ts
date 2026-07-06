@@ -5,7 +5,7 @@ import { db } from "@/db";
 import { childCredentials } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { nanoid } from "@/lib/utils";
-import { CHILD_COOKIE } from "@/lib/child-session";
+import { CHILD_COOKIE } from "@/lib/student-session";
 
 const MAX_ATTEMPTS = 5;
 const LOCKOUT_MINUTES = 15;

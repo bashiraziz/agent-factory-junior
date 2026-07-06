@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { CHILD_COOKIE } from "@/lib/child-session";
+import { CHILD_COOKIE } from "@/lib/student-session";
 
 export async function POST() {
   const jar = await cookies();

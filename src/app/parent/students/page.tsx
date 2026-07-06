@@ -49,14 +49,14 @@ export default async function ParentChildrenPage() {
         </div>
         <div className="flex items-center gap-2">
           <Link
-            href="/parent/children/create"
+            href="/parent/students/create"
             className="px-4 py-2 rounded-pill font-sans font-extrabold text-sm text-white"
             style={{ background: "#7C5CFF", boxShadow: "0 4px 0 #5B43E0" }}
           >
             + Create Account
           </Link>
           <Link
-            href="/parent/children/link"
+            href="/parent/students/link"
             className="px-4 py-2 rounded-pill font-sans font-extrabold text-sm text-white"
             style={{ background: "#18B5A0", boxShadow: "0 4px 0 #0E8A78" }}
           >
@@ -89,14 +89,14 @@ export default async function ParentChildrenPage() {
             </p>
             <div className="flex items-center justify-center gap-3 flex-wrap">
               <Link
-                href="/parent/children/create"
+                href="/parent/students/create"
                 className="inline-block px-6 py-3 rounded-pill font-sans font-extrabold text-white"
                 style={{ background: "#7C5CFF", boxShadow: "0 4px 0 #5B43E0" }}
               >
                 Create Account →
               </Link>
               <Link
-                href="/parent/children/link"
+                href="/parent/students/link"
                 className="inline-block px-6 py-3 rounded-pill font-sans font-extrabold text-white"
                 style={{ background: "#18B5A0", boxShadow: "0 4px 0 #0E8A78" }}
               >
@@ -112,7 +112,7 @@ export default async function ParentChildrenPage() {
               return (
                 <Link
                   key={child.id}
-                  href={`/parent/children/${child.id}`}
+                  href={`/parent/students/${child.id}`}
                   className="flex items-center gap-4 rounded-card p-5 transition-transform hover:-translate-y-0.5"
                   style={{ background: "#FFFFFF", border: "2px solid #F0E7D6", boxShadow: "0 4px 12px rgba(58,46,28,.08)" }}
                 >

@@ -17,7 +17,7 @@ export async function proxy(request: NextRequest) {
     request.cookies.get("better-auth.session_token") ||
     request.cookies.get("__Secure-better-auth.session_token");
 
-  // Child-credential session covers /student/* (PIN-based, no Better Auth account)
+  // PIN-credential session covers /student/* (PIN-based, no Better Auth account)
   const childCookie = request.cookies.get(CHILD_COOKIE);
 
   // Seat-code session covers /student/* only (no account, Track A)
@@ -42,8 +42,8 @@ export async function proxy(request: NextRequest) {
   }
 
   // Role-mismatch check: read the afj-role cookie set by the profile API after onboarding.
-  // Skip when a child cookie is present — children are always students regardless of any
-  // adult session that may be lingering in the same browser (e.g. demo parent + demo student).
+  // Skip when a student PIN cookie is present — PIN-auth students are always /student/* regardless
+  // of any adult session that may be lingering in the same browser (e.g. demo parent + demo student).
   const roleCookie = request.cookies.get("afj-role");
   if (!childCookie?.value && roleCookie?.value && roleCookie.value !== matchedRole) {
     const url = request.nextUrl.clone();
@@ -56,7 +56,7 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/student/:path*",
+    "/student/((?!sign-in).*)",
     "/teacher/:path*",
     "/parent/:path*",
     "/admin/:path*",

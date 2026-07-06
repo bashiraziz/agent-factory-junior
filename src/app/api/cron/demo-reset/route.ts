@@ -9,6 +9,6 @@ export async function GET(req: NextRequest) {
   }
 
   const result = await resetDemoData();
-  console.log(`[cron/demo-reset] Purged ${result.deleted} demo child account(s)`);
+  console.log(`[cron/demo-reset] Purged demo student account(s)`);
   return NextResponse.json({ ok: true, ...result });
 }
