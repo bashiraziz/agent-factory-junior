@@ -115,7 +115,7 @@ export default function HelpPage() {
             </svg>
           </div>
           <span className="font-display text-xl" style={{ color: "#2A2A3C" }}>
-            Agent Factory <span style={{ color: "#7C5CFF" }}>Junior</span>
+            Agent Factory <span style={{ color: "#7C5CFF" }}>Foundations</span>
           </span>
         </Link>
         <Link
