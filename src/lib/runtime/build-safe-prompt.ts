@@ -1,11 +1,11 @@
 import type { ProjectDSL } from "./types";
 
 export function buildSafePrompt(dsl: ProjectDSL): string {
-  const knowledgeText = dsl.knowledge
+  const knowledgeText = (dsl.knowledge ?? [])
     .map((k) => k.content)
     .join("\n");
 
-  const rulesText = dsl.rules.map((r) => `- ${r}`).join("\n");
+  const rulesText = (dsl.rules ?? []).map((r) => `- ${r}`).join("\n");
 
   const stepsLines: string[] = [];
   let stepNum = 1;
