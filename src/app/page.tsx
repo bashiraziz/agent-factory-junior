@@ -2,14 +2,12 @@ import Link from "next/link";
 import { Mascot } from "@/components/mascot";
 import {
   Blocks,
-  ShieldCheck,
   ScrollText,
   Users,
 } from "lucide-react";
 
 const CHIPS = [
   { label: "Visual block editor", Icon: Blocks,      color: "#7C5CFF" },
-  { label: "Safe for kids",        Icon: ShieldCheck, color: "#FF6B6B" },
   { label: "Replays",              Icon: ScrollText,  color: "#FF924D" },
   { label: "Teacher & parent review", Icon: Users,   color: "#3DA5F4" },
 ];
