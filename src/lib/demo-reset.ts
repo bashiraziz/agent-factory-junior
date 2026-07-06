@@ -12,7 +12,7 @@ import {
 } from "@/db/schema";
 import { eq, inArray, sql } from "drizzle-orm";
 
-export const DEMO_EMAIL = "demo@agentfactoryjr.com";
+export const DEMO_EMAIL = "demo@agentfactoryfoundations.com";
 const SEEDED_CHILD_ID = "demo_profile_child_001";
 
 export async function resetDemoData(): Promise<{ deleted: number }> {

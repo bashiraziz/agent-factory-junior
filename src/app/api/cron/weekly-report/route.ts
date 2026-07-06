@@ -97,7 +97,7 @@ export async function POST(req: NextRequest) {
       parentName: parentProfile.displayName.split(" ")[0],
       children: childSummaries,
       weekOf,
-      dashboardUrl: `${process.env.NEXT_PUBLIC_APP_URL ?? "https://agentfactoryjr.com"}/parent/dashboard`,
+      dashboardUrl: `${process.env.NEXT_PUBLIC_APP_URL ?? "https://agentfactoryfoundations.com"}/parent/dashboard`,
     });
 
     await sendEmail({

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "@/lib/auth-client";
 
-const DEMO_EMAIL = "demo@agentfactoryjr.com";
+const DEMO_EMAIL = "demo@agentfactoryfoundations.com";
 const DEMO_PASSWORD = "Demo1234!";
 
 export function DemoParentButton() {

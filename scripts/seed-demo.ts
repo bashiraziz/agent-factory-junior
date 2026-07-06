@@ -6,7 +6,7 @@
  *   npx tsx scripts/seed-demo.ts
  *
  * Demo credentials:
- *   Parent  →  demo@agentfactoryjr.com  /  Demo1234!
+ *   Parent  →  demo@agentfactoryfoundations.com  /  Demo1234!
  *   Child   →  username: alex_demo      /  PIN: 1234
  */
 
@@ -26,7 +26,7 @@ const pool = new Pool({
   ssl: DATABASE_URL.includes("neon.tech") ? true : undefined,
 });
 
-const DEMO_EMAIL     = "demo@agentfactoryjr.com";
+const DEMO_EMAIL     = "demo@agentfactoryfoundations.com";
 const DEMO_PASSWORD  = "Demo1234!";
 const DEMO_PIN       = "1234";
 const CHILD_USERNAME = "alex_demo";

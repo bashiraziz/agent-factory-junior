@@ -30,7 +30,7 @@ npm run db:seed-demo
 
 | | Credentials |
 |---|---|
-| **Parent** | `demo@agentfactoryjr.com` / `Demo1234!` |
+| **Parent** | `demo@agentfactoryfoundations.com` / `Demo1234!` |
 | **Child** | username `alex_demo` / PIN `1234` |
 
 ---

@@ -88,7 +88,7 @@ export default function ConnectPage() {
             <div className="font-display text-lg" style={{ color: "#2A2A3C" }}>Tell my parent</div>
             <p className="font-sans text-sm" style={{ color: "#5C5747" }}>
               Ask a parent or guardian to visit{" "}
-              <strong>agentfactoryjr.com/parent</strong> and add you as their child.
+              <strong>agentfactoryfoundations.com/parent</strong> and add you as their child.
               Once they&apos;ve linked your account, tap Refresh below.
             </p>
             <button

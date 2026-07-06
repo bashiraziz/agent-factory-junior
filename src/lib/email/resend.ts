@@ -10,7 +10,7 @@ export async function sendEmail({
     return;
   }
   await resend.emails.send({
-    from: process.env.EMAIL_FROM ?? "reports@agentfactoryjr.com",
+    from: process.env.EMAIL_FROM ?? "reports@agentfactoryfoundations.com",
     to,
     subject,
     html,

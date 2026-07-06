@@ -13,7 +13,7 @@ import { DeleteWorkerButton } from "@/components/delete-worker-button";
 import { LogoutButton } from "@/components/logout-button";
 import { HelpButton } from "@/components/help-button";
 
-const DEMO_EMAIL = process.env.DEMO_EMAIL ?? "demo@agentfactoryjr.com";
+const DEMO_EMAIL = process.env.DEMO_EMAIL ?? "demo@agentfactoryfoundations.com";
 
 export default async function StudentDashboard() {
   const profile = await resolveStudentProfile();

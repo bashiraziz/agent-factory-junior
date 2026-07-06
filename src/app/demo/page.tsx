@@ -37,7 +37,7 @@ export default function DemoPage() {
               className="rounded-xl px-4 py-3 font-mono text-xs space-y-1"
               style={{ background: "#F4F0FF", color: "#5B6BE6" }}
             >
-              <div>Email &nbsp;&nbsp;demo@agentfactoryjr.com</div>
+              <div>Email &nbsp;&nbsp;demo@agentfactoryfoundations.com</div>
               <div>Password Demo1234!</div>
             </div>
             <DemoParentButton />

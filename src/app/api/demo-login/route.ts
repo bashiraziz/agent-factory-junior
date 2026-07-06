@@ -6,7 +6,7 @@ import { profiles } from "@/db/schema";
 import { eq, sql } from "drizzle-orm";
 import { purgeDemoChildren } from "@/lib/demo-reset";
 
-const DEMO_EMAIL    = "demo@agentfactoryjr.com";
+const DEMO_EMAIL    = "demo@agentfactoryfoundations.com";
 const DEMO_PASSWORD = "Demo1234!";
 
 export async function GET(request: NextRequest) {
@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
         await purgeDemoChildren(parentProfile.id);
       }
 
-      // Mark email as verified — demo@agentfactoryjr.com has no real inbox
+      // Mark email as verified — demo@agentfactoryfoundations.com has no real inbox
       await db.execute(
         sql`UPDATE "user" SET "emailVerified" = true WHERE id = ${result.user.id}`
       );
