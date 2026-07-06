@@ -13,7 +13,7 @@ const SECTIONS: Section[] = [
     title: "Getting started",
     audience: "everyone",
     items: [
-      { q: "What is Agent Factory Junior?", a: "A safe place for kids to build small AI Workers using visual blocks — no coding. Every worker follows safety rules, and every run is watched by a teacher or parent." },
+      { q: "What is Agent Factory Foundations?", a: "A safe place for kids to build small AI Workers using visual blocks — no coding. Every worker follows safety rules, and every run is watched by a teacher or parent." },
       { q: "How do I sign in?", a: "Students join with a classroom code from a teacher, or a link code from a parent. Teachers and parents create an account with email at /sign-up." },
     ],
   },
@@ -133,7 +133,7 @@ export default function HelpPage() {
             HELP CENTER
           </div>
           <h1 className="font-display text-4xl font-semibold" style={{ color: "#2A2A3C" }}>
-            How to use Agent Factory Junior
+            How to use Agent Factory Foundations
           </h1>
           <p className="font-sans text-lg mt-2" style={{ color: "#5C5747" }}>
             Quick answers for students, teachers, and parents.

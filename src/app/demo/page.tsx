@@ -11,7 +11,7 @@ export default function DemoPage() {
         <div className="text-center space-y-3">
           <Mascot size={72} />
           <h1 className="font-display text-4xl font-semibold" style={{ color: "#2A2A3C" }}>
-            Try Agent Factory Junior
+            Try Agent Factory Foundations
           </h1>
           <p className="font-sans text-lg" style={{ color: "#5C5747" }}>
             Pick a role and explore — no sign-up needed.

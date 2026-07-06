@@ -98,7 +98,7 @@ export default function CreditsPage() {
             This wall has room
           </h3>
           <p className="font-sans text-sm" style={{ color: "#5C5747", maxWidth: 360, margin: "0 auto" }}>
-            If you helped shape Agent Factory Junior — as a tester, teacher,
+            If you helped shape Agent Factory Foundations — as a tester, teacher,
             translator, advisor, or friend — your name belongs here. Reach out.
           </p>
         </div>

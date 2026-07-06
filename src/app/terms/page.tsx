@@ -26,7 +26,7 @@ export default function TermsPage() {
             Terms of Service
           </h1>
           <p className="font-sans text-sm mt-1" style={{ color: "#8A8071" }}>
-            Agent Factory Junior · Last updated: 3 July 2026
+            Agent Factory Foundations · Last updated: 3 July 2026
           </p>
         </div>
 
@@ -41,7 +41,7 @@ export default function TermsPage() {
           </h2>
           <p className="font-sans text-base" style={{ color: "#5C5747", maxWidth: 480, margin: "0 auto" }}>
             We&rsquo;re working on a full set of terms of service. In the meantime, if you have
-            any questions about using Agent Factory Junior, please reach out to us directly.
+            any questions about using Agent Factory Foundations, please reach out to us directly.
           </p>
           <a
             href="mailto:bashiraziz@yahoo.com"
@@ -59,7 +59,7 @@ export default function TermsPage() {
         >
           <span className="text-2xl flex-shrink-0">⚖️</span>
           <p className="font-sans text-sm leading-relaxed" style={{ color: "#78350F" }}>
-            By using Agent Factory Junior you agree to use the platform responsibly and in
+            By using Agent Factory Foundations you agree to use the platform responsibly and in
             accordance with our{" "}
             <Link href="/privacy" style={{ color: "#7C5CFF", fontWeight: 700 }}>
               Privacy Policy

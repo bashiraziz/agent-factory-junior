@@ -298,7 +298,7 @@ export default function CreateChildAccountPage() {
                   <a href="/privacy" target="_blank" className="font-bold underline" style={{ color: "#7C5CFF" }}>
                     Privacy Policy
                   </a>{" "}
-                  and I consent to my child&apos;s use of Agent Factory Junior, including AI processing of
+                  and I consent to my child&apos;s use of Agent Factory Foundations, including AI processing of
                   their block configurations by Google Gemini. I understand I can delete my child&apos;s
                   account and all associated data at any time.
                 </span>

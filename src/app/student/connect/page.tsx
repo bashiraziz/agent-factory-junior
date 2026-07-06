@@ -45,7 +45,7 @@ export default function ConnectPage() {
             One more step 🔒
           </h1>
           <p className="font-sans text-base" style={{ color: "#5C5747", maxWidth: 400, margin: "0 auto" }}>
-            Agent Factory Junior is for supervised learners. Connect with a teacher or a parent to start building.
+            Agent Factory Foundations is for supervised learners. Connect with a teacher or a parent to start building.
           </p>
         </div>
 

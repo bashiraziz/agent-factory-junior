@@ -1,4 +1,4 @@
-# Agent Factory Junior — Roadmap
+# Agent Factory Foundations — Roadmap
 
 ## Access Model: Two Tracks
 
@@ -8,7 +8,7 @@ profiles. The correct architecture runs both tracks in parallel, not as
 alternatives.
 
 ```
-How does a child access Agent Factory Junior?
+How does a child access Agent Factory Foundations?
 
 ┌─────────────────────────────────────────────────────────────┐
 │  TRACK A — Through school (no account needed)               │

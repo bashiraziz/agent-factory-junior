@@ -1,7 +1,7 @@
 const SECTIONS = [
   {
     title: "1. Who we are",
-    body: 'Agent Factory Junior is an educational platform where children build AI Workers using visual blocks, supervised by a parent or teacher. We are not directed at children — sign-up is for adults only. Children access the platform through an account created and managed by their parent or teacher.',
+    body: 'Agent Factory Foundations is an educational platform where children build AI Workers using visual blocks, supervised by a parent or teacher. We are not directed at children — sign-up is for adults only. Children access the platform through an account created and managed by their parent or teacher.',
   },
   {
     title: "2. How accounts are created",

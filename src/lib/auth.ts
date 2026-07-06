@@ -31,11 +31,11 @@ export const auth = betterAuth({
     sendVerificationEmail: async ({ user, url }: { user: { email: string; name?: string }; url: string }) => {
       await sendEmail({
         to: user.email,
-        subject: "Verify your email — Agent Factory Junior",
+        subject: "Verify your email — Agent Factory Foundations",
         html: `
           <div style="font-family: Nunito, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px;">
             <h1 style="font-family: Fredoka, sans-serif; color: #2A2A3C; font-size: 24px;">
-              Welcome to Agent Factory Junior 👋
+              Welcome to Agent Factory Foundations 👋
             </h1>
             <p style="color: #5C5747; font-size: 16px;">
               Click the button below to verify your email and start setting up your child's account.

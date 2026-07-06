@@ -71,7 +71,7 @@ export default async function ParentBYOKPage() {
             className="font-sans font-bold text-sm"
             style={{ color: "#8A8071", textDecoration: "none" }}
           >
-            About Agent Factory Junior
+            About Agent Factory Foundations
           </Link>
         </div>
       </main>

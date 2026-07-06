@@ -53,7 +53,7 @@ export default function AboutPage() {
 
           <div>
             <h1 className="font-display text-3xl font-semibold" style={{ color: "#2A2A3C" }}>
-              Agent Factory Junior
+              Agent Factory Foundations
             </h1>
             <p className="font-sans text-base font-semibold mt-1" style={{ color: "#7C5CFF" }}>
               Where kids build their first AI Workers

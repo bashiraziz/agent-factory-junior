@@ -1,4 +1,4 @@
-# Agent Factory Junior
+# Agent Factory Foundations
 
 A safe, child-friendly platform where kids build AI Workers with visual blocks.
 

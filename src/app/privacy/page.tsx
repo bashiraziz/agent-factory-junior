@@ -34,7 +34,7 @@ export default function PrivacyPage() {
             Privacy Policy
           </h1>
           <p className="font-sans text-sm mt-1" style={{ color: "#8A8071" }}>
-            Agent Factory Junior · Last updated: 3 July 2026
+            Agent Factory Foundations · Last updated: 3 July 2026
           </p>
         </div>
 

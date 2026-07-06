@@ -142,7 +142,7 @@ export default function NewClassroomPage() {
                     className="mt-1 w-5 h-5 accent-[#3DA5F4] flex-shrink-0"
                   />
                   <span className="font-sans text-sm leading-relaxed">
-                    As a school official, I consent to Agent Factory Junior collecting student data
+                    As a school official, I consent to Agent Factory Foundations collecting student data
                     (usernames, block configurations, and AI run logs) solely for educational purposes
                     in my classroom, per the{" "}
                     <a href="/privacy" target="_blank" className="font-bold underline" style={{ color: "#3DA5F4" }}>
