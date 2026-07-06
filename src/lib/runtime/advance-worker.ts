@@ -88,7 +88,7 @@ export async function advanceWorker(
   await assertApproved(project, studentId);
 
   const dsl = project.dslJson as ProjectDSL;
-  const quizStep = dsl.steps.find((s) => s.type === "quiz") as
+  const quizStep = (dsl.steps ?? []).find((s) => s.type === "quiz") as
     | { type: "quiz"; question_count: number }
     | undefined;
   const questionCount = quizStep?.question_count ?? 3;

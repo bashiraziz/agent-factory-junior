@@ -35,7 +35,7 @@ function generateMockResponse(dsl: ProjectDSL): LLMResponse {
   const messages: LLMResponse["messages"] = [];
   const steps_completed: string[] = [];
 
-  for (const step of dsl.steps) {
+  for (const step of (dsl.steps ?? [])) {
     if (step.type === "ask_student") {
       messages.push({
         role: "worker",

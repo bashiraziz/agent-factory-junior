@@ -9,7 +9,7 @@ export function buildSafePrompt(dsl: ProjectDSL): string {
 
   const stepsLines: string[] = [];
   let stepNum = 1;
-  for (const step of dsl.steps) {
+  for (const step of (dsl.steps ?? [])) {
     if (step.type === "ask_student") {
       stepsLines.push(`${stepNum}. Ask the student: "${step.prompt}"`);
     } else if (step.type === "explain") {
