@@ -16,7 +16,7 @@ const ROLES = [
   {
     id: "parent",
     label: "I'm a Parent",
-    desc: "Stay connected to your child's learning.",
+    desc: "Stay connected to your student's learning.",
     emoji: "👨‍👩‍👧",
     color: "#18B5A0",
   },

@@ -84,7 +84,7 @@ export default function CreateChildAccountPage() {
                 {created.displayName}&apos;s account is ready!
               </h1>
               <p className="font-sans text-sm mb-6" style={{ color: "#5C5747" }}>
-                Write these down and give them to your child. They&apos;ll use them to sign in at{" "}
+                Write these down and give them to your student. They&apos;ll use them to sign in at{" "}
                 <span className="font-mono font-bold">/join</span>.
               </p>
 
@@ -151,7 +151,7 @@ export default function CreateChildAccountPage() {
             <path d="M15 18l-6-6 6-6" />
           </svg>
         </Link>
-        <span className="font-display text-lg" style={{ color: "#2A2A3C" }}>Create Child Account</span>
+        <span className="font-display text-lg" style={{ color: "#2A2A3C" }}>Create Student Account</span>
       </header>
 
       <main className="flex-1 flex items-center justify-center px-4 py-6">
@@ -166,7 +166,7 @@ export default function CreateChildAccountPage() {
                 No email needed
               </h1>
               <p className="font-sans mt-2" style={{ color: "#5C5747" }}>
-                Pick a username and a 4-digit PIN for your child. They&apos;ll sign in at <span className="font-mono font-bold">/join</span>.
+                Pick a username and a 4-digit PIN for your student. They&apos;ll sign in at <span className="font-mono font-bold">/join</span>.
               </p>
             </div>
 
@@ -281,7 +281,7 @@ export default function CreateChildAccountPage() {
                   KEEP IT SAFE
                 </div>
                 <p className="font-sans text-xs" style={{ color: "#2A2A3C" }}>
-                  Write the username and PIN somewhere safe. You&apos;ll need them if your child forgets. You can also delete the account any time.
+                  Write the username and PIN somewhere safe. You&apos;ll need them if your student forgets. You can also delete the account any time.
                 </p>
               </div>
 
@@ -294,12 +294,12 @@ export default function CreateChildAccountPage() {
                   className="mt-1 w-5 h-5 accent-[#7C5CFF] flex-shrink-0"
                 />
                 <span className="font-sans text-sm leading-relaxed">
-                  I am this child&apos;s parent or legal guardian. I have read the{" "}
+                  I am this student&apos;s parent or legal guardian. I have read the{" "}
                   <a href="/privacy" target="_blank" className="font-bold underline" style={{ color: "#7C5CFF" }}>
                     Privacy Policy
                   </a>{" "}
-                  and I consent to my child&apos;s use of Agent Factory Foundations, including AI processing of
-                  their block configurations by Google Gemini. I understand I can delete my child&apos;s
+                  and I consent to my student&apos;s use of Agent Factory Foundations, including AI processing of
+                  their block configurations by Google Gemini. I understand I can delete my student&apos;s
                   account and all associated data at any time.
                 </span>
               </label>

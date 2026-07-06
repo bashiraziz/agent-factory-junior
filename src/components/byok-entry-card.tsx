@@ -129,7 +129,7 @@ export function BYOKEntryCard({ connected: initialConnected, keyTail: initialKey
                     </span>
                   )}
                   <span style={{ fontFamily: "Nunito, sans-serif", fontSize: 12, color: "#8A8071" }}>
-                    {isInvalid ? "Key needs to be reconnected" : "Kids get more runs daily"}
+                    {isInvalid ? "Key needs to be reconnected" : "Students get more runs daily"}
                   </span>
                 </div>
               </>

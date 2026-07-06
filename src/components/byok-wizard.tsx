@@ -183,7 +183,7 @@ export function BYOKWizard({ onClose, onSuccess, initialConnected: _ic, initialK
               Unlock more runs — for free
             </h2>
             <p style={{ fontFamily: "Nunito, sans-serif", color: "#5C5747", marginBottom: 24 }}>
-              Connect your own Google AI Studio key so your kids can keep building even after the daily limit. Takes 2 minutes!
+              Connect your own Google AI Studio key so your students can keep building even after the daily limit. Takes 2 minutes!
             </p>
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 28 }}>
@@ -257,7 +257,7 @@ export function BYOKWizard({ onClose, onSuccess, initialConnected: _ic, initialK
             </p>
 
             {[
-              { n: 1, text: "Sign in with your Google account (the grown-up account, not the kid's)" },
+              { n: 1, text: "Sign in with your Google account (the grown-up account, not the student's)" },
               { n: 2, text: 'Click "Create API key" — it\'s the big blue button' },
               { n: 3, text: 'Copy the key that starts with "AIza…"' },
             ].map((s) => (
@@ -478,7 +478,7 @@ export function BYOKWizard({ onClose, onSuccess, initialConnected: _ic, initialK
               It works!
             </h2>
             <p style={{ fontFamily: "Nunito, sans-serif", color: "#5C5747", marginBottom: 20 }}>
-              Your key is saved safely. Your kids now get more runs every day!
+              Your key is saved safely. Your students now get more runs every day!
             </p>
 
             <div style={{

@@ -40,7 +40,8 @@
       "Bash(git worktree *)",
       "Bash(unzip *)",
       "Bash(npx drizzle-kit *)",
-      "Bash(npx tsx *)"
+      "Bash(npx tsx *)",
+      "Bash(xargs ls *)"
     ]
   }
 }

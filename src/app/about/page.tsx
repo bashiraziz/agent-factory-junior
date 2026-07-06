@@ -56,7 +56,7 @@ export default function AboutPage() {
               Agent Factory Foundations
             </h1>
             <p className="font-sans text-base font-semibold mt-1" style={{ color: "#7C5CFF" }}>
-              Where kids build their first AI Workers
+              Where students build their first AI Workers
             </p>
           </div>
 
@@ -64,9 +64,9 @@ export default function AboutPage() {
             className="font-sans text-base leading-relaxed"
             style={{ color: "#5C5747", maxWidth: 460 }}
           >
-            I made this so that curious kids everywhere could meet AI as something they{" "}
+            I made this so that curious learners everywhere could meet AI as something they{" "}
             <em>build and guide</em> — not something that just happens to them. Every Worker
-            here is created by a child, checked by a grown-up, and made with care.
+            here is created by a student, checked by a grown-up, and made with care.
           </p>
         </div>
 

@@ -38,7 +38,7 @@ export const auth = betterAuth({
               Welcome to Agent Factory Foundations 👋
             </h1>
             <p style="color: #5C5747; font-size: 16px;">
-              Click the button below to verify your email and start setting up your child's account.
+              Click the button below to verify your email and start setting up your student's account.
             </p>
             <a href="${url}" style="display: inline-block; padding: 14px 32px; background: #7C5CFF;
               color: white; border-radius: 999px; font-weight: 700; font-size: 16px;

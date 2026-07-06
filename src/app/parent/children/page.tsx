@@ -45,7 +45,7 @@ export default async function ParentChildrenPage() {
               <path d="M15 18l-6-6 6-6" />
             </svg>
           </Link>
-          <span className="font-display text-xl" style={{ color: "#2A2A3C" }}>My Children</span>
+          <span className="font-display text-xl" style={{ color: "#2A2A3C" }}>My Students</span>
         </div>
         <div className="flex items-center gap-2">
           <Link
@@ -60,7 +60,7 @@ export default async function ParentChildrenPage() {
             className="px-4 py-2 rounded-pill font-sans font-extrabold text-sm text-white"
             style={{ background: "#18B5A0", boxShadow: "0 4px 0 #0E8A78" }}
           >
-            + Link a Child
+            + Link a Student
           </Link>
         </div>
       </header>
@@ -68,10 +68,10 @@ export default async function ParentChildrenPage() {
       <main className="max-w-3xl mx-auto px-6 py-8">
         <div className="mb-6">
           <div className="font-mono text-xs uppercase tracking-widest mb-1" style={{ color: "#8A8071" }}>
-            LINKED CHILDREN
+            LINKED STUDENTS
           </div>
           <h1 className="font-display text-3xl" style={{ color: "#2A2A3C" }}>
-            {children.length} child{children.length !== 1 ? "ren" : ""} linked
+            {children.length} student{children.length !== 1 ? "s" : ""} linked
           </h1>
         </div>
 
@@ -82,10 +82,10 @@ export default async function ParentChildrenPage() {
           >
             <div className="text-6xl mb-4">👨‍👩‍👧</div>
             <div className="font-display text-2xl mb-2" style={{ color: "#2A2A3C" }}>
-              No children linked yet
+              No students linked yet
             </div>
             <p className="font-sans mb-6" style={{ color: "#5C5747" }}>
-              Create an account for your child (no email needed!) or link an existing one.
+              Create an account for your student (no email needed!) or link an existing one.
             </p>
             <div className="flex items-center justify-center gap-3 flex-wrap">
               <Link
@@ -100,7 +100,7 @@ export default async function ParentChildrenPage() {
                 className="inline-block px-6 py-3 rounded-pill font-sans font-extrabold text-white"
                 style={{ background: "#18B5A0", boxShadow: "0 4px 0 #0E8A78" }}
               >
-                Link a Child →
+                Link a Student →
               </Link>
             </div>
           </div>

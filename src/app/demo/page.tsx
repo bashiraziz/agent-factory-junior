@@ -30,7 +30,7 @@ export default function DemoPage() {
               <div className="text-4xl">👨‍👩‍👧</div>
               <div className="font-display text-2xl font-semibold" style={{ color: "#2A2A3C" }}>Parent view</div>
               <p className="font-sans text-sm" style={{ color: "#5C5747" }}>
-                See your child&apos;s AI workers, activity feed, replay proofs, and safety controls.
+                See your student&apos;s AI workers, activity feed, replay proofs, and safety controls.
               </p>
             </div>
             <div

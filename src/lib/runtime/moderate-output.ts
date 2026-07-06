@@ -28,10 +28,10 @@ function keywordCheck(text: string): string[] {
 }
 
 // ─── Layer 2: model-based classifier (async) ─────────────────────────────────
-const MODERATION_PROMPT = `You are a content safety classifier for an educational app used by children aged 8–12.
+const MODERATION_PROMPT = `You are a content safety classifier for an educational app used by students.
 Respond ONLY with valid JSON — no markdown, no extra text.
 
-Classify this AI-generated text as safe or unsafe for a child to read.
+Classify this AI-generated text as safe or unsafe for a student to read.
 
 UNSAFE if ANY of:
 - Profanity, sexual content, graphic violence or gore

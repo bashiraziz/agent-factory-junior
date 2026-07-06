@@ -38,7 +38,7 @@ export default function PrivacyPage() {
           </p>
         </div>
 
-        {/* Kid-friendly summary card */}
+        {/* Plain-language summary card */}
         <div
           className="rounded-2xl p-6 space-y-4"
           style={{ background: "#FFFFFF", border: "2px solid #7C5CFF33", boxShadow: "0 4px 0 #7C5CFF22" }}
@@ -46,7 +46,7 @@ export default function PrivacyPage() {
           <div className="flex items-center gap-3">
             <span className="text-2xl">🔒</span>
             <h2 className="font-display text-xl font-semibold" style={{ color: "#7C5CFF" }}>
-              Your privacy, in kid words
+              Your privacy, simply explained
             </h2>
           </div>
           <ul className="space-y-3">

@@ -5,7 +5,7 @@ const CONTRIBUTORS = [
   {
     name: "Bashir Aziz",
     role: "Creator",
-    note: "Built this so curious kids everywhere could meet AI as something they build and guide — not something that just happens to them.",
+    note: "Built this so curious learners everywhere could meet AI as something they build and guide — not something that just happens to them.",
     emoji: "🧑‍💻",
     color: "#7C5CFF",
   },
@@ -42,7 +42,7 @@ export default function CreditsPage() {
           </h1>
           <p className="font-sans text-base" style={{ color: "#5C5747", maxWidth: 420, margin: "0 auto" }}>
             Every line of code, every lesson, every block shape — built by real people
-            who believe kids deserve to understand the tech that shapes their world.
+            who believe students deserve to understand the tech that shapes their world.
           </p>
         </div>
 

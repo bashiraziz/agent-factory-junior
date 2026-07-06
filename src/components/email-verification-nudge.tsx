@@ -24,7 +24,7 @@ export function EmailVerificationNudge({ email }: { email: string }) {
     >
       <span className="text-2xl flex-shrink-0">📧</span>
       <div className="flex-1">
-        <div className="font-sans font-extrabold text-sm">Verify your email to create child accounts</div>
+        <div className="font-sans font-extrabold text-sm">Verify your email to create student accounts</div>
         <div className="font-sans text-sm mt-0.5">
           Check your inbox for a verification link, or{" "}
           {sent ? (

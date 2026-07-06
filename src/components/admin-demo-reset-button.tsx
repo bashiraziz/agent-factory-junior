@@ -7,7 +7,7 @@ export function AdminDemoResetButton() {
   const [deleted, setDeleted] = useState(0);
 
   async function handleReset() {
-    if (!confirm("Reset demo data now? This deletes all child accounts added by demo visitors (the seeded alex_demo child is kept).")) return;
+    if (!confirm("Reset demo data now? This deletes all student accounts added by demo visitors (the seeded alex_demo student is kept).")) return;
     setState("running");
     try {
       const res = await fetch("/api/admin/demo-reset", { method: "POST" });
@@ -30,7 +30,7 @@ export function AdminDemoResetButton() {
           Demo account reset
         </div>
         <div className="font-sans text-sm mt-0.5" style={{ color: "#5C5747" }}>
-          Wipes child accounts added by demo visitors. The seeded <span className="font-mono">alex_demo</span> child is always kept.
+          Wipes student accounts added by demo visitors. The seeded <span className="font-mono">alex_demo</span> student is always kept.
           Also runs automatically every 4 days via cron.
         </div>
         {state === "done" && (

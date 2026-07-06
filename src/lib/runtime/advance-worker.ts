@@ -29,7 +29,7 @@ const QuizSchema = z.object({
 function baseSystem(dsl: ProjectDSL): string {
   const knowledge = dsl.knowledge.map((k) => k.content).join("\n");
   const rules = dsl.rules.map((r) => `- ${r}`).join("\n");
-  return `You are an educational AI Worker for children.
+  return `You are an educational AI Worker for students.
 Safety rules:
 - Kind, safe, age-appropriate language.
 - Do NOT give homework answers directly.
@@ -130,7 +130,7 @@ export async function advanceWorker(
   }
 
   if (phase === "quiz") {
-    const prompt = `Based on the conversation below, create exactly ${questionCount} multiple-choice question(s) to check the student's understanding. Each question must have 3 answer choices. Mark the correct answer with a 0-based index. For each question, include a short, kid-friendly "explanation" (1-2 sentences) that says *why* the correct answer is right — this is shown to the student after they submit so they learn from mistakes.
+    const prompt = `Based on the conversation below, create exactly ${questionCount} multiple-choice question(s) to check the student's understanding. Each question must have 3 answer choices. Mark the correct answer with a 0-based index. For each question, include a short, student-friendly "explanation" (1-2 sentences) that says *why* the correct answer is right — this is shown to the student after they submit so they learn from mistakes.
 
 Conversation so far:
 ${convo}`;

@@ -48,7 +48,7 @@ export default function SignUpPage() {
             👨‍👩‍👧 For parents &amp; teachers
           </div>
           <p className="font-sans text-sm" style={{ color: "#5C5747" }}>
-            Manage your child&apos;s or students&apos; AI learning — free to get started.
+            Manage your students&apos; AI learning — free to get started.
           </p>
         </div>
 

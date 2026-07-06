@@ -85,7 +85,7 @@ export default async function ParentDashboard() {
           <p className="font-sans text-lg mt-1" style={{ color: "#5C5747" }}>
             {validChildren.length > 0
               ? `Keeping an eye on ${validChildren.map((c) => c.displayName.split(" ")[0]).join(" & ")}'s learning`
-              : "Create or link a child account to see their learning activity"}
+              : "Create or link a student account to see their learning activity"}
           </p>
         </div>
 
@@ -97,10 +97,10 @@ export default async function ParentDashboard() {
           >
             <div className="text-6xl mb-4">👶</div>
             <div className="font-display text-2xl mb-2" style={{ color: "#2A2A3C" }}>
-              Add your first child
+              Add your first student
             </div>
             <p className="font-sans mb-6" style={{ color: "#5C5747" }}>
-              Create a child account directly, or link an existing one with their link code.
+              Create a student account directly, or link an existing one with their link code.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
               <CreateChildButton />
@@ -114,7 +114,7 @@ export default async function ParentDashboard() {
               <div className="flex items-center justify-between mb-5">
                 <div>
                   <div className="font-mono text-xs uppercase tracking-widest mb-1" style={{ color: "#8A8071" }}>
-                    MY CHILDREN
+                    MY STUDENTS
 
                   </div>
                   <h2 className="font-display text-2xl" style={{ color: "#2A2A3C" }}>
@@ -253,7 +253,7 @@ function CreateChildButton() {
       className="px-5 py-2.5 rounded-pill font-sans font-extrabold text-white text-sm inline-block"
       style={{ background: "#7C5CFF", boxShadow: "0 4px 0 #5B43E0" }}
     >
-      + Create Child Account
+      + Create Student Account
     </a>
   );
 }
@@ -266,7 +266,7 @@ function LinkChildButton() {
         className="px-5 py-2.5 rounded-pill font-sans font-extrabold text-sm"
         style={{ background: "#F4F0FF", color: "#7C5CFF", border: "2px solid #7C5CFF33" }}
       >
-        Link Child Account
+        Link Student Account
       </button>
     </form>
   );

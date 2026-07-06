@@ -87,7 +87,7 @@ export function WeeklyReportEmail({ parentName, children, weekOf, dashboardUrl }
 
           <Text style={{ fontSize: 12, color: "#8A8071", marginTop: 24 }}>
             You&apos;re getting this because you opted in to weekly reports.
-            You can turn it off any time in your family dashboard under each child&apos;s settings.
+            You can turn it off any time in your family dashboard under each student&apos;s settings.
           </Text>
         </Container>
       </Body>

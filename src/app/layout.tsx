@@ -31,7 +31,7 @@ const spaceMono = Space_Mono({
 
 export const metadata: Metadata = {
   title: "Agent Factory Foundations — Build Your First AI Worker",
-  description: "A safe, child-friendly platform to build AI Workers with visual blocks.",
+  description: "A safe, learning-focused platform to build AI Workers with visual blocks.",
   icons: {
     icon: [
       { url: "/favicon.svg", type: "image/svg+xml" },

@@ -17,7 +17,7 @@ export async function POST(
   if (!project) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const link = await verifyParentChildLink(parent.id, project.ownerId);
-  if (!link) return NextResponse.json({ error: "Not your child's worker" }, { status: 403 });
+  if (!link) return NextResponse.json({ error: "Not your student's worker" }, { status: 403 });
 
   await db
     .update(projects)
@@ -38,7 +38,7 @@ export async function DELETE(
   if (!project) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const link = await verifyParentChildLink(parent.id, project.ownerId);
-  if (!link) return NextResponse.json({ error: "Not your child's worker" }, { status: 403 });
+  if (!link) return NextResponse.json({ error: "Not your student's worker" }, { status: 403 });
 
   await db.delete(projects).where(eq(projects.id, id));
   return NextResponse.json({ ok: true });

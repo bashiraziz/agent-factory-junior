@@ -153,7 +153,7 @@ export default async function ClassroomDetailPage({
           </Link>
           <HelpButton screenKey="teacher-classroom" title="Classroom detail" tips={[
             { icon: "🔑", title: "Join code", body: "Share the code so students can join." },
-            { icon: "🎟", title: "Seat codes", body: "Pre-generate codes for kids without email." },
+            { icon: "🎟", title: "Seat codes", body: "Pre-generate codes for students without email." },
             { icon: "👀", title: "Recent runs", body: "Click Replay to see exactly what happened." },
             { icon: "⚠", title: "Flagged runs", body: "Yellow rows tripped a safety rule — click Review first." },
             { icon: "🖼", title: "Gallery", body: "Students can share their finished Workers. You approve or reject from the Gallery tab before classmates see them." },

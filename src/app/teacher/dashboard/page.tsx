@@ -101,7 +101,7 @@ export default async function TeacherDashboard() {
           </Link>
           <HelpButton screenKey="teacher-dashboard" title="Teacher Hub" tips={[
             { icon: "🏫", title: "Create a classroom", body: "Click + New Classroom, give it a name, and share the join code with students." },
-            { icon: "🎓", title: "Students join with a code", body: "Students go to /join and enter your code — no email needed for kids." },
+            { icon: "🎓", title: "Students join with a code", body: "Students go to /join and enter your code — no email needed for students." },
             { icon: "⚠", title: "Safety flags", body: "Any run that trips a safety rule appears in the review list. Click Review to see what happened." },
             { icon: "📊", title: "Per-classroom view", body: "Click a classroom card to see today's runs, students, and seat codes." },
           ]} />

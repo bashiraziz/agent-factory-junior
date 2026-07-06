@@ -41,7 +41,7 @@ export const CORE_CHAPTERS: BookChapter[] = [
       "You already use AI every day! Voice helpers like Siri and Alexa, video picks on YouTube, spellcheck, face filters, and translation apps all use AI.",
       "Even the chat helper in this app is AI. And here's a sneaky one: video apps use AI to keep you watching 'just one more.' YOU decide when to stop!",
     ],
-    callout: { kind: "try", text: "Count how many AIs you meet before dinner today. Most kids find more than five!" },
+    callout: { kind: "try", text: "Count how many AIs you meet before dinner today. Most students find more than five!" },
     badge: { name: "The Spotter", emoji: "🔎", bg: "#E8F7ED" },
     mission: { title: "Add a Knowledge block", description: "Open the builder and add a Knowledge block. Write down an AI you spotted in real life today.", checklist: ["I added a Knowledge block with an AI I spotted today"] },
     quiz: { q: "Which of these uses AI?", choices: ["A paper book", "A spellchecker", "A pencil"], answer: 1 },
@@ -51,7 +51,7 @@ export const CORE_CHAPTERS: BookChapter[] = [
     title: "The good AI can do", emoji: "💚", color: "#FF7AB6", shadowColor: "#D94F90",
     paragraphs: [
       "AI helps in amazing ways. It helps doctors spot problems on X-rays, translates languages instantly, and reads pictures out loud for people who can't see well.",
-      "It helps scientists study the ocean and space, sorts recycling, and helps kids learn at their own speed.",
+      "It helps scientists study the ocean and space, sorts recycling, and helps students learn at their own speed.",
     ],
     callout: { kind: "remember", text: "Used kindly and carefully, AI can help make the world better and fairer for lots of people." },
     badge: { name: "The Helper", emoji: "💚", bg: "#FFF0F6" },

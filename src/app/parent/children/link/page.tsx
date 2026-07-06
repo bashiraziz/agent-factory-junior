@@ -23,8 +23,8 @@ export default function LinkChildPage() {
         body: JSON.stringify({ linkCode: code.trim().toUpperCase() }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to link child");
-      setSuccess(data.student?.displayName || "Child linked!");
+      if (!res.ok) throw new Error(data.error || "Failed to link student");
+      setSuccess(data.student?.displayName || "Student linked!");
       setTimeout(() => router.push("/parent/children"), 1500);
     } catch (ex) {
       setError(ex instanceof Error ? ex.message : "Something went wrong");
@@ -43,7 +43,7 @@ export default function LinkChildPage() {
             <path d="M15 18l-6-6 6-6" />
           </svg>
         </Link>
-        <span className="font-display text-lg" style={{ color: "#2A2A3C" }}>Link a Child</span>
+        <span className="font-display text-lg" style={{ color: "#2A2A3C" }}>Link a Student</span>
       </header>
 
       <main className="flex-1 flex items-center justify-center px-4">
@@ -58,7 +58,7 @@ export default function LinkChildPage() {
                 Enter Link Code
               </h1>
               <p className="font-sans mt-2" style={{ color: "#5C5747" }}>
-                Ask your child for their link code. They can find it in their profile or in their student dashboard.
+                Ask your student for their link code. They can find it in their profile or in their student dashboard.
               </p>
             </div>
 
@@ -81,7 +81,7 @@ export default function LinkChildPage() {
                   className="block font-mono text-xs uppercase tracking-widest mb-2"
                   style={{ color: "#8A8071" }}
                 >
-                  CHILD'S LINK CODE
+                  STUDENT'S LINK CODE
                 </label>
                 <input
                   id="code"
@@ -111,7 +111,7 @@ export default function LinkChildPage() {
                   HOW IT WORKS
                 </div>
                 <ul className="font-sans text-sm space-y-1" style={{ color: "#2A2A3C" }}>
-                  <li>🎓 Ask your child for their link code</li>
+                  <li>🎓 Ask your student for their link code</li>
                   <li>🔗 Enter it above to connect</li>
                   <li>👀 See all their AI Worker activity</li>
                   <li>📋 Watch replays for every run</li>
@@ -124,7 +124,7 @@ export default function LinkChildPage() {
                 className="w-full py-3.5 rounded-pill font-sans font-extrabold text-lg text-white disabled:opacity-40"
                 style={{ background: "#18B5A0", boxShadow: "0 4px 0 #0E8A78" }}
               >
-                {loading ? "Linking…" : success ? "Linked! ✓" : "Link Child →"}
+                {loading ? "Linking…" : success ? "Linked! ✓" : "Link Student →"}
               </button>
             </form>
           </div>

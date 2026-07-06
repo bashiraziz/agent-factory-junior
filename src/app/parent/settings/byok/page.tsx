@@ -41,7 +41,7 @@ export default async function ParentBYOKPage() {
           </div>
           <h1 className="font-display text-3xl" style={{ color: "#2A2A3C" }}>Your AI Key</h1>
           <p className="font-sans mt-2" style={{ color: "#5C5747" }}>
-            Connect your own free Google AI key to unlock higher daily limits for all your kids — same safety rules, no payment info ever.
+            Connect your own free Google AI key to unlock higher daily limits for all your students — same safety rules, no payment info ever.
           </p>
         </div>
 
@@ -61,7 +61,7 @@ export default async function ParentBYOKPage() {
               Your key stays private
             </div>
             <div className="font-sans text-sm mt-1" style={{ color: "#5C5747" }}>
-              We store it encrypted with AES-256. It's never shown in full — only the last 4 characters — and your kids can't see it.
+              We store it encrypted with AES-256. It's never shown in full — only the last 4 characters — and your students can't see it.
             </div>
           </div>
         </div>
