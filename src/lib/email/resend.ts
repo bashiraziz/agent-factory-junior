@@ -9,10 +9,13 @@ export async function sendEmail({
     console.warn("[email] RESEND_API_KEY not set — skipping send");
     return;
   }
-  await resend.emails.send({
-    from: process.env.EMAIL_FROM ?? "reports@agentfactoryfoundations.com",
+  const { error } = await resend.emails.send({
+    from: process.env.EMAIL_FROM ?? "reports@rowshni.xyz",
     to,
     subject,
     html,
   });
+  if (error) {
+    console.error(`[email] Resend rejected send to ${to}: ${error.name} — ${error.message}`);
+  }
 }
