@@ -27,6 +27,11 @@ export default function CreateChildAccountPage() {
   // Generated after mount: Math.random() during render differs between server and client HTML.
   const [suggestions, setSuggestions] = useState<string[]>([]);
 
+  // The error banner sits above the long form; bring it into view after a failed submit.
+  useEffect(() => {
+    if (error) window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [error]);
+
   useEffect(() => {
     setSuggestions(Array.from({ length: 3 }, randomUsername));
   }, []);

@@ -28,6 +28,7 @@ export const auth = betterAuth({
   ].filter(Boolean),
   emailAndPassword: { enabled: true },
   emailVerification: {
+    sendOnSignUp: true,
     sendVerificationEmail: async ({ user, url }: { user: { email: string; name?: string }; url: string }) => {
       await sendEmail({
         to: user.email,
