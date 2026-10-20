@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, type FormEvent } from "react";
+import { useState, useEffect, useCallback, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -24,7 +24,12 @@ export default function CreateChildAccountPage() {
   const [error, setError] = useState<string | null>(null);
   const [consented, setConsented] = useState(false);
   const [created, setCreated] = useState<{ displayName: string; username: string; pin: string } | null>(null);
-  const [suggestions] = useState(() => Array.from({ length: 3 }, randomUsername));
+  // Generated after mount: Math.random() during render differs between server and client HTML.
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+
+  useEffect(() => {
+    setSuggestions(Array.from({ length: 3 }, randomUsername));
+  }, []);
 
   const applySuggestion = useCallback((s: string) => setUsername(s), []);
 
